@@ -1,0 +1,39 @@
+== Fresh clone into /tmp/fleet-fresh-clone.wro4Zl/fleet ==
+== make setup ==
+./scripts/setup.sh
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: 'near-api-js@7.4.0',
+npm WARN EBADENGINE   required: { node: '>=22.22.2', pnpm: '>=10.4.1' },
+npm WARN EBADENGINE   current: { node: 'v22.22.1', npm: '9.2.0' }
+npm WARN EBADENGINE }
+
+added 74 packages in 5s
+
+> fleet@0.3.0 build
+> tsc -p packages/sdk/tsconfig.json && tsc -p packages/cli/tsconfig.json && tsc -p packages/api/tsconfig.json
+
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /tmp/fleet-fresh-clone.wro4Zl/fleet/contracts/fleet-controller/Cargo.toml
+workspace: /tmp/fleet-fresh-clone.wro4Zl/fleet/Cargo.toml
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling libc v0.2.191
+   Compiling typenum v1.20.1
+   Compiling cfg-if v1.0.5
+   Compiling version_check v0.9.5
+   Compiling subtle v2.6.1
+   Compiling const-oid v0.9.6
+   Compiling serde_core v1.0.229
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.15
+   Compiling serde v1.0.229
+   Compiling generic-array v0.14.7
+   Compiling equivalent v1.0.3
+   Compiling hashbrown v0.17.1
+   Compiling strsim v0.11.1
+The futex facility returned an unexpected error code.
+./scripts/setup.sh: line 52: 27346 Aborted                    cargo test --workspace --no-run
+make: *** [Makefile:25: setup] Error 134
+make: write error: stdout: Function not implemented
+./scripts/fresh-clone-test.sh: fork: Function not implemented

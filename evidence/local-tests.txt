@@ -133,6 +133,24 @@ Result: `FLEET verification: PASS`, `CLAIMS 20/20 verified (20 rows)`,
 `RPC CHECK: OK testnet latest_block_height=276096929`. Full log:
 `evidence/verify-v03.log`.
 
+## Fresh-clone test
+
+Command:
+
+```bash
+CARGO_BUILD_JOBS=2 CARGO_INCREMENTAL=0 FLEET_REQUIRE_RPC=1 \
+  ./scripts/fresh-clone-test.sh
+```
+
+Result: `FLEET fresh-clone test: PASS`; 35 Rust tests, 21 TypeScript tests,
+`CLAIMS 20/20 verified`, malformed-claim rejection, mainnet refusal, and clean
+repository hygiene. Log: `evidence/fresh-clone-v03.log`.
+
+The first attempt was aborted by a host-level futex/fork failure while `cargo`
+was compiling (`futex facility returned an unexpected error code`). The retry
+with two build jobs passed. The aborted log is retained as
+`evidence/fresh-clone-v03-attempt1-host-abort.log`.
+
 ## Gas profile
 
 Command:

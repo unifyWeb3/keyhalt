@@ -10,6 +10,8 @@ This directory holds machine-readable evidence for FLEET v0.3.
 | `mutation/` | Mutation-test report (8 mutants, 8 killed) |
 | `repro-build/` | Two isolated clean wasm builds and hash comparison |
 | `local-tests.txt` | Local fmt/clippy/Rust/TypeScript/repro/mutation/gas log |
+| `fresh-clone-v03.log` | Clean-clone setup/verify pass, malformed-claim and mainnet negative controls |
+| `verify-v03.log` | Full `FLEET_REQUIRE_RPC=1 make verify` pass |
 
 Rules:
 
@@ -24,6 +26,10 @@ The canonical run is `testnet-v03/run.json` (63 checks). Its wasm hash and audit
 head are quoted in `CLAIMS.md`; the tx hashes are public testnet transactions.
 Key files used for the run live outside this repository under
 `/root/.near-fallback-keys/` with mode 600 and are never copied here.
+
+`fresh-clone-v03-attempt1-host-abort.log` is the first clone attempt, aborted by a
+host-level futex/fork failure during compilation; the retry passed and is the
+file used as evidence.
 
 `phase1/` remains as the historical baseline. It records the harness before any
 product code existed and must not be used to support a v0.3 product claim.

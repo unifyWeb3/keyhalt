@@ -22,7 +22,7 @@ testnet transaction hash. A flaky, skipped, or unrun test is not evidence.
 | SDK/CLI | `npm test` | read paths, audit verify/tamper, exit codes, signer rules | **21/21 pass** |
 | Gas | `scripts/gas-profile.mjs` | per-operation cost from canonical evidence | **29 groups**, 3 provision rows |
 | Repro | `scripts/repro-build.sh` | two clean `--locked` builds | **byte-identical** |
-| Fresh clone | `scripts/fresh-clone-test.sh` | clean clone can reproduce | **pending after v0.3 commit** |
+| Fresh clone | `scripts/fresh-clone-test.sh` | clean clone can reproduce | **PASS** 2026-11-03 (`evidence/fresh-clone-v03.log`) |
 | Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **20/20 verified** |
 
 **Sandbox gap:** `near-workspaces` is not installed on this Linux arm64 host.
@@ -243,12 +243,12 @@ verify, export, tamper).
 | ID | Test | Status |
 | --- | --- | --- |
 | T-M-01 | 8 semantic mutants each killed by a targeted test | **PASS** 8/8; `evidence/mutation/mutation-report.md` |
-| T-SC-01 | Fresh clone + `make setup` + `make verify` | **PASS for Phase 1**; v0.3 rerun pending commit |
+| T-SC-01 | Fresh clone + `make setup` + `make verify` | **PASS** v0.3 2026-11-03; `evidence/fresh-clone-v03.log` |
 | T-SC-02 | Claims checker rejects malformed/unsupported rows | **PASS** (fresh-clone negative control) |
-| T-SC-03 | README “do X, see Y” matches reality | **PASS after v0.3 docs; fresh clone pending** |
+| T-SC-03 | README “do X, see Y” matches reality | **PASS** in the fresh-clone run |
 | T-SC-04 | No key/credential in clone or history | **PASS** working tree + history scan |
 | T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL** — 20 rows, tx hashes public; not one re-run script |
-| T-S-001…T-S-007 | Setup, verify, claims, secret scan, mainnet refusal, static web check | **PASS** (rerun in v0.3 verify) |
+| T-S-001…T-S-007 | Setup, verify, claims, secret scan, mainnet refusal, static web check | **PASS** (v0.3 verify + fresh clone) |
 
 ---
 
@@ -288,12 +288,12 @@ Open gaps, in priority order:
 6. No allowance-budget or storage-growth measurement (`T-G-02`, `T-G-03`).
 7. Property tests are deterministic and cover a subset of transitions.
 8. No near-workspaces sandbox run on this arm64 host.
-9. Fresh-clone v0.3 rerun must follow the commit.
+9. Docs/evidence changed after the fresh-clone commit; re-run the clone test before the submission tag.
 
 | Checkpoint | Criteria | Status |
 | --- | --- | --- |
 | Core contract | invariant/unit/property green; no AddKey on existing keys; audit verifies | **MET 2026-11-03** |
-| SDK/CLI/E2E | 3-agent E2E; SDK/CLI tests; every claim has evidence | **MET 2026-11-03** except fresh clone |
+| SDK/CLI/E2E | 3-agent E2E; SDK/CLI tests; every claim has evidence | **MET 2026-11-03** including fresh clone |
 | Feature freeze (Nov 10) | no new features; gas/latency tables complete | Gas done; latency not done |
 | Demo (Nov 12) | every step replayed; no untested claim | **PENDING** |
 | README final (Nov 13) | fresh clone green; claims checker green; diff link | **PENDING** |
