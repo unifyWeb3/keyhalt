@@ -181,11 +181,11 @@ print every tx hash, and save machine-readable output under `evidence/`.
 
 | ID | Test | Expected | Status |
 | --- | --- | --- | --- |
-| T-SC-01 | Fresh clone, `make setup`, `make verify` | PASS, no prior context | PLANNED until committed; then run |
+| T-SC-01 | Fresh clone, `make setup`, `make verify` | PASS, no prior context | **PASS** 2026-11-03, `FLEET_REQUIRE_RPC=1` |
 | T-SC-02 | Claims checker rejects malformed/unsupported claims | Nonzero exit + clear error | **PASS** (T-S-003) |
-| T-SC-03 | README “do X, see Y” matches reality | Commands work; no product claim without a row | PLANNED |
-| T-SC-04 | No key/credential in clone or history | Secret scan clean | **PASS** for working tree; history scan pending |
-| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | Each row re-run; tx hashes resolve | PLANNED (no product claims yet) |
+| T-SC-03 | README “do X, see Y” matches reality | Commands work; no product claim without a row | **PASS for Phase 1**; product replay pending |
+| T-SC-04 | No key/credential in clone or history | Secret scan clean | **PASS** working tree + history scan |
+| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | Each row re-run; tx hashes resolve | **N/A** — 0 product claims |
 
 The exact fresh-clone test is `scripts/fresh-clone-test.sh`. It must be green
 before every release candidate, including the submission tag.
