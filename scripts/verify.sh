@@ -42,6 +42,8 @@ console.log("WEB CHECK: OK static placeholder, no script, no key field");
 NODE
 
 echo "== Read-only testnet RPC =="
+# Best-effort by default; a public RPC outage must not make local reproduction
+# fail. Set FLEET_REQUIRE_RPC=1 for a release gate that requires testnet.
 node scripts/rpc-check.mjs
 
 echo "== Installed test harness versions =="

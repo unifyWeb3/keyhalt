@@ -44,7 +44,10 @@ CLAIMS 0/0 (no claims recorded yet)
 ```
 
 The read-only RPC check uses the public testnet endpoint only. It refuses to run
-if a mainnet RPC or `NEAR_MAINNET` is configured. No key is read or written.
+if a mainnet RPC or `NEAR_MAINNET` is configured. No key is read or written. It
+retries three times and is best-effort by default, so a public-RPC outage does
+not make local reproduction fail; set `FLEET_REQUIRE_RPC=1` to make it a release
+gate. There are no product claims that depend on this check at Phase 1.
 
 **One-command test from a clean clone:**
 
