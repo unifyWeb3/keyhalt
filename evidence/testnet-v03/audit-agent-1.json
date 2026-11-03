@@ -1,0 +1,217 @@
+{
+  "agent": "agent-1b.fleet-v03-5cff9e99.testnet",
+  "on_chain_verify": true,
+  "js_verify": true,
+  "head": "cc33b0ea668c9a42d34d5950638e53907009e52c4b197e1328a1f4ce762ee10b",
+  "entries": [
+    {
+      "seq": 0,
+      "action": "init",
+      "actor_account": "",
+      "signer_pk": "",
+      "subject": "provisioned",
+      "block_height": 276090358,
+      "block_timestamp": "1793733292254129411",
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "entry_hash": "257c15c3cc7d19274da9240e8fee0e418010f346612ede099137e1683146c92f"
+    },
+    {
+      "seq": 1,
+      "action": "freeze",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:AzeY7q9w4vjdZwfAb4EEVDkjDRH9euCUfnkuzPuvyXpV",
+      "subject": "paused=true",
+      "block_height": 276090380,
+      "block_timestamp": "1793733307193172767",
+      "prev_hash": "257c15c3cc7d19274da9240e8fee0e418010f346612ede099137e1683146c92f",
+      "entry_hash": "1ea0a186aec399e2d28536803380644fbaca652e46206a4a3616d0f23e682c88"
+    },
+    {
+      "seq": 2,
+      "action": "unfreeze",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:AzeY7q9w4vjdZwfAb4EEVDkjDRH9euCUfnkuzPuvyXpV",
+      "subject": "paused=false",
+      "block_height": 276090396,
+      "block_timestamp": "1793733317862882647",
+      "prev_hash": "1ea0a186aec399e2d28536803380644fbaca652e46206a4a3616d0f23e682c88",
+      "entry_hash": "bdaee7e1b2c6af1114bad398afcb76ef91583f26cb4318793593c46702b365a8"
+    },
+    {
+      "seq": 3,
+      "action": "grant_operator",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:AzeY7q9w4vjdZwfAb4EEVDkjDRH9euCUfnkuzPuvyXpV",
+      "subject": "ed25519:BqvN3hJu6AW7BHYQ3QsnhncF1ZMqhh3UR6QTVJkN3bVq;tag=ops-c",
+      "block_height": 276090432,
+      "block_timestamp": "1793733342045727154",
+      "prev_hash": "bdaee7e1b2c6af1114bad398afcb76ef91583f26cb4318793593c46702b365a8",
+      "entry_hash": "939982af3ab513859faed800bb7abb4dd736e24777b94421e3efd8ccd86caa50"
+    },
+    {
+      "seq": 4,
+      "action": "grant_confirmed",
+      "actor_account": "",
+      "signer_pk": "",
+      "subject": "ed25519:BqvN3hJu6AW7BHYQ3QsnhncF1ZMqhh3UR6QTVJkN3bVq",
+      "block_height": 276090434,
+      "block_timestamp": "1793733343453976771",
+      "prev_hash": "939982af3ab513859faed800bb7abb4dd736e24777b94421e3efd8ccd86caa50",
+      "entry_hash": "8167ff3529886cead13031665f2f148236d161ae8039357d964f2ca8aad8e747"
+    },
+    {
+      "seq": 5,
+      "action": "revoke_operator",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:AzeY7q9w4vjdZwfAb4EEVDkjDRH9euCUfnkuzPuvyXpV",
+      "subject": "ed25519:BqvN3hJu6AW7BHYQ3QsnhncF1ZMqhh3UR6QTVJkN3bVq",
+      "block_height": 276090449,
+      "block_timestamp": "1793733353660486089",
+      "prev_hash": "8167ff3529886cead13031665f2f148236d161ae8039357d964f2ca8aad8e747",
+      "entry_hash": "60d50e7978a1740af83bf3066fc633607c709d3fcd78957a6a3ae99e9c433ca9"
+    },
+    {
+      "seq": 6,
+      "action": "revoke_tag",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:AzeY7q9w4vjdZwfAb4EEVDkjDRH9euCUfnkuzPuvyXpV",
+      "subject": "tag=ops-a;removed=ed25519:CyKEm8L9nTavWRrkLV2a4DPnGq9QS14jvFPFbUp3iCNn,ed25519:83JqisTunQNXkE6FFGaz62TozYyUMbrQ5kpFvsdNPVgZ",
+      "block_height": 276090457,
+      "block_timestamp": "1793733359511327033",
+      "prev_hash": "60d50e7978a1740af83bf3066fc633607c709d3fcd78957a6a3ae99e9c433ca9",
+      "entry_hash": "55b438bc041c6e9fb47e14faecccc88aa5fb448b2a6432e374dd98e6c9871935"
+    },
+    {
+      "seq": 7,
+      "action": "rotate_operator",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:AzeY7q9w4vjdZwfAb4EEVDkjDRH9euCUfnkuzPuvyXpV",
+      "subject": "ed25519:9jDnfdcrnmsxewRoX2tRFhTfcKRRT4CBfGYfSCRmJaJo->ed25519:92v65xui1QS3B2f2Fmd3L4qUpMrayWCmrRNuCB6T7E2v;tag=ops-b",
+      "block_height": 276090465,
+      "block_timestamp": "1793733365320840443",
+      "prev_hash": "55b438bc041c6e9fb47e14faecccc88aa5fb448b2a6432e374dd98e6c9871935",
+      "entry_hash": "34c2c3cf2e0126e98ff70eefaabdc0d8b506f29f8f1000343dd681c688e2fa4d"
+    },
+    {
+      "seq": 8,
+      "action": "rotate_confirmed",
+      "actor_account": "",
+      "signer_pk": "",
+      "subject": "ed25519:92v65xui1QS3B2f2Fmd3L4qUpMrayWCmrRNuCB6T7E2v",
+      "block_height": 276090467,
+      "block_timestamp": "1793733366031406271",
+      "prev_hash": "34c2c3cf2e0126e98ff70eefaabdc0d8b506f29f8f1000343dd681c688e2fa4d",
+      "entry_hash": "a2fbd6697804652cb4e0d405a54d7e0ff7a6dcb20c4eaee39e29199938b694d6"
+    },
+    {
+      "seq": 9,
+      "action": "propose_admin",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:AzeY7q9w4vjdZwfAb4EEVDkjDRH9euCUfnkuzPuvyXpV",
+      "subject": "ed25519:8L2nU42xqMvQiGXGzPwuq7iMS4g5CVLPuYQ8F7GNRr9",
+      "block_height": 276090477,
+      "block_timestamp": "1793733373631125957",
+      "prev_hash": "a2fbd6697804652cb4e0d405a54d7e0ff7a6dcb20c4eaee39e29199938b694d6",
+      "entry_hash": "549689e7240f2c38d23d0a0c19a25680d7cf6353a51ad419163468404eb0aba7"
+    },
+    {
+      "seq": 10,
+      "action": "propose_confirmed",
+      "actor_account": "",
+      "signer_pk": "",
+      "subject": "ed25519:8L2nU42xqMvQiGXGzPwuq7iMS4g5CVLPuYQ8F7GNRr9",
+      "block_height": 276090479,
+      "block_timestamp": "1793733374862531321",
+      "prev_hash": "549689e7240f2c38d23d0a0c19a25680d7cf6353a51ad419163468404eb0aba7",
+      "entry_hash": "6b818fab78486895fe110b8c70a5875778c07d8e497f118b2b399bbfe2e2f2df"
+    },
+    {
+      "seq": 11,
+      "action": "accept_admin",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:8L2nU42xqMvQiGXGzPwuq7iMS4g5CVLPuYQ8F7GNRr9",
+      "subject": "ed25519:8L2nU42xqMvQiGXGzPwuq7iMS4g5CVLPuYQ8F7GNRr9",
+      "block_height": 276090492,
+      "block_timestamp": "1793733383926769426",
+      "prev_hash": "6b818fab78486895fe110b8c70a5875778c07d8e497f118b2b399bbfe2e2f2df",
+      "entry_hash": "d909772e2d3246b804fba42ce2130b52c4c7e8e95c8287839b640b646051c289"
+    },
+    {
+      "seq": 12,
+      "action": "freeze",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:8L2nU42xqMvQiGXGzPwuq7iMS4g5CVLPuYQ8F7GNRr9",
+      "subject": "paused=true",
+      "block_height": 276090501,
+      "block_timestamp": "1793733389775753836",
+      "prev_hash": "d909772e2d3246b804fba42ce2130b52c4c7e8e95c8287839b640b646051c289",
+      "entry_hash": "0c0c61233c0524af5bdc9b0ce0863c41be84f678378fd372eb947e4faf56cf6c"
+    },
+    {
+      "seq": 13,
+      "action": "unfreeze",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:8L2nU42xqMvQiGXGzPwuq7iMS4g5CVLPuYQ8F7GNRr9",
+      "subject": "paused=false",
+      "block_height": 276090508,
+      "block_timestamp": "1793733395445495620",
+      "prev_hash": "0c0c61233c0524af5bdc9b0ce0863c41be84f678378fd372eb947e4faf56cf6c",
+      "entry_hash": "8e7d8ee89dc02ba5f075103b9e66b45a41772f49f183839f39393a348c5c8159"
+    },
+    {
+      "seq": 14,
+      "action": "recover_admin",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:BgE92x6fT5wpMUKeTrqG1BbWJCiAxCob3h5ZQ5wLUocR",
+      "subject": "ed25519:CeYS7gkYLL3umiiJFMXb9uRdAtBPBRcN3bZXsGEBzaJL",
+      "block_height": 276090515,
+      "block_timestamp": "1793733400258539198",
+      "prev_hash": "8e7d8ee89dc02ba5f075103b9e66b45a41772f49f183839f39393a348c5c8159",
+      "entry_hash": "738e87f7168188ca19529ee102e7fd5432cd624c8e6ad27e4d41c78991c0b1cf"
+    },
+    {
+      "seq": 15,
+      "action": "recover_confirmed",
+      "actor_account": "",
+      "signer_pk": "",
+      "subject": "ed25519:CeYS7gkYLL3umiiJFMXb9uRdAtBPBRcN3bZXsGEBzaJL",
+      "block_height": 276090517,
+      "block_timestamp": "1793733401259225369",
+      "prev_hash": "738e87f7168188ca19529ee102e7fd5432cd624c8e6ad27e4d41c78991c0b1cf",
+      "entry_hash": "c1b6dd70213706a3c6df91f9d7b75989237afb038d86082b23ff4dbad60dca86"
+    },
+    {
+      "seq": 16,
+      "action": "accept_admin",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:CeYS7gkYLL3umiiJFMXb9uRdAtBPBRcN3bZXsGEBzaJL",
+      "subject": "ed25519:CeYS7gkYLL3umiiJFMXb9uRdAtBPBRcN3bZXsGEBzaJL",
+      "block_height": 276090525,
+      "block_timestamp": "1793733407293131963",
+      "prev_hash": "c1b6dd70213706a3c6df91f9d7b75989237afb038d86082b23ff4dbad60dca86",
+      "entry_hash": "6e82aa8cf19cc5f8307d18b60b754a335cb798173ad2c6161f77e9f62a54589a"
+    },
+    {
+      "seq": 17,
+      "action": "freeze",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:CeYS7gkYLL3umiiJFMXb9uRdAtBPBRcN3bZXsGEBzaJL",
+      "subject": "paused=true",
+      "block_height": 276090533,
+      "block_timestamp": "1793733412683264220",
+      "prev_hash": "6e82aa8cf19cc5f8307d18b60b754a335cb798173ad2c6161f77e9f62a54589a",
+      "entry_hash": "b86914d309f32a187912fea9a2f353163f85bb6c557689c30b78006a1f4f000c"
+    },
+    {
+      "seq": 18,
+      "action": "unfreeze",
+      "actor_account": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "signer_pk": "ed25519:CeYS7gkYLL3umiiJFMXb9uRdAtBPBRcN3bZXsGEBzaJL",
+      "subject": "paused=false",
+      "block_height": 276090540,
+      "block_timestamp": "1793733416557191316",
+      "prev_hash": "b86914d309f32a187912fea9a2f353163f85bb6c557689c30b78006a1f4f000c",
+      "entry_hash": "cc33b0ea668c9a42d34d5950638e53907009e52c4b197e1328a1f4ce762ee10b"
+    }
+  ]
+}

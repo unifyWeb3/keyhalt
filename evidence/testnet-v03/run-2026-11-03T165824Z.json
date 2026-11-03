@@ -1,0 +1,1317 @@
+{
+  "run": {
+    "started_at": "2026-11-03T16:56:42.001Z",
+    "finished_at": "2026-11-03T16:58:24.117Z",
+    "parent": "fleet-v03-5cff9e99.testnet",
+    "rpc": "https://rpc.testnet.fastnear.com",
+    "wasm_bytes": 248644,
+    "wasm_sha256": "cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f",
+    "agent_count": 3,
+    "operators_per_agent": 4
+  },
+  "agents": [
+    {
+      "id": "agent-1.fleet-v03-5cff9e99.testnet",
+      "admin_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+      "recovery_pk": "ed25519:8Rm2m3Q5ChPzPK41keeaJx6MvdULKg2szzqVoUa3ssDG",
+      "operator_pks": [
+        "ed25519:79QpeGPpA3B4pe9qkZMcLb57c3Ld42zNkWrWVgdFhHNk",
+        "ed25519:A7F4gMC87HWoPHYNuQriMG62KkBeCxk9CKZfaWciyKAx",
+        "ed25519:BfGr2PBmbM7GSRwh8547kXTTBA8tgSSdiNbPDUVvtiZ4",
+        "ed25519:Fs7oSYFG5msxkxwMu351jHErwwsZTPhXK5hPvx2DAKh2"
+      ],
+      "operator_tags": [
+        "ops-a",
+        "ops-a",
+        "ops-b",
+        "ops-b"
+      ],
+      "create_tx": null,
+      "init_tx": null,
+      "provisioned": true
+    },
+    {
+      "id": "agent-2.fleet-v03-5cff9e99.testnet",
+      "admin_pk": "ed25519:Dof6MFJCZfu2zDHvWkjk61mY2Nbyvnfu3kYAnMwAGQ9e",
+      "recovery_pk": "ed25519:2trz4MFsokn7MH3Dpe4kvi7XhAJDdEv9LGaFU36g9NQL",
+      "operator_pks": [
+        "ed25519:76a4wpbD4jxUPdvKDX2XdYmNPrLdUBQWrmrqNtgt94Ld",
+        "ed25519:4tgtLkQY4iZ7xWApNnApftKiBtsKABQHLDGuNqF9N6wT",
+        "ed25519:AAGCBzeas7GWZ8uCqhoxiutyoQXidRiXDYoCbbZATpzo",
+        "ed25519:8B4MLGwLEWBGemVji2E1MR1onHyBQtBhD25ypzf2wDYV"
+      ],
+      "operator_tags": [
+        "ops-a",
+        "ops-a",
+        "ops-b",
+        "ops-b"
+      ],
+      "create_tx": null,
+      "init_tx": null,
+      "provisioned": true
+    },
+    {
+      "id": "agent-3.fleet-v03-5cff9e99.testnet",
+      "admin_pk": "ed25519:EvcpEN5hiLLvmuztiNcMELCiVs7sqPi6mgjNyW4Ru4qP",
+      "recovery_pk": "ed25519:GczyiZ3Ff5gs6JDgzANXfR3HzjsttmdWcEFKgd8QqGhY",
+      "operator_pks": [
+        "ed25519:FRD1KafZNBij9LQ1AJU3ckpsvEjUUBV8ukjau8odH1ct",
+        "ed25519:3vXMo1JFrzgNqRr51UtDaaDVCrcqkg2zTPwKjGZHmC6f",
+        "ed25519:CrhP6XktwUj2MdHyCRKuERUaZ6BPAiXDAVSWXEFDGJzT",
+        "ed25519:98p2NUDeb1yQdHYXgDG5vkUCymNGFRp8ZtqPbBQgVjrz"
+      ],
+      "operator_tags": [
+        "ops-a",
+        "ops-a",
+        "ops-b",
+        "ops-b"
+      ],
+      "create_tx": null,
+      "init_tx": null,
+      "provisioned": true
+    }
+  ],
+  "concurrency": {
+    "attempts": 12,
+    "successes": 12,
+    "duration_ms": 6183,
+    "calls": [
+      {
+        "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+        "operator": 0,
+        "tx": "9EZX5c6WNrViE1mUJGtPKYQ3FyphyoryLYNzxN3y6sDT",
+        "block_hash": "A9v642hc2YBkCVYpq32j2Q8zWaqGBfqRZkXGS2XqLwG3",
+        "block_height": 276075986,
+        "gas_burnt": "4010212094352",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-1.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:79QpeGPpA3B4pe9qkZMcLb57c3Ld42zNkWrWVgdFhHNk\",\"subject\":\"agent-1.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075986,\"block_timestamp\":1793725005690311323,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+        "operator": 1,
+        "tx": "8UV2fUXdBUtW1NaSKAFcm9VdBLhiC3U61j2aAfofrC4t",
+        "block_hash": "A9v642hc2YBkCVYpq32j2Q8zWaqGBfqRZkXGS2XqLwG3",
+        "block_height": 276075986,
+        "gas_burnt": "4010509109268",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-1.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:A7F4gMC87HWoPHYNuQriMG62KkBeCxk9CKZfaWciyKAx\",\"subject\":\"agent-1.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075986,\"block_timestamp\":1793725005690311323,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+        "operator": 2,
+        "tx": "4ge6GvckryJTAYiLKCTpGAdhP3AGh8MjxY33hw2J5kyi",
+        "block_hash": "A9v642hc2YBkCVYpq32j2Q8zWaqGBfqRZkXGS2XqLwG3",
+        "block_height": 276075986,
+        "gas_burnt": "4010781441504",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-1.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:BfGr2PBmbM7GSRwh8547kXTTBA8tgSSdiNbPDUVvtiZ4\",\"subject\":\"agent-1.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075986,\"block_timestamp\":1793725005690311323,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+        "operator": 3,
+        "tx": "E8ToadLxTHGRc7V1EbpaEVK28ZEJZsxp5G4f56m2w3z3",
+        "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+        "block_height": 276075987,
+        "gas_burnt": "4011053773740",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-1.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:Fs7oSYFG5msxkxwMu351jHErwwsZTPhXK5hPvx2DAKh2\",\"subject\":\"agent-1.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-2.fleet-v03-5cff9e99.testnet",
+        "operator": 0,
+        "tx": "AKPXbYQpqknhTyyKVS5Rs13jWhSvpFTF59z3LisF1nF5",
+        "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+        "block_height": 276075987,
+        "gas_burnt": "3963718276608",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-2.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:76a4wpbD4jxUPdvKDX2XdYmNPrLdUBQWrmrqNtgt94Ld\",\"subject\":\"agent-2.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-2.fleet-v03-5cff9e99.testnet",
+        "operator": 1,
+        "tx": "EZkjun9y3dT5NycEcAs2CQKY6hN6yFGbLKWUQvgJp9Ra",
+        "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+        "block_height": 276075987,
+        "gas_burnt": "3963842512764",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-2.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:4tgtLkQY4iZ7xWApNnApftKiBtsKABQHLDGuNqF9N6wT\",\"subject\":\"agent-2.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-2.fleet-v03-5cff9e99.testnet",
+        "operator": 2,
+        "tx": "8djSP1fq9yJ87gYmEawRncFXq862AKLTiqom8p5tfKJ2",
+        "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+        "block_height": 276075987,
+        "gas_burnt": "3964238258400",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-2.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:AAGCBzeas7GWZ8uCqhoxiutyoQXidRiXDYoCbbZATpzo\",\"subject\":\"agent-2.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-2.fleet-v03-5cff9e99.testnet",
+        "operator": 3,
+        "tx": "AmVW4mEBJRYN6KnApPxC6RBzS6jP1oWXvkbUwwY1pkaD",
+        "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+        "block_height": 276075987,
+        "gas_burnt": "3964436542596",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-2.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:8B4MLGwLEWBGemVji2E1MR1onHyBQtBhD25ypzf2wDYV\",\"subject\":\"agent-2.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-3.fleet-v03-5cff9e99.testnet",
+        "operator": 0,
+        "tx": "6DWH5n7SjH33K13mZrC4DYoLmSTP1EANqwkBejePH3rG",
+        "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+        "block_height": 276075987,
+        "gas_burnt": "3963891055368",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-3.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:FRD1KafZNBij9LQ1AJU3ckpsvEjUUBV8ukjau8odH1ct\",\"subject\":\"agent-3.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-3.fleet-v03-5cff9e99.testnet",
+        "operator": 1,
+        "tx": "9khkw6kWLGSXaVTiSsaPwMWfuGGuEcHZ4Tju1X8ip2y5",
+        "block_hash": "PrKT7Yw5ZFkFsEbBZ4252wD3rNcK62XTYWrv9JbVLKF",
+        "block_height": 276075988,
+        "gas_burnt": "3963793147404",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-3.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:3vXMo1JFrzgNqRr51UtDaaDVCrcqkg2zTPwKjGZHmC6f\",\"subject\":\"agent-3.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075988,\"block_timestamp\":1793725006735181052,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-3.fleet-v03-5cff9e99.testnet",
+        "operator": 2,
+        "tx": "3c3by9oiFki12kGxK1H8riwbZtkM8whMnGettQ6m43ph",
+        "block_hash": "PrKT7Yw5ZFkFsEbBZ4252wD3rNcK62XTYWrv9JbVLKF",
+        "block_height": 276075988,
+        "gas_burnt": "3964312306440",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-3.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:CrhP6XktwUj2MdHyCRKuERUaZ6BPAiXDAVSWXEFDGJzT\",\"subject\":\"agent-3.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075988,\"block_timestamp\":1793725006735181052,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      },
+      {
+        "agent": "agent-3.fleet-v03-5cff9e99.testnet",
+        "operator": 3,
+        "tx": "2TfaBChwR14mFFyhBV3oSvgR96TWLFQfj9xJ7Y88qLpk",
+        "block_hash": "PrKT7Yw5ZFkFsEbBZ4252wD3rNcK62XTYWrv9JbVLKF",
+        "block_height": 276075988,
+        "gas_burnt": "3964461225276",
+        "status": "success",
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        },
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-3.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:98p2NUDeb1yQdHYXgDG5vkUCymNGFRp8ZtqPbBQgVjrz\",\"subject\":\"agent-3.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075988,\"block_timestamp\":1793725006735181052,\"entry_hash\":\"\"}}",
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+        ]
+      }
+    ]
+  },
+  "lifecycle": {
+    "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+    "steps": [
+      {
+        "name": "freeze",
+        "tx": "qCJzMxDm74WAfQUQHenQ26HthmXpFtXs5MJDqXpN2yQ",
+        "block_hash": "2dFKUDoqPsoSsjUv1DwRBUaz4tfXUKK7dbMJkoTK1hUv",
+        "block_height": 276075996,
+        "gas_burnt": "2377862943791",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        }
+      },
+      {
+        "name": "execute while frozen",
+        "tx": "HAKHFSmRGBBGMsd3AtFMnMyTbj1xUjTMvVkrZCpHt28h",
+        "block_hash": "hBMTyqPPAAXbEz6i6QayPGrgs91p7PzuyWNmzCMaP5j",
+        "block_height": 276076002,
+        "gas_burnt": "1933331610866",
+        "status": "failure",
+        "refusal": "controller is frozen",
+        "top_status": {
+          "Failure": {
+            "ActionError": {
+              "index": 0,
+              "kind": {
+                "FunctionCallError": {
+                  "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "unfreeze",
+        "tx": "4Gwqn7Hb1dFMU8TjwJfvt64Knc6EkRkSJPU8piLDhDfd",
+        "block_hash": "BtDDMQJ9orW7v2YpPuUrReYcAd2FeTRpC6TvBWoQwTsy",
+        "block_height": 276076008,
+        "gas_burnt": "2412211126995",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        }
+      },
+      {
+        "name": "operator execute positive control",
+        "tx": "8wqK2JG7pYc2pxE7Z9ckHwC4EYvvm6kbPKrFRCmVJ2bK",
+        "block_hash": "GuEBC3V6hG4PaDQSExr6rGpdqc4ghXBPrGsPAAUytbrK",
+        "block_height": 276076015,
+        "gas_burnt": "4057360003116",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "InBvbmci"
+        }
+      },
+      {
+        "name": "execute wrong method",
+        "tx": "6wE4k6P1Rt7origQxnDGri61BpPnYYbuSuauwyMM1nKG",
+        "block_hash": "BZ3ktb7uyYpUwzKXwB2yw9xtztLLNtDBDPhAnbXh64bN",
+        "block_height": 276076022,
+        "gas_burnt": "1945569062850",
+        "status": "failure",
+        "refusal": "method not allowed",
+        "top_status": {
+          "Failure": {
+            "ActionError": {
+              "index": 0,
+              "kind": {
+                "FunctionCallError": {
+                  "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "execute wrong receiver",
+        "tx": "CGiwT57i3Xnefzezho4QLPpq5dkM8HMQdpHm4dPEkn1c",
+        "block_hash": "HMgNHUB9mWeX5Titwgv3sEHSMCRHG1W9uuuY6gyFmbJZ",
+        "block_height": 276076028,
+        "gas_burnt": "1944979856074",
+        "status": "failure",
+        "refusal": "receiver not allowed",
+        "top_status": {
+          "Failure": {
+            "ActionError": {
+              "index": 0,
+              "kind": {
+                "FunctionCallError": {
+                  "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "execute with deposit rejected by FunctionCall key policy",
+        "status": "protocol_rejected",
+        "error": "Deposit is not allowed with function call"
+      },
+      {
+        "name": "execute above gas cap",
+        "tx": "3AtGGjYshY5B54uYpYnN487k2bbKbpi7XsuZcFXtoVCa",
+        "block_hash": "GsC1yVYDXrN7qB933wwgEZ9S9fYSeRzfKDxPfBTfwVh3",
+        "block_height": 276076036,
+        "gas_burnt": "1945988382268",
+        "status": "failure",
+        "refusal": "gas above policy cap",
+        "top_status": {
+          "Failure": {
+            "ActionError": {
+              "index": 0,
+              "kind": {
+                "FunctionCallError": {
+                  "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "grant operator",
+        "tx": "8j5APyXLxLsJiNmCqyEw3aPGb6uY3uPYqKGywQ5ht2vF",
+        "block_hash": "54hcJmKPcK75VF5Fq2vdTnxh3qeBqXNoKjFRd6cruoj6",
+        "block_height": 276076042,
+        "gas_burnt": "5794593028209",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "dHJ1ZQ=="
+        }
+      },
+      {
+        "name": "duplicate grant refused",
+        "tx": "3UyJXgbTxcEw2k3QmemLLsLQ7cAPnnDAsvyGTfJZcJ2k",
+        "block_hash": "4VAZ5sPszEwBwrw8AYypeDtU7okEa4px1gguRNwDPqSi",
+        "block_height": 276076052,
+        "gas_burnt": "1972281441970",
+        "status": "failure",
+        "refusal": "key already has a role",
+        "top_status": {
+          "Failure": {
+            "ActionError": {
+              "index": 0,
+              "kind": {
+                "FunctionCallError": {
+                  "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "revoke operator",
+        "tx": "EDrE8r5X8JuueQnBEhbYqHwSbPaAKWPDcXESjo8JSmEc",
+        "block_hash": "ACquh1eZDpi3XJXDtRwKbS93TAKaET3A3WYBqBFdjmv6",
+        "block_height": 276076059,
+        "gas_burnt": "3236865697129",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        }
+      },
+      {
+        "name": "revoke tag ops-a",
+        "tx": "GW98BZEkLDnUnyLqig7yE8KeavBwuShBnbaEmrEHjY64",
+        "block_hash": "BwTQT9BSNYHig5ccFUzaTvk16Woj82vUrcgdUL3rjEnP",
+        "block_height": 276076068,
+        "gas_burnt": "3980357510196",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "WyJlZDI1NTE5Ojc5UXBlR1BwQTNCNHBlOXFrWk1jTGI1N2MzTGQ0MnpOa1dyV1ZnZEZoSE5rIiwiZWQyNTUxOTpBN0Y0Z01DODdIV29QSFlOdVFyaU1HNjJLa0JlQ3hrOUNLWmZhV2NpeUtBeCJd"
+        }
+      },
+      {
+        "name": "rotate operator",
+        "tx": "A9M6AXaWVzVZYPHggdvNJL1XLkFwuhxts185TxUJoKLP",
+        "block_hash": "Dkh4XoHtCGcPJmnt1bXPU83RatUXntV14JYi22MSHbWG",
+        "block_height": 276076077,
+        "gas_burnt": "6779109206958",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "dHJ1ZQ=="
+        }
+      },
+      {
+        "name": "propose admin rotation",
+        "tx": "BoLgzddxMGrBktJHGHgrH3F4Bya58hMxi6DtLDLDAkZk",
+        "block_hash": "B2BgNfVxfpehfDRzWfFVq6C7FiJWysRNCJ3qWyti1HVy",
+        "block_height": 276076089,
+        "gas_burnt": "6199550659561",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "dHJ1ZQ=="
+        }
+      },
+      {
+        "name": "second pending rotation refused",
+        "tx": "Skyaho3S8LyGKAijzuMzNtWiR7fM4tPoD6n34tw9UPw",
+        "block_hash": "BsV3i5G4LmxJqSYc5ALJgZAtDrsH1bXDvuNenDAxMqH5",
+        "block_height": 276076100,
+        "gas_burnt": "2022984403265",
+        "status": "failure",
+        "refusal": "a rotation is already pending",
+        "top_status": {
+          "Failure": {
+            "ActionError": {
+              "index": 0,
+              "kind": {
+                "FunctionCallError": {
+                  "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "name": "accept admin rotation",
+        "tx": "CZVu4agHmyw7FNiHaP8S1AapP3FiMnpTdmVLyUaVhRyn",
+        "block_hash": "8HUt2gU5pVJsiJHTqeoo681hr1LB8pNbrMGbcbym8xUL",
+        "block_height": 276076107,
+        "gas_burnt": "3426125525561",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        }
+      },
+      {
+        "name": "new admin freeze",
+        "tx": "GzeBCzWqybU7CkJta9MUoMMKwgdQr8BeW7UUXHhhDE8d",
+        "block_hash": "Bf2GUWuQnzBDVdsXQvKvmdHJYi7BK8yyxnnM94dosZRF",
+        "block_height": 276076116,
+        "gas_burnt": "2759567061426",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        }
+      },
+      {
+        "name": "new admin unfreeze",
+        "tx": "BnGRByjX93ETg9bwg37LhqTP6f58SDSnshemvJdv4SDc",
+        "block_hash": "HsrMMZYr7njrKJ8bzxr8gVKaDmChgeHfU1JCpHCUQ3aE",
+        "block_height": 276076123,
+        "gas_burnt": "2794389152365",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        }
+      },
+      {
+        "name": "old admin key rejected after rotation",
+        "status": "protocol_rejected",
+        "error": "Access key ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP does not exist at block height 276076127"
+      },
+      {
+        "name": "recover admin",
+        "tx": "6RSsAeqftJuqe8LrJ9PQKQAYLpnyECPbc5SdrXm8LD1R",
+        "block_hash": "EkJ52TxXJ1kVbY9jKPb2nEjjo9mCKxMXnZAZo6PchMG9",
+        "block_height": 276076130,
+        "gas_burnt": "6546726678872",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "dHJ1ZQ=="
+        }
+      },
+      {
+        "name": "accept recovered admin",
+        "tx": "6bRErMRAqmsLx9SmV7UT2fZyhbH7B5GapzP3NjSW5WUB",
+        "block_hash": "DLABCpkn9YKjRgSjG5eW5r9pR9CDKiFcuJK299fek2QF",
+        "block_height": 276076140,
+        "gas_burnt": "3597815656559",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        }
+      },
+      {
+        "name": "recovered admin freeze",
+        "tx": "Cezm7qMcRoFF4xpmCFwuxqkb6RuUNoMtaDMyHMs6QYWR",
+        "block_hash": "DuXjQHctdEojwDc2MeK2S6KjTPjkcKdNBr8Jb5L3xkz7",
+        "block_height": 276076149,
+        "gas_burnt": "2930993087748",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        }
+      },
+      {
+        "name": "recovered admin unfreeze",
+        "tx": "ETCcD3ZYFQQVM78XHm6FEpLNaBUGyu1LYrdh1KrnkNLV",
+        "block_hash": "H6zX3p52SNNMXLK1ihZiQ3fNfaTecHe1UzcuKPTk2VUa",
+        "block_height": 276076156,
+        "gas_burnt": "2966135230771",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        }
+      },
+      {
+        "name": "operator key rejected for freeze",
+        "status": "protocol_rejected",
+        "error": "Access key does not allow method freeze"
+      },
+      {
+        "name": "admin key rejected for execute",
+        "status": "protocol_rejected",
+        "error": "Access key does not allow method execute"
+      },
+      {
+        "name": "unknown key rejected",
+        "status": "protocol_rejected",
+        "error": "Access key ed25519:EFmosMdDeuNawFUvWmGZwoRZo5UG96sRahPtjibq5Z2Q does not exist at block height 276076161"
+      }
+    ],
+    "final_state": {
+      "account_id": "agent-1.fleet-v03-5cff9e99.testnet",
+      "version": "fleet-controller-v0.3.0",
+      "mode": "A",
+      "paused": false,
+      "admin_pk": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u",
+      "admin_account": null,
+      "recovery_pk": "ed25519:8Rm2m3Q5ChPzPK41keeaJx6MvdULKg2szzqVoUa3ssDG",
+      "pending_admin_pk": null,
+      "pending_origin": null,
+      "inflight_admin_pk": null,
+      "operators": [
+        {
+          "pk": "ed25519:Fs7oSYFG5msxkxwMu351jHErwwsZTPhXK5hPvx2DAKh2",
+          "tag": "ops-b",
+          "active": true
+        },
+        {
+          "pk": "ed25519:4pP8i6BC9kqeorjztxopdjnC43HEQyUvU6thCAJFTzgU",
+          "tag": "ops-b",
+          "active": true
+        }
+      ],
+      "receiver": "agent-1.fleet-v03-5cff9e99.testnet",
+      "method": "ping",
+      "max_operators": 16,
+      "provisioned": true,
+      "provision_error": null,
+      "audit_head": {
+        "seq": 20,
+        "entry_hash": "173896d51b974dcc5332a1e1679d70469cf4794742880176b59e06e760383797",
+        "block_height": 276076156,
+        "block_timestamp": "1793725098400640880"
+      },
+      "audit_len": 21
+    },
+    "final_keys": [
+      {
+        "public_key": "ed25519:4pP8i6BC9kqeorjztxopdjnC43HEQyUvU6thCAJFTzgU",
+        "permission": "FunctionCall",
+        "function_call": {
+          "allowance": "250000000000000000000000",
+          "method_names": [
+            "execute"
+          ],
+          "receiver_id": "agent-1.fleet-v03-5cff9e99.testnet"
+        }
+      },
+      {
+        "public_key": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u",
+        "permission": "FunctionCall",
+        "function_call": {
+          "allowance": "99139778627492200000000",
+          "method_names": [
+            "freeze",
+            "unfreeze",
+            "grant_operator",
+            "revoke_operator",
+            "rotate_operator",
+            "revoke_tag",
+            "propose_admin",
+            "cancel_admin",
+            "accept_admin"
+          ],
+          "receiver_id": "agent-1.fleet-v03-5cff9e99.testnet"
+        }
+      },
+      {
+        "public_key": "ed25519:8Rm2m3Q5ChPzPK41keeaJx6MvdULKg2szzqVoUa3ssDG",
+        "permission": "FunctionCall",
+        "function_call": {
+          "allowance": "99412282100862800000000",
+          "method_names": [
+            "recover_admin",
+            "cancel_admin"
+          ],
+          "receiver_id": "agent-1.fleet-v03-5cff9e99.testnet"
+        }
+      },
+      {
+        "public_key": "ed25519:Fs7oSYFG5msxkxwMu351jHErwwsZTPhXK5hPvx2DAKh2",
+        "permission": "FunctionCall",
+        "function_call": {
+          "allowance": "248939892168926800000000",
+          "method_names": [
+            "execute"
+          ],
+          "receiver_id": "agent-1.fleet-v03-5cff9e99.testnet"
+        }
+      }
+    ]
+  },
+  "audit": {
+    "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+    "len": 21,
+    "head": "173896d51b974dcc5332a1e1679d70469cf4794742880176b59e06e760383797",
+    "on_chain_verify": true,
+    "js_verify": true,
+    "entries": [
+      {
+        "seq": 0,
+        "action": "init",
+        "actor_account": "",
+        "signer_pk": "",
+        "subject": "provisioned",
+        "block_height": 276075416,
+        "block_timestamp": "1793724678775624889",
+        "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "entry_hash": "68bb5a332c92017a22610401a325a391522aba192921766ae1cd7ba4fa378361"
+      },
+      {
+        "seq": 1,
+        "action": "freeze",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+        "subject": "paused=true",
+        "block_height": 276075824,
+        "block_timestamp": "1793724911275871299",
+        "prev_hash": "68bb5a332c92017a22610401a325a391522aba192921766ae1cd7ba4fa378361",
+        "entry_hash": "ff3c26887abd286368fc737e3ef85101ccd823052f4842543e59a1fe7a2d3097"
+      },
+      {
+        "seq": 2,
+        "action": "unfreeze",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+        "subject": "paused=false",
+        "block_height": 276075839,
+        "block_timestamp": "1793724919459687567",
+        "prev_hash": "ff3c26887abd286368fc737e3ef85101ccd823052f4842543e59a1fe7a2d3097",
+        "entry_hash": "5b5d7d4204d3886edc5558ad59af8d1c15790cdad91be57eb9083c295c7ac573"
+      },
+      {
+        "seq": 3,
+        "action": "freeze",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+        "subject": "paused=true",
+        "block_height": 276075996,
+        "block_timestamp": "1793725011105692259",
+        "prev_hash": "5b5d7d4204d3886edc5558ad59af8d1c15790cdad91be57eb9083c295c7ac573",
+        "entry_hash": "7c141eb16fe99b4c0fbacfd1131af74316a423ef4f77e822f31903bc87492c99"
+      },
+      {
+        "seq": 4,
+        "action": "unfreeze",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+        "subject": "paused=false",
+        "block_height": 276076008,
+        "block_timestamp": "1793725017633506668",
+        "prev_hash": "7c141eb16fe99b4c0fbacfd1131af74316a423ef4f77e822f31903bc87492c99",
+        "entry_hash": "3c5c14b8ce25163bf082bfcddbfda5e3b7060d8989f291e8a723700660d001f9"
+      },
+      {
+        "seq": 5,
+        "action": "grant_operator",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+        "subject": "ed25519:B27KAx1TSUz9d9JCkeampwnKpEefqS4NqyWZQgqjYRB6;tag=ops-c",
+        "block_height": 276076042,
+        "block_timestamp": "1793725035192231089",
+        "prev_hash": "3c5c14b8ce25163bf082bfcddbfda5e3b7060d8989f291e8a723700660d001f9",
+        "entry_hash": "c5732f84a09a6f0fbd579a82794bb59fc81790a3f808a7b05ccab105090e6b62"
+      },
+      {
+        "seq": 6,
+        "action": "grant_confirmed",
+        "actor_account": "",
+        "signer_pk": "",
+        "subject": "ed25519:B27KAx1TSUz9d9JCkeampwnKpEefqS4NqyWZQgqjYRB6",
+        "block_height": 276076044,
+        "block_timestamp": "1793725036121835822",
+        "prev_hash": "c5732f84a09a6f0fbd579a82794bb59fc81790a3f808a7b05ccab105090e6b62",
+        "entry_hash": "49ed7da6c276c5de608997dcfdc234307b214722b13d5a7c856338ff6e08ebf3"
+      },
+      {
+        "seq": 7,
+        "action": "revoke_operator",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+        "subject": "ed25519:B27KAx1TSUz9d9JCkeampwnKpEefqS4NqyWZQgqjYRB6",
+        "block_height": 276076059,
+        "block_timestamp": "1793725045081481544",
+        "prev_hash": "49ed7da6c276c5de608997dcfdc234307b214722b13d5a7c856338ff6e08ebf3",
+        "entry_hash": "9be10bf0682e707343b6315fd81f8af2dfcc6ce9be1b1abb44ad8bbe4c7e62cf"
+      },
+      {
+        "seq": 8,
+        "action": "revoke_tag",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+        "subject": "tag=ops-a;removed=ed25519:79QpeGPpA3B4pe9qkZMcLb57c3Ld42zNkWrWVgdFhHNk,ed25519:A7F4gMC87HWoPHYNuQriMG62KkBeCxk9CKZfaWciyKAx",
+        "block_height": 276076068,
+        "block_timestamp": "1793725050487245192",
+        "prev_hash": "9be10bf0682e707343b6315fd81f8af2dfcc6ce9be1b1abb44ad8bbe4c7e62cf",
+        "entry_hash": "37319dcb953feec8a5937c02fc64c6518b3fa2f236b5945b2aba2b710a3689c1"
+      },
+      {
+        "seq": 9,
+        "action": "rotate_operator",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+        "subject": "ed25519:BfGr2PBmbM7GSRwh8547kXTTBA8tgSSdiNbPDUVvtiZ4->ed25519:4pP8i6BC9kqeorjztxopdjnC43HEQyUvU6thCAJFTzgU;tag=ops-b",
+        "block_height": 276076077,
+        "block_timestamp": "1793725055370415831",
+        "prev_hash": "37319dcb953feec8a5937c02fc64c6518b3fa2f236b5945b2aba2b710a3689c1",
+        "entry_hash": "97faf29e0a67b61973535a88a37d62d5d7511d79c95d09783f2ada03ed1703a5"
+      },
+      {
+        "seq": 10,
+        "action": "rotate_confirmed",
+        "actor_account": "",
+        "signer_pk": "",
+        "subject": "ed25519:4pP8i6BC9kqeorjztxopdjnC43HEQyUvU6thCAJFTzgU",
+        "block_height": 276076079,
+        "block_timestamp": "1793725056578582567",
+        "prev_hash": "97faf29e0a67b61973535a88a37d62d5d7511d79c95d09783f2ada03ed1703a5",
+        "entry_hash": "2bf89d92f7108b4b1fa2fef78a47d9ac0dd371965e7b7cadb46010807eea1f73"
+      },
+      {
+        "seq": 11,
+        "action": "propose_admin",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+        "subject": "ed25519:BHxBqEpKC6aZJ6F9Z2R8AFQEPkT5EVAWvH77Tu87x7Ey",
+        "block_height": 276076089,
+        "block_timestamp": "1793725062340732850",
+        "prev_hash": "2bf89d92f7108b4b1fa2fef78a47d9ac0dd371965e7b7cadb46010807eea1f73",
+        "entry_hash": "5cfec39f3dc52953b58754f4ba9f6fc34445045d2734910a6a2c7e3772c3cc2c"
+      },
+      {
+        "seq": 12,
+        "action": "propose_confirmed",
+        "actor_account": "",
+        "signer_pk": "",
+        "subject": "ed25519:BHxBqEpKC6aZJ6F9Z2R8AFQEPkT5EVAWvH77Tu87x7Ey",
+        "block_height": 276076091,
+        "block_timestamp": "1793725063224159448",
+        "prev_hash": "5cfec39f3dc52953b58754f4ba9f6fc34445045d2734910a6a2c7e3772c3cc2c",
+        "entry_hash": "9d668259dc49ccf0e15b40084f6fd280c13688ea42ef7eaa45ee74f83bdeb4c4"
+      },
+      {
+        "seq": 13,
+        "action": "accept_admin",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:BHxBqEpKC6aZJ6F9Z2R8AFQEPkT5EVAWvH77Tu87x7Ey",
+        "subject": "ed25519:BHxBqEpKC6aZJ6F9Z2R8AFQEPkT5EVAWvH77Tu87x7Ey",
+        "block_height": 276076107,
+        "block_timestamp": "1793725071349362132",
+        "prev_hash": "9d668259dc49ccf0e15b40084f6fd280c13688ea42ef7eaa45ee74f83bdeb4c4",
+        "entry_hash": "afef5649857fe331df4f3d6c0aaade466ce54396d87f6d6214db17f8a15ad20c"
+      },
+      {
+        "seq": 14,
+        "action": "freeze",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:BHxBqEpKC6aZJ6F9Z2R8AFQEPkT5EVAWvH77Tu87x7Ey",
+        "subject": "paused=true",
+        "block_height": 276076116,
+        "block_timestamp": "1793725076186850645",
+        "prev_hash": "afef5649857fe331df4f3d6c0aaade466ce54396d87f6d6214db17f8a15ad20c",
+        "entry_hash": "6504f2f0fed8d43343b45b40e2458ef571bca5baaad9fb13ba6998ba01a5a703"
+      },
+      {
+        "seq": 15,
+        "action": "unfreeze",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:BHxBqEpKC6aZJ6F9Z2R8AFQEPkT5EVAWvH77Tu87x7Ey",
+        "subject": "paused=false",
+        "block_height": 276076123,
+        "block_timestamp": "1793725079892635609",
+        "prev_hash": "6504f2f0fed8d43343b45b40e2458ef571bca5baaad9fb13ba6998ba01a5a703",
+        "entry_hash": "ed991b75e0e32a4bcc595c54ce859052f6fff905805fc06ab4fbdd0240cac899"
+      },
+      {
+        "seq": 16,
+        "action": "recover_admin",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:8Rm2m3Q5ChPzPK41keeaJx6MvdULKg2szzqVoUa3ssDG",
+        "subject": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u",
+        "block_height": 276076130,
+        "block_timestamp": "1793725083977393812",
+        "prev_hash": "ed991b75e0e32a4bcc595c54ce859052f6fff905805fc06ab4fbdd0240cac899",
+        "entry_hash": "c91236e43ba79a3bf952b07b19a59edb4aa8aca3e9ceed59df0ab71beab16ae4"
+      },
+      {
+        "seq": 17,
+        "action": "recover_confirmed",
+        "actor_account": "",
+        "signer_pk": "",
+        "subject": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u",
+        "block_height": 276076132,
+        "block_timestamp": "1793725085100783214",
+        "prev_hash": "c91236e43ba79a3bf952b07b19a59edb4aa8aca3e9ceed59df0ab71beab16ae4",
+        "entry_hash": "a81fad27cd0e3430d6e9dad92045098d9033ca0771be96647b99a30380f49f9d"
+      },
+      {
+        "seq": 18,
+        "action": "accept_admin",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u",
+        "subject": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u",
+        "block_height": 276076140,
+        "block_timestamp": "1793725089450025009",
+        "prev_hash": "a81fad27cd0e3430d6e9dad92045098d9033ca0771be96647b99a30380f49f9d",
+        "entry_hash": "e720c792cdac38d85ed9a27d2efeae8ef19ef878bb9e7d6acf59512f633995da"
+      },
+      {
+        "seq": 19,
+        "action": "freeze",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u",
+        "subject": "paused=true",
+        "block_height": 276076149,
+        "block_timestamp": "1793725094589034147",
+        "prev_hash": "e720c792cdac38d85ed9a27d2efeae8ef19ef878bb9e7d6acf59512f633995da",
+        "entry_hash": "ac410dcfa38fed7d9aaaeb3f1df1160da28b5fbf0de2e0a26866738483a0687d"
+      },
+      {
+        "seq": 20,
+        "action": "unfreeze",
+        "actor_account": "agent-1.fleet-v03-5cff9e99.testnet",
+        "signer_pk": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u",
+        "subject": "paused=false",
+        "block_height": 276076156,
+        "block_timestamp": "1793725098400640880",
+        "prev_hash": "ac410dcfa38fed7d9aaaeb3f1df1160da28b5fbf0de2e0a26866738483a0687d",
+        "entry_hash": "173896d51b974dcc5332a1e1679d70469cf4794742880176b59e06e760383797"
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: existing admin matches stored key",
+      "ok": true,
+      "detail": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP"
+    },
+    {
+      "name": "agent-2.fleet-v03-5cff9e99.testnet: existing admin matches stored key",
+      "ok": true,
+      "detail": "ed25519:Dof6MFJCZfu2zDHvWkjk61mY2Nbyvnfu3kYAnMwAGQ9e"
+    },
+    {
+      "name": "agent-3.fleet-v03-5cff9e99.testnet: existing admin matches stored key",
+      "ok": true,
+      "detail": "ed25519:EvcpEN5hiLLvmuztiNcMELCiVs7sqPi6mgjNyW4Ru4qP"
+    },
+    {
+      "name": "three agents provisioned",
+      "ok": true
+    },
+    {
+      "name": "12 concurrent executes (3 agents x 4 operator keys)",
+      "ok": true,
+      "detail": "12/12 in 6183ms"
+    },
+    {
+      "name": "freeze pauses execution",
+      "ok": true
+    },
+    {
+      "name": "operator execute returned pong",
+      "ok": true,
+      "detail": "InBvbmci"
+    },
+    {
+      "name": "granted key is execute-only",
+      "ok": true
+    },
+    {
+      "name": "revoke_tag returned both ops-a keys",
+      "ok": true,
+      "detail": "[\"ed25519:79QpeGPpA3B4pe9qkZMcLb57c3Ld42zNkWrWVgdFhHNk\",\"ed25519:A7F4gMC87HWoPHYNuQriMG62KkBeCxk9CKZfaWciyKAx\"]"
+    },
+    {
+      "name": "pending origin is admin",
+      "ok": true
+    },
+    {
+      "name": "pending origin is recovery",
+      "ok": true
+    },
+    {
+      "name": "audit chain recomputes in JavaScript",
+      "ok": true,
+      "detail": "21 entries, head 173896d51b…"
+    },
+    {
+      "name": "on-chain audit verification",
+      "ok": true
+    },
+    {
+      "name": "audit head matches last entry",
+      "ok": true,
+      "detail": "173896d51b… vs 173896d51b…"
+    },
+    {
+      "name": "post-lifecycle agent has zero FullAccess keys",
+      "ok": true
+    },
+    {
+      "name": "post-lifecycle admin is the recovered key",
+      "ok": true,
+      "detail": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: 4 native keys",
+      "ok": true,
+      "detail": "found 4"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: zero FullAccess keys",
+      "ok": true,
+      "detail": "FunctionCall"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: ed25519:4p… is FunctionCall",
+      "ok": true,
+      "detail": "FunctionCall"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: ed25519:4p… receiver is self",
+      "ok": true,
+      "detail": "agent-1.fleet-v03-5cff9e99.testnet"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: ed25519:67… is FunctionCall",
+      "ok": true,
+      "detail": "FunctionCall"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: ed25519:67… receiver is self",
+      "ok": true,
+      "detail": "agent-1.fleet-v03-5cff9e99.testnet"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: ed25519:8R… is FunctionCall",
+      "ok": true,
+      "detail": "FunctionCall"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: ed25519:8R… receiver is self",
+      "ok": true,
+      "detail": "agent-1.fleet-v03-5cff9e99.testnet"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: ed25519:Fs… is FunctionCall",
+      "ok": true,
+      "detail": "FunctionCall"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: ed25519:Fs… receiver is self",
+      "ok": true,
+      "detail": "agent-1.fleet-v03-5cff9e99.testnet"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: admin key is native",
+      "ok": true,
+      "detail": "ed25519:67X3QvdfZaWVG5mDd7deTtD5R8scCnCBwY35VzJJCK1u"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: admin method ACL",
+      "ok": true,
+      "detail": "[\"freeze\",\"unfreeze\",\"grant_operator\",\"revoke_operator\",\"rotate_operator\",\"revoke_tag\",\"propose_admin\",\"cancel_admin\",\"accept_admin\"]"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: recovery key is native",
+      "ok": true,
+      "detail": "ed25519:8Rm2m3Q5ChPzPK41keeaJx6MvdULKg2szzqVoUa3ssDG"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: recovery method ACL",
+      "ok": true,
+      "detail": "[\"recover_admin\",\"cancel_admin\"]"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: operator ed25519:Fs… is native",
+      "ok": true,
+      "detail": "ed25519:Fs7oSYFG5msxkxwMu351jHErwwsZTPhXK5hPvx2DAKh2"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: operator ed25519:Fs… execute-only",
+      "ok": true,
+      "detail": "[\"execute\"]"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: operator ed25519:4p… is native",
+      "ok": true,
+      "detail": "ed25519:4pP8i6BC9kqeorjztxopdjnC43HEQyUvU6thCAJFTzgU"
+    },
+    {
+      "name": "agent-1.fleet-v03-5cff9e99.testnet: operator ed25519:4p… execute-only",
+      "ok": true,
+      "detail": "[\"execute\"]"
+    }
+  ],
+  "steps": [
+    {
+      "name": "start",
+      "at": "2026-11-03T16:56:42.143Z",
+      "parent": "fleet-v03-5cff9e99.testnet",
+      "rpc": "https://rpc.testnet.fastnear.com",
+      "wasm_bytes": 248644,
+      "wasm_sha256": "cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f"
+    },
+    {
+      "name": "concurrency",
+      "at": "2026-11-03T16:56:50.725Z",
+      "attempts": 12,
+      "successes": 12,
+      "duration_ms": 6183,
+      "calls": [
+        {
+          "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+          "operator": 0,
+          "tx": "9EZX5c6WNrViE1mUJGtPKYQ3FyphyoryLYNzxN3y6sDT",
+          "block_hash": "A9v642hc2YBkCVYpq32j2Q8zWaqGBfqRZkXGS2XqLwG3",
+          "block_height": 276075986,
+          "gas_burnt": "4010212094352",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-1.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:79QpeGPpA3B4pe9qkZMcLb57c3Ld42zNkWrWVgdFhHNk\",\"subject\":\"agent-1.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075986,\"block_timestamp\":1793725005690311323,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+          "operator": 1,
+          "tx": "8UV2fUXdBUtW1NaSKAFcm9VdBLhiC3U61j2aAfofrC4t",
+          "block_hash": "A9v642hc2YBkCVYpq32j2Q8zWaqGBfqRZkXGS2XqLwG3",
+          "block_height": 276075986,
+          "gas_burnt": "4010509109268",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-1.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:A7F4gMC87HWoPHYNuQriMG62KkBeCxk9CKZfaWciyKAx\",\"subject\":\"agent-1.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075986,\"block_timestamp\":1793725005690311323,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+          "operator": 2,
+          "tx": "4ge6GvckryJTAYiLKCTpGAdhP3AGh8MjxY33hw2J5kyi",
+          "block_hash": "A9v642hc2YBkCVYpq32j2Q8zWaqGBfqRZkXGS2XqLwG3",
+          "block_height": 276075986,
+          "gas_burnt": "4010781441504",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-1.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:BfGr2PBmbM7GSRwh8547kXTTBA8tgSSdiNbPDUVvtiZ4\",\"subject\":\"agent-1.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075986,\"block_timestamp\":1793725005690311323,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-1.fleet-v03-5cff9e99.testnet",
+          "operator": 3,
+          "tx": "E8ToadLxTHGRc7V1EbpaEVK28ZEJZsxp5G4f56m2w3z3",
+          "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+          "block_height": 276075987,
+          "gas_burnt": "4011053773740",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-1.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:Fs7oSYFG5msxkxwMu351jHErwwsZTPhXK5hPvx2DAKh2\",\"subject\":\"agent-1.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-2.fleet-v03-5cff9e99.testnet",
+          "operator": 0,
+          "tx": "AKPXbYQpqknhTyyKVS5Rs13jWhSvpFTF59z3LisF1nF5",
+          "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+          "block_height": 276075987,
+          "gas_burnt": "3963718276608",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-2.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:76a4wpbD4jxUPdvKDX2XdYmNPrLdUBQWrmrqNtgt94Ld\",\"subject\":\"agent-2.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-2.fleet-v03-5cff9e99.testnet",
+          "operator": 1,
+          "tx": "EZkjun9y3dT5NycEcAs2CQKY6hN6yFGbLKWUQvgJp9Ra",
+          "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+          "block_height": 276075987,
+          "gas_burnt": "3963842512764",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-2.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:4tgtLkQY4iZ7xWApNnApftKiBtsKABQHLDGuNqF9N6wT\",\"subject\":\"agent-2.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-2.fleet-v03-5cff9e99.testnet",
+          "operator": 2,
+          "tx": "8djSP1fq9yJ87gYmEawRncFXq862AKLTiqom8p5tfKJ2",
+          "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+          "block_height": 276075987,
+          "gas_burnt": "3964238258400",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-2.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:AAGCBzeas7GWZ8uCqhoxiutyoQXidRiXDYoCbbZATpzo\",\"subject\":\"agent-2.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-2.fleet-v03-5cff9e99.testnet",
+          "operator": 3,
+          "tx": "AmVW4mEBJRYN6KnApPxC6RBzS6jP1oWXvkbUwwY1pkaD",
+          "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+          "block_height": 276075987,
+          "gas_burnt": "3964436542596",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-2.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:8B4MLGwLEWBGemVji2E1MR1onHyBQtBhD25ypzf2wDYV\",\"subject\":\"agent-2.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-3.fleet-v03-5cff9e99.testnet",
+          "operator": 0,
+          "tx": "6DWH5n7SjH33K13mZrC4DYoLmSTP1EANqwkBejePH3rG",
+          "block_hash": "889WnUSXSdcqfimrgBhExzWFrKQzLr2cYG1CpudfbhjA",
+          "block_height": 276075987,
+          "gas_burnt": "3963891055368",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-3.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:FRD1KafZNBij9LQ1AJU3ckpsvEjUUBV8ukjau8odH1ct\",\"subject\":\"agent-3.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075987,\"block_timestamp\":1793725006155122917,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-3.fleet-v03-5cff9e99.testnet",
+          "operator": 1,
+          "tx": "9khkw6kWLGSXaVTiSsaPwMWfuGGuEcHZ4Tju1X8ip2y5",
+          "block_hash": "PrKT7Yw5ZFkFsEbBZ4252wD3rNcK62XTYWrv9JbVLKF",
+          "block_height": 276075988,
+          "gas_burnt": "3963793147404",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-3.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:3vXMo1JFrzgNqRr51UtDaaDVCrcqkg2zTPwKjGZHmC6f\",\"subject\":\"agent-3.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075988,\"block_timestamp\":1793725006735181052,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-3.fleet-v03-5cff9e99.testnet",
+          "operator": 2,
+          "tx": "3c3by9oiFki12kGxK1H8riwbZtkM8whMnGettQ6m43ph",
+          "block_hash": "PrKT7Yw5ZFkFsEbBZ4252wD3rNcK62XTYWrv9JbVLKF",
+          "block_height": 276075988,
+          "gas_burnt": "3964312306440",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-3.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:CrhP6XktwUj2MdHyCRKuERUaZ6BPAiXDAVSWXEFDGJzT\",\"subject\":\"agent-3.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075988,\"block_timestamp\":1793725006735181052,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        },
+        {
+          "agent": "agent-3.fleet-v03-5cff9e99.testnet",
+          "operator": 3,
+          "tx": "2TfaBChwR14mFFyhBV3oSvgR96TWLFQfj9xJ7Y88qLpk",
+          "block_hash": "PrKT7Yw5ZFkFsEbBZ4252wD3rNcK62XTYWrv9JbVLKF",
+          "block_height": 276075988,
+          "gas_burnt": "3964461225276",
+          "status": "success",
+          "top_status": {
+            "SuccessValue": "InBvbmci"
+          },
+          "logs": [
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-3.fleet-v03-5cff9e99.testnet\",\"signer_pk\":\"ed25519:98p2NUDeb1yQdHYXgDG5vkUCymNGFRp8ZtqPbBQgVjrz\",\"subject\":\"agent-3.fleet-v03-5cff9e99.testnet.ping\",\"block_height\":276075988,\"block_timestamp\":1793725006735181052,\"entry_hash\":\"\"}}",
+            "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+          ]
+        }
+      ]
+    }
+  ],
+  "ok": true
+}

@@ -1,8 +1,10 @@
-# FLEET controller specification v0.3 (document only)
+# FLEET controller specification v0.3
 
-**Status:** design target. **No v0.3 code exists.** This document fixes the
-known v0.2 defects on paper; every `HYPOTHESIS` must become a test before it is
-claimed. It is not a security audit.
+**Status:** design target, now implemented as the v0.3 controller. The contract,
+SDK, and CLI exist and ran on testnet on 2026-11-03. Every `HYPOTHESIS` still
+needs a test before it is claimed; the current claim status is in
+`docs/TEST_PLAN.md`. Mode B and the console are not implemented. This is not a
+security audit.
 **Date:** 2026-11-03 UTC. Phase 1 target was 2026-10-31; the slip is disclosed in
 `research/BUILD_STATUS.md`.
 **Base evidence:** v0.2 controller `fleet-controller-v2/0.2.0` and multisig

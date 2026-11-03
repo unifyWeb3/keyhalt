@@ -1,6 +1,6 @@
 {
   "name": "@fleet/api",
-  "version": "0.0.0-phase1",
+  "version": "0.3.0-phase1",
   "private": true,
   "type": "module",
   "main": "dist/index.js",

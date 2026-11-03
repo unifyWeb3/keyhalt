@@ -1,12 +1,13 @@
 /**
- * FLEET read-only inventory and audit API — Phase 1 scaffold.
+ * FLEET read-only inventory and audit API — v0.3 scaffold.
  *
  * The API is read-only by construction: no signing key, no write route, and no
- * private-key input. Phase 1 implements only `/health`; the read routes are
- * specified in `docs/INTERFACES.md` and return 501 until Phase 2.
+ * private-key input. v0.3 implements only `/health`; the read routes are
+ * specified in `docs/INTERFACES.md` and still return 501. The SDK and CLI are
+ * the product interfaces until the console is designed and approved.
  */
 
-export const FLEET_API_VERSION = "0.0.0-phase1";
+export const FLEET_API_VERSION = "0.3.0-phase1";
 
 export type ReadOnlyMethod = "GET" | "HEAD";
 
@@ -34,7 +35,7 @@ export function createReadOnlyApi(): {
         return {
           status: 200,
           body: {
-            status: "phase1-scaffold",
+            status: "v03-scaffold",
             version: FLEET_API_VERSION,
             readOnly: true,
           },
@@ -43,7 +44,7 @@ export function createReadOnlyApi(): {
       return {
         status: 501,
         body: {
-          error: "not implemented in Phase 1",
+          error: "not implemented in the v0.3 scaffold",
           path,
           see: "docs/INTERFACES.md",
         },

@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "command": "verify-audit",
+  "file": "/root/fleet/evidence/cli-v03/agent-2-audit.json",
+  "verified": true,
+  "entries": 5,
+  "head": "6ca11eecb70409d88dacc57947e8f3068872b55a3b0841aeaa0ac40a6e7b97e9",
+  "error": null
+}

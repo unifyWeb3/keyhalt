@@ -1,0 +1,147 @@
+# FLEET local verification log
+
+Date: 2026-11-03 UTC
+Host: Linux arm64, Node.js v22.22.1, rustc 1.93.0 (254b59607 2026-01-19),
+cargo 1.93.0 (083ac5135 2025-12-15).
+
+## Rust format
+
+Command:
+
+```bash
+PATH=/root/.cargo/bin:$PATH cargo fmt --all -- --check
+```
+
+Result: exit 0 (no diff).
+
+## Rust tests
+
+Command:
+
+```bash
+PATH=/root/.cargo/bin:$PATH cargo test --workspace
+```
+
+Result:
+
+```text
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 170.98s
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+```
+
+The 35 tests comprise 19 pure state-machine tests in `model.rs` and 16
+near-sdk wrapper/callback tests in `lib.rs`.
+
+## Clippy
+
+Command:
+
+```bash
+PATH=/root/.cargo/bin:$PATH cargo clippy --workspace --all-targets -- -D warnings
+```
+
+Result:
+
+```text
+    Checking fleet-controller v0.3.0 (/root/fleet/contracts/fleet-controller)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.85s
+CLIPPY_EXIT=0
+```
+
+## TypeScript build and tests
+
+Command:
+
+```bash
+npm test
+```
+
+Result:
+
+```text
+# tests 21
+# pass 21
+# fail 0
+```
+
+The suite covers the SDK (version, mainnet refusal, missing-signer refusal,
+big-u64 JSON parsing, canonical 19-entry audit verification, tamper and
+prev-hash rejection, export formats) and the CLI (version/help, exit codes,
+mainnet refusal, signer file mode, audit verification and tamper rejection).
+
+## Release wasm
+
+Command:
+
+```bash
+PATH=/root/.cargo/bin:$PATH \
+  cargo build -p fleet-controller --target wasm32-unknown-unknown --release
+sha256sum target/wasm32-unknown-unknown/release/fleet_controller.wasm
+```
+
+Result:
+
+```text
+248644 bytes
+cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f  target/wasm32-unknown-unknown/release/fleet_controller.wasm
+```
+
+The same sha256 was independently recorded by the testnet harness in
+`evidence/testnet-v03/run.json`.
+
+## Clean reproducibility
+
+Two builds in separate empty target directories with `--locked` produced
+byte-identical wasm:
+
+```text
+cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f  build A
+cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f  build B
+REPRO_BYTES_IDENTICAL=yes
+```
+
+Full report: `evidence/repro-build/report.md`.
+
+## Mutation test
+
+Command:
+
+```bash
+node scripts/mutation-test.mjs
+```
+
+Result:
+
+```text
+killed=8 survived=0 invalid=0 total=8
+```
+
+Eight semantic mutants in the state machine were each killed by a targeted
+test; the source was restored byte-identical after every run. Full report:
+`evidence/mutation/mutation-report.md`.
+
+## Full verification gate
+
+Command:
+
+```bash
+FLEET_REQUIRE_RPC=1 make verify
+```
+
+Result: `FLEET verification: PASS`, `CLAIMS 20/20 verified (20 rows)`,
+`SECRET SCAN: OK`, `WEB CHECK: OK`, and
+`RPC CHECK: OK testnet latest_block_height=276096929`. Full log:
+`evidence/verify-v03.log`.
+
+## Gas profile
+
+Command:
+
+```bash
+node scripts/gas-profile.mjs
+```
+
+Result: 3 provisioning rows and 29 operation groups written to
+`evidence/testnet-v03/gas-profile.md` and `.json`. Provisioning cost was
+43.04 Tgas per agent (36.65 create/deploy + 6.39 init/AddKey). A concurrent
+`execute` averaged 3.964 Tgas across 12 calls.

@@ -59,5 +59,5 @@ echo "  cargo   $(cargo --version)"
 if command -v cargo-near >/dev/null 2>&1; then
   echo "  cargo-near $(cargo near --version 2>/dev/null || echo present)"
 else
-  echo "  cargo-near not installed (not required for Phase 1)"
+  echo "  cargo-near not installed (not required for v0.3)"
 fi

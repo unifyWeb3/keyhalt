@@ -1,0 +1,70 @@
+{
+  "format": "fleet-audit-v1",
+  "accountId": "agent-2.fleet-v03-5cff9e99.testnet",
+  "exportedAt": "2026-11-03T19:33:23.008Z",
+  "contractVersion": "fleet-controller-v0.3.0",
+  "head": {
+    "seq": 4,
+    "entryHash": "6ca11eecb70409d88dacc57947e8f3068872b55a3b0841aeaa0ac40a6e7b97e9",
+    "blockHeight": 276092082,
+    "blockTimestampNs": "1793734391884256794"
+  },
+  "entries": [
+    {
+      "seq": 0,
+      "action": "init",
+      "actorAccount": "",
+      "signerPublicKey": "",
+      "subject": "provisioned",
+      "blockHeight": 276075499,
+      "blockTimestampNs": "1793724728382915594",
+      "prevHash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "entryHash": "221776826f6fd531b60690d03050332d1dc2be305e4746133962f43445d3b49e"
+    },
+    {
+      "seq": 1,
+      "action": "freeze",
+      "actorAccount": "agent-2.fleet-v03-5cff9e99.testnet",
+      "signerPublicKey": "ed25519:Dof6MFJCZfu2zDHvWkjk61mY2Nbyvnfu3kYAnMwAGQ9e",
+      "subject": "paused=true",
+      "blockHeight": 276091760,
+      "blockTimestampNs": "1793734197226600366",
+      "prevHash": "221776826f6fd531b60690d03050332d1dc2be305e4746133962f43445d3b49e",
+      "entryHash": "123ddaee8b6e360d087bb0cea5b2dc61714967f60224e7b6dee778043a53e4aa"
+    },
+    {
+      "seq": 2,
+      "action": "unfreeze",
+      "actorAccount": "agent-2.fleet-v03-5cff9e99.testnet",
+      "signerPublicKey": "ed25519:Dof6MFJCZfu2zDHvWkjk61mY2Nbyvnfu3kYAnMwAGQ9e",
+      "subject": "paused=false",
+      "blockHeight": 276092013,
+      "blockTimestampNs": "1793734349377453303",
+      "prevHash": "123ddaee8b6e360d087bb0cea5b2dc61714967f60224e7b6dee778043a53e4aa",
+      "entryHash": "0ae8705af5344946c31185deb88241d52af14c408b0a8a1fc812166f83e1cf31"
+    },
+    {
+      "seq": 3,
+      "action": "freeze",
+      "actorAccount": "agent-2.fleet-v03-5cff9e99.testnet",
+      "signerPublicKey": "ed25519:Dof6MFJCZfu2zDHvWkjk61mY2Nbyvnfu3kYAnMwAGQ9e",
+      "subject": "paused=true",
+      "blockHeight": 276092062,
+      "blockTimestampNs": "1793734379747122493",
+      "prevHash": "0ae8705af5344946c31185deb88241d52af14c408b0a8a1fc812166f83e1cf31",
+      "entryHash": "55f3592f1947a5ec49b974d8b86ce850c0a89be296c0beeb4d64361d07e45a32"
+    },
+    {
+      "seq": 4,
+      "action": "unfreeze",
+      "actorAccount": "agent-2.fleet-v03-5cff9e99.testnet",
+      "signerPublicKey": "ed25519:Dof6MFJCZfu2zDHvWkjk61mY2Nbyvnfu3kYAnMwAGQ9e",
+      "subject": "paused=false",
+      "blockHeight": 276092082,
+      "blockTimestampNs": "1793734391884256794",
+      "prevHash": "55f3592f1947a5ec49b974d8b86ce850c0a89be296c0beeb4d64361d07e45a32",
+      "entryHash": "6ca11eecb70409d88dacc57947e8f3068872b55a3b0841aeaa0ac40a6e7b97e9"
+    }
+  ],
+  "verified": true
+}

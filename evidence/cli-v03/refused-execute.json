@@ -1,0 +1,12 @@
+{
+  "ok": false,
+  "command": "execute",
+  "accountId": "agent-2.fleet-v03-5cff9e99.testnet",
+  "error": {
+    "code": "FLEET_E_REJECTED",
+    "message": "controller is frozen",
+    "txHash": "CmQsxdxF48sVbzpX4uHjXrXWJyypT7umkA5hbztfxt8o",
+    "blockHeight": 276092072,
+    "refusal": "controller is frozen"
+  }
+}

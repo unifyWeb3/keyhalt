@@ -1,0 +1,9 @@
+{
+  "ok": false,
+  "command": "verify-audit",
+  "file": "/root/fleet/evidence/cli-v03/tampered-audit.json",
+  "verified": false,
+  "entries": 5,
+  "head": "123ddaee8b6e360d087bb0cea5b2dc61714967f60224e7b6dee778043a53e4aa",
+  "error": "entry_hash mismatch at seq 2: expected de8b472fc751b74e0aa583854a3a7e19885b7d9c33f794f834e7d7a430be4ecd"
+}

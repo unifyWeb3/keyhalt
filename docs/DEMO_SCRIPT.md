@@ -1,84 +1,201 @@
-# FLEET 90-second demo script (target)
+# FLEET 90-second demo script
 
-**Status:** Phase 1 — this is a **target script, not a recording**. No product
-capability is implemented, so **no step is demo-eligible yet**. Each row names
-the test that must pass before the step can be recorded. `PLANNED` means not run.
+**Status:** v0.3 — **planned, not recorded**. The commands below work against
+the canonical testnet evidence, but no video exists and `T-E-07` is still
+planned. Do not present this script as a recording.
 **Date:** 2026-11-03 UTC.
-**Rule:** every step must map to a `VERIFIED` row in `CLAIMS.md` and a green test
-in `docs/TEST_PLAN.md`. If a step is not verified, cut it or mark it untested on
-screen. Do not record a step that relies on an untested claim.
+**Rule:** every step maps to a `VERIFIED` row in `CLAIMS.md`. If a step is not
+green during rehearsal, cut it rather than softening the claim.
 
 ---
 
 ## 1. Format
 
-- One continuous screen recording, 1920×1080, 90 seconds, no cuts that hide a
-  command result. A terminal plus the read-only console is enough.
-- Testnet only. Every transaction hash is visible or in the description.
-- No private key, seed phrase, credential file, or key file path is shown.
-- The human posts the video publicly on X; the agent does not post.
-- The recording is made only after `T-E-07` (demo replay) passes.
-- A hosted read-only console is optional; if hosted, it stays up through
-  **2026-11-18** (ideally 2026-11-25) and has no write path.
+- One continuous terminal recording, 1920×1080, 90 seconds, no cuts that hide a
+  command result.
+- Testnet only. Every transaction hash is visible.
+- No private key, seed phrase, credential file, or key-file path is shown. Use
+  environment variables for key-file paths.
+- The human records and posts. The agent does not post, upload, or submit.
+- The console is **not shown**: it is not built. Terminal only.
+- Rehearse on a dedicated demo agent, then reset it before the real take.
 
 ---
 
-## 2. Timeline
+## 2. Pre-recording setup (not in the 90 seconds)
 
-| Time | Step | What the viewer sees | Test that must pass | Claim |
-| --- | --- | --- | --- | --- |
-| 0–6 s | Title and honesty panel | “FLEET — native NEAR account-fleet key-lifecycle control plane. Testnet. Unaudited. Mode A is not non-custodial.” Claims panel: 0 product claims at Phase 1. | T-SC-03, T-SC-05 | No product claim yet |
-| 6–16 s | Provision 3 agents | `fleet provision --agents 3` (planned); 3 account IDs; each key list has zero `FullAccess`; controller + operator + gas keys shown. | T-E-01, T-I-01 | “3 agents provisioned with zero full-access keys” |
-| 16–28 s | 12 concurrent calls | `fleet demo concurrency --agents 3 --lanes 4` (planned); 12/12 success, max overlap, two blocks; one denied call with positive control. | T-E-02, T-R-01, T-R-02 | “12 concurrent calls across 3 agents × 4 lanes” |
-| 28–40 s | Freeze mid-flight | Pre-signed freeze is submitted while a call is in flight; `paused=true`; next `execute` denied; measured wall/block latency on screen. Do **not** say the in-flight call was cancelled. | T-E-03, T-L-01, T-L-02 | “Freeze took effect in measured p95; new executes blocked” |
-| 40–52 s | Tag revoke | `fleet revoke-tag --tag C` (planned); 3 keys removed in one tx; returned list has 3; a B key still executes. | T-E-06, T-I-08, T-R-04 | “A tag revoke removed exactly tag C and B still works” |
-| 52–64 s | Admin recovery | Recovery proposes a fresh admin; pending key accepts; new admin freezes/unfreezes. Show old admin inactive. | T-E-04, T-I-07 | “Lost-admin recovery installed a fresh admin key” |
-| 64–76 s | Audit export | `fleet audit export` + `fleet verify-audit`; chain verifies; one field edited in a copy; verifier fails. | T-E-06, T-I-10, T-I-11 | “Audit export is hash-chained and tamper-evident” |
-| 76–88 s | Claims panel | Three columns: VERIFIED (with test/tx), HYPOTHESIS/UNKNOWN, NOT CLAIMED. Explicitly: unaudited, testnet, Mode A not non-custodial, no in-flight cancellation, no 20 lanes. | T-SC-03, T-SC-05 | No claim without evidence |
-| 88–90 s | Close | “FLEET is a native NEAR account-fleet key-lifecycle control plane. Testnet reference implementation.” | — | Product definition only |
+Use a dedicated demo agent, e.g. `agent-demo.fleet-v03-5cff9e99.testnet`,
+provisioned by the controller with six FunctionCall keys and zero FullAccess.
+Keep signer files outside the repository, mode 600.
 
-The 90-second budget is tight. If a step overruns, cut the optional console view
-and keep the terminal result. Do not speed up a transaction or hide a failure.
+```bash
+export DEMO_ACCOUNT=agent-demo.fleet-v03-5cff9e99.testnet
+export DEMO_ADMIN=/secure/fleet-demo/admin.json
+export DEMO_OPERATOR=/secure/fleet-demo/operator.json
+export DEMO_NEW_ADMIN=/secure/fleet-demo/new-admin.json
+export FLEET=./node_modules/.bin/fleet
+```
 
----
+Checklist:
 
-## 3. What is deliberately not shown
-
-- No mainnet account, real funds, payout address, or KYC.
-- No private key, seed phrase, `.env`, credential JSON, or `~/.near-credentials`.
-- No “20 parallel calls”, “16 lanes”, “top-up works”, “two-step rotation works”,
-  “audited”, “production-ready”, “trustless”, or unqualified “non-custodial”.
-- No wallet connection, browser signing, or server-side key.
-- No claim that a freeze cancels a receipt already accepted by the chain.
-- No business/DeFi/agent-swarm claim. Track is `security` only.
+- [ ] Dedicated agent is unfrozen and has four active operators.
+- [ ] `$DEMO_ADMIN` can `freeze`; `$DEMO_OPERATOR` can `execute`.
+- [ ] `$DEMO_NEW_ADMIN` is a fresh key not currently on the account.
+- [ ] Audit export has at least one entry.
+- [ ] Terminal font is readable; scrollback is cleared; notifications are off.
+- [ ] `$FLEET --version` prints `fleet 0.3.0`.
+- [ ] A dry run completed without an unexpected error.
 
 ---
 
-## 4. Failure fallbacks (decide before recording)
+## 3. The 90 seconds
 
-| Failure | Fallback | What must be said |
-| --- | --- | --- |
-| Mode B 2-of-2 reuse gate fails | Demo Mode A; keep Mode B as `HYPOTHESIS` | “Mode A is not non-custodial; the team holds the admin key.” |
-| Freeze p95 misses 5 s | Show the measured p95; cut the ≤5 s sentence | “Measured p95 is X s; the target was not met.” |
-| 12 concurrent calls fail | Show the verified count (e.g. 8/12); update the claim | “12 was the target; the verified result is N.” |
-| Recovery step fails | Cut the step; mark recovery `UNKNOWN` | “Recovery is not claimed.” |
-| Testnet RPC outage | Use a pre-recorded local sandbox run, labelled “sandbox, not testnet” | “This segment is a sandbox replay, not a testnet result.” |
-| Audit anchor challenged | Show hash-chain verify; state no on-chain anchor | “Tamper-evident only with a trusted head; no on-chain anchor.” |
-| Judge asks “OutLayer does this” | Show the one-sentence edge and the native-key scope | “FLEET controls native access keys on accounts the team already owns; it is not a custody contract.” |
+### 0:00–0:08 — Title
+
+On screen, type:
+
+```bash
+clear
+echo "FLEET — native NEAR account-fleet key lifecycle"
+echo "testnet only | unaudited | Mode A is not non-custodial"
+```
+
+Claim: none; framing only.
+
+### 0:08–0:22 — Inventory: scoped keys, no FullAccess
+
+```bash
+$FLEET inventory "$DEMO_ACCOUNT"
+```
+
+Show:
+
+- `mode: A`
+- `operators: 4 (4 active)`
+- `native keys: 6 (0 FullAccess)`
+- audit length/head
+
+Claim: F-001, F-009. Test: `evidence/testnet-v03/run.json`.
+
+### 0:22–0:34 — Operator execution
+
+```bash
+$FLEET execute "$DEMO_ACCOUNT" --method ping --args '{}' --gas 10 \
+  --signer-key-file "$DEMO_OPERATOR" --json
+```
+
+Show `ok: true`, `txHash`, `blockHeight`. Open the tx on NearBlocks only if the
+recording includes the browser; otherwise leave the hash on screen.
+
+Claim: F-002, F-014. Test: canonical concurrency + SDK/CLI tests.
+
+### 0:34–0:50 — Freeze stops execution; unfreeze restores it
+
+```bash
+$FLEET freeze "$DEMO_ACCOUNT" --signer-key-file "$DEMO_ADMIN" --json
+$FLEET execute "$DEMO_ACCOUNT" --method ping --args '{}' --gas 10 \
+  --signer-key-file "$DEMO_OPERATOR" --json
+$FLEET unfreeze "$DEMO_ACCOUNT" --signer-key-file "$DEMO_ADMIN" --json
+```
+
+Show the middle command failing with:
+
+```json
+"code": "FLEET_E_REJECTED",
+"message": "controller is frozen",
+"txHash": "..."
+```
+
+Then show the unfreeze succeeding. Do not claim that freeze cancels an in-flight
+receipt.
+
+Claim: F-003, F-015. Test: `evidence/cli-v03/refused-execute.json`.
+
+### 0:50–1:06 — Admin rotation: new key, old key loses access
+
+```bash
+$FLEET propose-admin "$DEMO_ACCOUNT" --new-admin "<new-admin-public-key>" \
+  --signer-key-file "$DEMO_ADMIN" --json
+$FLEET accept-admin "$DEMO_ACCOUNT" --signer-key-file "$DEMO_NEW_ADMIN" --json
+$FLEET freeze "$DEMO_ACCOUNT" --signer-key-file "$DEMO_ADMIN" --json
+$FLEET freeze "$DEMO_ACCOUNT" --signer-key-file "$DEMO_NEW_ADMIN" --json
+$FLEET unfreeze "$DEMO_ACCOUNT" --signer-key-file "$DEMO_NEW_ADMIN" --json
+```
+
+Expected: propose and accept succeed; the old admin freeze is rejected by the
+native key ACL (the key was deleted); the new admin freeze/unfreeze succeeds.
+The new public key is public; it may be shown.
+
+Claim: F-006, F-010. Test: `run.json` admin rotation + old-admin rejection.
+
+### 1:06–1:20 — Audit export and tamper rejection
+
+```bash
+$FLEET audit export "$DEMO_ACCOUNT" --out /tmp/fleet-demo-audit.json --json
+$FLEET verify-audit /tmp/fleet-demo-audit.json --json
+
+cp /tmp/fleet-demo-audit.json /tmp/fleet-demo-tampered.json
+python3 - <<'PY'
+import json
+p = "/tmp/fleet-demo-tampered.json"
+d = json.load(open(p))
+d["entries"][0]["subject"] = "tampered"
+json.dump(d, open(p, "w"), indent=2)
+PY
+$FLEET verify-audit /tmp/fleet-demo-tampered.json --json
+```
+
+Show the first verify passing with an entry count and head, then the tampered
+verify failing with `entry_hash mismatch` and exit code 6.
+
+Claim: F-008, F-016. Test: `evidence/cli-v03/tamper-verify.json`.
+
+### 1:20–1:30 — Claims discipline and limits
+
+```bash
+node scripts/check-claims.mjs
+```
+
+Show `CLAIMS 20/20 verified`. End on the README status line or say:
+
+> Testnet only. Unaudited. Mode A is not non-custodial. Mode B is not
+> implemented. Freeze does not cancel an in-flight receipt.
+
+Do not show a console, wallet, hosted service, or a mainnet transaction.
 
 ---
 
-## 5. Pre-recording checklist
+## 4. Claim map
 
-- [ ] `make verify` green.
-- [ ] `./scripts/fresh-clone-test.sh` green on a clean clone.
-- [ ] `T-E-07` demo replay green; every step has a `VERIFIED` claim row.
-- [ ] Every tx hash in the video resolves on testnet explorer.
-- [ ] No key material visible in the terminal scrollback, shell history, or
-      browser tabs. Clear the screen and use a clean shell.
-- [ ] Claims panel matches `CLAIMS.md`; no unsupported wording.
-- [ ] Mode A/B disclosure is on screen.
-- [ ] Hosted console (if any) is read-only and will stay up through 2026-11-18.
-- [ ] The human has reviewed the video and approved the public X post.
+| Time | Step | Claims | Evidence |
+| --- | --- | --- | --- |
+| 0:08 | Inventory | F-001, F-009 | `evidence/testnet-v03/run.json` |
+| 0:22 | Execute | F-002, F-014 | `run.json`; `evidence/cli-v03/verify.json` |
+| 0:34 | Freeze refusal | F-003, F-015 | `evidence/cli-v03/refused-execute.json` |
+| 0:50 | Admin rotation | F-006, F-010 | `run.json` lifecycle |
+| 1:06 | Audit + tamper | F-008, F-016 | `evidence/cli-v03/*` |
+| 1:20 | Claims | F-013, F-017…F-020 | `evidence/local-tests.txt`, `CLAIMS.md` |
 
-The agent does not post, publish, or submit. Those are human-only actions.
+Every step also depends on the testnet-only guard (F-014) and the 35-test /
+21-test suites (F-013, F-020).
+
+---
+
+## 5. Cut rules
+
+- If the freeze refusal does not show `controller is frozen`, stop and re-record.
+- If the tampered audit does not exit 6, stop and re-record.
+- If a public RPC is degraded, wait and retry; do not edit the result.
+- If admin rotation fails because the new key already exists, generate a fresh
+  key before the take.
+- If any step needs a console, cut it. The console is not part of v0.3.
+- Never add a claim to the narration that is not in `CLAIMS.md`.
+
+---
+
+## 6. After recording
+
+- Save the file outside the repository; do not commit a video.
+- Write the public tx hashes and the recording date into the submission notes.
+- Ask the human to review the narration against `CLAIMS.md`.
+- The human posts; the agent does not.

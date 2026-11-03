@@ -9,7 +9,12 @@
  * depend on a third-party service. Set FLEET_REQUIRE_RPC=1 to make it fatal.
  */
 
-const url = process.env.NEAR_RPC_URL || "https://rpc.testnet.near.org";
+import { setDefaultResultOrder } from "node:dns";
+
+// IPv4 first avoids bare "fetch failed" on hosts without a working IPv6 route.
+setDefaultResultOrder("ipv4first");
+
+const url = process.env.NEAR_RPC_URL || "https://rpc.testnet.fastnear.com";
 const required = process.env.FLEET_REQUIRE_RPC === "1";
 
 if (process.env.NEAR_MAINNET) {
@@ -31,7 +36,7 @@ for (let attempt = 1; attempt <= 3; attempt += 1) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         jsonrpc: "2.0",
-        id: `fleet-phase1-rpc-check-${attempt}`,
+        id: `fleet-v03-rpc-check-${attempt}`,
         method: "status",
         params: [],
       }),

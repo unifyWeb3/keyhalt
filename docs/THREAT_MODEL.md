@@ -1,8 +1,9 @@
 # FLEET threat model
 
-**Status:** Phase 1 design document. No controller, SDK, CLI, or dashboard is
-implemented. Every mitigation below is a **design requirement** until its test
-in `docs/TEST_PLAN.md` is green. This is not an audit.
+**Status:** v0.3 design document. The controller, SDK, and CLI are implemented
+and have run on testnet; the console and Mode B are not. Mitigations with a green
+test in `docs/TEST_PLAN.md` are marked there; the rest remain design
+requirements. This is not an audit.
 **Date:** 2026-11-03 UTC (Phase 1 target was 2026-10-31; slip disclosed in
 `research/BUILD_STATUS.md`).
 **Scope:** NEAR testnet only. Mode A (team-held admin key) and Mode B (2-of-2
@@ -127,7 +128,7 @@ State this plainly in the README and demo:
 ## 6. Threat cases
 
 The covering test IDs refer to `docs/TEST_PLAN.md`. `PLANNED` means the test is
-specified but not implemented at Phase 1.
+specified but not implemented in v0.3.
 
 | ID | Threat | Impact | Mitigation / design response | Residual | Covering test |
 | --- | --- | --- | --- | --- | --- |

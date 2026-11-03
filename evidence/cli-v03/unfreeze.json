@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "command": "unfreeze",
+  "accountId": "agent-2.fleet-v03-5cff9e99.testnet",
+  "txHash": "9x6fx2mFgMiEVFB587Yt13nvkpV5KgG1X9XThsUxYCQ7",
+  "blockHeight": 276092082,
+  "gasBurnt": "2412482636475",
+  "refusal": null
+}

@@ -1,224 +1,303 @@
-# FLEET test plan
+# FLEET test plan (v0.3)
 
-**Status:** Phase 1 — the test plan is written; only the **harness** tests
-(T-S-001…T-S-007) are implemented. Every product test is `PLANNED`. A planned
-test is not evidence and cannot support a claim.
-**Date:** 2026-11-03 UTC. Phase 1 target was 2026-10-31; the slip is disclosed in
-`research/BUILD_STATUS.md`.
+**Status:** v0.3 controller, SDK, CLI, canonical testnet run, mutation test, gas
+profile, and reproducibility build are complete. Tests below are marked with the
+result that actually ran. `PARTIAL` means a narrower test exists but the full
+property is not covered. `PLANNED` and `NOT IMPLEMENTED` are not evidence.
+**Date:** 2026-11-03 UTC.
 **Rule:** a `VERIFIED` row in `CLAIMS.md` must name a test that ran or a public
-testnet transaction hash. A flaky or skipped test is not evidence.
+testnet transaction hash. A flaky, skipped, or unrun test is not evidence.
 
 ---
 
-## 1. Layers
+## 1. Layers actually run
 
-| Layer | Tool | What it proves | When it runs |
+| Layer | Tool | What it proves | Result |
 | --- | --- | --- | --- |
-| Unit | `cargo test` | State machine, permission checks, audit hashing, tag logic | Every change |
-| Property/fuzz | `proptest` / `cargo-fuzz` (planned) | Invariants hold over generated sequences | CI nightly + before freeze |
-| Integration | `near-workspaces` sandbox | Real receipts, access keys, gas, callbacks | Every PR once available |
-| Testnet E2E | CLI/SDK + public testnet RPC | The deployed contract and real keys behave as claimed | Before each release candidate |
-| Refusal | integration + unit | Every rejection has a **positive control** that succeeds | With the feature |
-| Gas profiling | receipt outcomes | Gas/storage cost and allowance budget | Before feature freeze |
-| Latency | repeated testnet runs | Freeze p95 wall/block target | Before demo recording |
-| Fresh clone | shell | A clean agent can reproduce the repo and claims | Before every release candidate |
-| Claims/screener | Node + shell | No unsupported claim, no key, no mainnet | Before every commit/tag |
+| Unit | `cargo test --workspace` | state machine, permission checks, audit hashing, callbacks | **35/35 pass** (170.98 s) |
+| Property-style | deterministic xorshift sequences | 5,000-step state/reference equivalence + audit verification | **pass** (`random_sequences_preserve_reference_and_audit`) |
+| Differential | `Reference` model | state matches an independent simple model after each step | **pass** (short + 5,000-step) |
+| Mutation | `scripts/mutation-test.mjs` | targeted tests constrain eight critical branches | **8/8 killed** |
+| Testnet E2E | `scripts/testnet-e2e.mjs` | deployed wasm, real keys, receipts, gas, callbacks | **63/63 checks**, 2026-11-03 |
+| SDK/CLI | `npm test` | read paths, audit verify/tamper, exit codes, signer rules | **21/21 pass** |
+| Gas | `scripts/gas-profile.mjs` | per-operation cost from canonical evidence | **29 groups**, 3 provision rows |
+| Repro | `scripts/repro-build.sh` | two clean `--locked` builds | **byte-identical** |
+| Fresh clone | `scripts/fresh-clone-test.sh` | clean clone can reproduce | **pending after v0.3 commit** |
+| Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **20/20 verified** |
+
+**Sandbox gap:** `near-workspaces` is not installed on this Linux arm64 host.
+`near-workspaces@4.0.0` selects `near-sandbox@0.1.1`, which reports
+`Unsupported platform: Linux arm64`; `near-sandbox@0.3.4` requires Node
+≥22.22.2 while the host has 22.22.1. Testnet E2E is the integration path here;
+sandbox tests remain a CI x64 item.
 
 ---
 
-## 2. Invariants and the test that proves each
+## 2. Invariants and status
 
-| ID | Invariant (precise) | Primary tests | Status |
+| ID | Invariant | Primary tests | Status |
 | --- | --- | --- | --- |
-| I-01 | `admin_pk` and `admin_account` are never both set; exactly one mode is active after init. | T-U-01, T-I-01 | PLANNED |
-| I-02 | No lifecycle method calls `AddKey` for a key that may already exist; activation performs no `AddKey`. | T-U-03, T-U-04, T-I-02 | PLANNED |
-| I-03 | No method adds `FullAccess`; every added key is `FunctionCall` with `receiver = current account` and an allowlisted method set. | T-U-02, T-P-05, T-I-01 | PLANNED |
-| I-04 | `paused = true` blocks every `execute`; `unfreeze` restores the positive control. | T-U-05, T-I-05, T-R-02 | PLANNED |
-| I-05 | Only the active admin (Mode A) or `admin_account` (Mode B) can freeze/unfreeze or change lifecycle state; the pending key can only accept. | T-U-06, T-U-12, T-R-01, T-R-05, T-R-06 | PLANNED |
-| I-06 | A recovery key can propose a fresh admin, but cannot freeze, grant, revoke, or execute; the pending key must accept. | T-U-11, T-I-07 | PLANNED |
-| I-07 | `revoke_tag(tag)` removes exactly the operators with that tag and returns exactly that list; other tags remain and can execute after. | T-U-07, T-P-03, T-I-08, T-R-04 | PLANNED |
-| I-08 | An unauthorized or malformed call reverts; no state, audit entry, or native key changes. | T-U-08, T-R-01…T-R-07 | PLANNED |
-| I-09 | Audit `seq` is monotonic and gapless; every mutation appends one entry with block height/time and a valid `prev_hash` chain. | T-U-09, T-P-02, T-I-10 | PLANNED |
-| I-10 | An audit export verifies only if every hash and the head match; any edit is detected. | T-I-10, T-I-11, T-SC-02 | PLANNED |
-| I-11 | The controller never deploys code, transfers balance, accepts a deposit, or grants full access. | T-U-02, T-P-05, T-D-04 | PLANNED |
-| I-12 | A failed add/delete receipt is never counted as success; the controller reports failure or leaves a verifiable pending state. | T-U-03, T-U-04, T-I-02, T-I-03 | PLANNED |
+| I-01 | `admin_pk` and `admin_account` are never both set; exactly one mode is active after init. | `init_rejects_both_or_neither_mode`, `init_rejects_both_modes`, `init_is_mode_exclusive_and_schedules_no_full_access_key` | **VERIFIED** |
+| I-02 | No lifecycle method calls `AddKey` for a key that may already exist; activation performs no `AddKey`. | `admin_rotation_has_no_add_key_on_accept`, `pending_admin_cannot_freeze_and_accept_performs_no_add`, `grant_and_propose_reject_keys_that_already_have_a_role` | **VERIFIED** |
+| I-03 | No method adds `FullAccess`; every added key is `FunctionCall` with `receiver = current account` and an allowlisted method set. | `init_is_mode_exclusive_and_schedules_no_full_access_key`, `grant_schedules_function_call_key_and_callback_confirms`; testnet key list | **VERIFIED** for scheduled paths |
+| I-04 | `paused = true` blocks every `execute`; `unfreeze` restores the positive control. | `freeze_blocks_operator_and_unfreeze_restores_positive_control`, `execute_requires_active_operator_freeze_and_allowlist`, testnet F-003 | **VERIFIED** |
+| I-05 | Only the active admin (Mode A) or `admin_account` (Mode B) can freeze/unfreeze or change lifecycle state; the pending key can only accept. | `operator_cannot_freeze_but_admin_can`, `freeze_and_unfreeze_are_admin_only`, `operator_cannot_call_admin_methods`, `pending_admin_cannot_freeze_and_accept_performs_no_add`, `mode_b_admin_is_predecessor_only` | **VERIFIED** for Mode A; Mode B check is wrapper-only |
+| I-06 | A recovery key can propose a fresh admin, but cannot freeze, grant, revoke, or execute; the pending key must accept. | `recovery_cannot_freeze_or_grant`, `recovery_proposes_but_cannot_accept_itself`, `recovery_proposes_and_pending_key_accepts`, testnet F-007 | **VERIFIED** |
+| I-07 | `revoke_tag(tag)` removes exactly the operators with that tag; other tags remain and can execute after. | `revoke_tag_is_an_exact_partition`, `revoke_and_tag_revoke_are_exact`, testnet F-005 | **VERIFIED** (deterministic set) |
+| I-08 | An unauthorized or malformed call reverts; no state, audit entry, or native key changes. | `invalid_inputs_revert_before_state_change`, `missing_tag_reverts_without_audit`, `grant_failure_removes_pending_operator`, testnet refusals | **VERIFIED** for covered paths |
+| I-09 | Audit `seq` is monotonic and gapless; every mutation appends one entry with block height/time and a valid `prev_hash` chain. | `audit_chain_verifies_and_tamper_fails`, `audit_entry_lookup_and_pagination_are_exact`, `random_sequences_preserve_reference_and_audit`, testnet F-008 | **VERIFIED** |
+| I-10 | An audit export verifies only if every hash and the head match; any edit is detected. | `audit_chain_verifies_and_tamper_fails`, SDK/CLI tamper tests, `evidence/cli-v03/tamper-verify.json` | **VERIFIED** |
+| I-11 | The controller never deploys code, transfers balance, accepts a deposit, or grants full access. | `execute_rejects_wrong_receiver_and_deposit`, `init_is_mode_exclusive_and_schedules_no_full_access_key`; testnet deposit rejection | **VERIFIED** for exposed paths; no deploy/transfer method exists |
+| I-12 | A failed add/delete receipt is never counted as success; the controller reports failure or leaves a verifiable pending state. | `failed_grant_is_not_active_and_is_removed`, `audit_chain_survives_failed_callbacks`, `grant_failure_removes_pending_operator` | **VERIFIED** |
 
 ---
 
-## 3. Unit tests
+## 3. Rust unit tests (35)
 
-| ID | Test | Expected | Status |
+### 3.1 Pure state machine (`model.rs`, 19 tests)
+
+| Test | What it pins |
+| --- | --- |
+| `init_rejects_both_or_neither_mode` | mode exclusivity |
+| `init_rejects_duplicate_and_colliding_keys` | no duplicate role keys at init |
+| `freeze_blocks_operator_and_unfreeze_restores_positive_control` | freeze + positive control |
+| `operator_cannot_freeze_but_admin_can` | admin-only freeze |
+| `recovery_cannot_freeze_or_grant` | recovery scope |
+| `revoke_tag_is_an_exact_partition` | tag partition, others survive |
+| `missing_tag_reverts_without_audit` | no-op refusal is not audited |
+| `pending_admin_cannot_freeze_and_accept_performs_no_add` | pending key scope; accept flips only |
+| `recovery_proposes_but_cannot_accept_itself` | proposer ≠ accepter |
+| `grant_and_propose_reject_keys_that_already_have_a_role` | admin/recovery/operator collisions |
+| `cancel_admin_is_allowed_for_admin_or_recovery_and_clears_pending` | cancel authorization |
+| `rotate_is_fresh_key_first_and_keeps_old_until_confirmed` | old key stays until confirm; other operators survive |
+| `grant_failure_removes_pending_operator` | failed callback cleanup |
+| `audit_chain_verifies_and_tamper_fails` | hash chain; field, height, and prev-hash tamper |
+| `mode_b_admin_is_predecessor_only` | Mode B predecessor check (not a multisig implementation) |
+| `invalid_inputs_revert_before_state_change` | malformed input leaves state intact |
+| `audit_entry_lookup_and_pagination_are_exact` | seq lookup and page bounds |
+| `reference_model_matches_a_short_sequence` | differential model |
+| `random_sequences_preserve_reference_and_audit` | 5,000 deterministic steps vs reference; audit verified every step |
+
+### 3.2 near-sdk wrapper (`lib.rs`, 16 tests)
+
+| Test | What it pins |
+| --- | --- |
+| `init_is_mode_exclusive_and_schedules_no_full_access_key` | init receipts, FunctionCall only |
+| `init_rejects_both_modes` | wrapper mode guard |
+| `provisioning_callback_promotes_operators` | callback success path |
+| `provisioning_failure_leaves_controller_unprovisioned` | callback failure path |
+| `freeze_and_unfreeze_are_admin_only` | wrapper ACL |
+| `operator_cannot_call_admin_methods` | operator scope |
+| `grant_schedules_function_call_key_and_callback_confirms` | AddKey ACL + callback |
+| `failed_grant_is_not_active_and_is_removed` | failed AddKey rollback |
+| `public_callback_is_private` | callback can only be called by self |
+| `execute_requires_active_operator_freeze_and_allowlist` | policy checks |
+| `execute_rejects_wrong_receiver_and_deposit` | receiver + deposit |
+| `revoke_and_tag_revoke_are_exact` | DeleteKey receipt shape |
+| `admin_rotation_has_no_add_key_on_accept` | no AddKey on accept |
+| `recovery_proposes_and_pending_key_accepts` | recovery flow |
+| `mode_b_uses_predecessor_account` | Mode B actor derivation |
+| `audit_chain_survives_failed_callbacks` | audit integrity after failure |
+
+Run log: `evidence/local-tests.txt`. Clippy `--all-targets -D warnings` and
+`cargo fmt --check` are clean.
+
+---
+
+## 4. Property and fuzz status
+
+| ID | Property | Status | Note |
 | --- | --- | --- | --- |
-| T-U-01 | Init with both `admin_pk` and `admin_account`, or neither | Reverts; no state written | PLANNED |
-| T-U-02 | Grant/rotate/init key permission | Only `FunctionCall` to current account; `FullAccess` rejected | PLANNED |
-| T-U-03 | `accept_admin` path | No `AddKey` action; pending flips active; old admin inactive | PLANNED |
-| T-U-04 | Duplicate/fresh key checks | Existing key rejected before any `AddKey`; fresh key accepted | PLANNED |
-| T-U-05 | Freeze then `execute` | `execute` reverts while paused; succeeds after unfreeze | PLANNED |
-| T-U-06 | Wrong signer calls freeze/grant/revoke | Reverts; state + audit unchanged | PLANNED |
-| T-U-07 | `revoke_tag("C")` with A/B/C keys | Only C removed; return list exactly C; A/B remain | PLANNED |
-| T-U-08 | Unauthorized call with positive control | Negative reverts, positive succeeds, no partial state | PLANNED |
-| T-U-09 | Audit seq/hash after N mutations | Seq 0..N-1, each hash recomputes, head matches | PLANNED |
-| T-U-10 | Mode A allowance refresh by rotation | New fresh key has configured allowance; old key inactive; no top-up call | PLANNED |
-| T-U-11 | Recovery proposal + accept | Active admin unchanged until accept; recovery cannot execute | PLANNED |
-| T-U-12 | Pending key calls freeze/grant | Reverts; only `accept_admin` succeeds | PLANNED |
+| T-P-01 | Legal transition sequences preserve mode/admin/recovery/operator invariants | **PARTIAL** | 5,000-step sequence covers freeze/unfreeze, grant success/failure, revoke, missing tag; not rotate/admin/recovery |
+| T-P-02 | Audit chain verifies after arbitrary successful mutations; fails after any single-cell edit | **VERIFIED** | verify after every random step; field/height/prev-hash tamper tests |
+| T-P-03 | Tag revocation is a partition for random key/tag sets | **PARTIAL** | deterministic partition test only |
+| T-P-04 | Key uniqueness across active/pending/recovery/admin for random sets | **PARTIAL** | deterministic collision test only |
+| T-P-05 | No generated action adds FullAccess or a non-allowlisted receiver | **PARTIAL** | structural (no FullAccess field) + wrapper tests; not a random generator |
 
-**Harness unit tests already passing:** Rust scaffold test (1), TypeScript SDK
-(2), CLI (3), API (3). They prove the scaffold builds and refuses to fake product
-behavior. They do **not** prove any FLEET capability.
+No external `proptest`/`cargo-fuzz` dependency was added. The generator is a
+fixed-seed xorshift; a failure would print the step and audit heads. This is
+weaker than a shrinking property framework and is disclosed.
 
 ---
 
-## 4. Property and fuzz tests
+## 5. Canonical testnet E2E
 
-| ID | Property | Generator | Status |
-| --- | --- | --- | --- |
-| T-P-01 | Any sequence of legal transitions preserves I-01, I-05, I-06 | Random action sequences with valid/invalid actors | PLANNED |
-| T-P-02 | Audit hash chain verifies after arbitrary successful mutations, and fails after any single-cell edit | Random mutation sequences + mutation fuzzer | PLANNED |
-| T-P-03 | Tag revocation is a partition: removed ∪ retained = original, removed ∩ retained = ∅ | Random key/tag sets | PLANNED |
-| T-P-04 | Key uniqueness: no active key equals a pending/recovery/operator key | Random key sets with duplicates | PLANNED |
-| T-P-05 | No generated action adds full access or a non-allowlisted receiver | Random grant/rotate/init inputs | PLANNED |
+Evidence: `evidence/testnet-v03/run.json` (63 checks), `RUN.md`,
+`audit-agent-1.json`.
 
-Property tests must print the failing seed and shrink the case. A property test
-that only checks the happy path is not sufficient.
+| ID | Test | Result |
+| --- | --- | --- |
+| T-E-01 | Provision 3 agents, each with 6 FunctionCall keys, 0 FullAccess, 4 operators | **PASS** |
+| T-E-02 | 12 concurrent executes (3 agents × 4 operator keys) | **PASS** 12/12 in 8,633 ms |
+| T-E-03 | Freeze blocks the next execute; unfreeze restores it | **PASS**; no latency claim |
+| T-E-04 | Admin recovery through the recovery key | **PASS** |
+| T-E-05 | Admin rotation: propose, accept, old admin rejected | **PASS** |
+| T-E-06 | Audit export + independent JS recompute + tamper rejection | **PASS** |
+| T-E-07 | Replay the 90-second demo script | **PLANNED** — no recording |
+| T-I-01 | 3 native accounts, zero FullAccess | **PASS** |
+| T-I-02 | Admin rotation with a fresh key; accept adds no key | **PASS** |
+| T-I-03 | Allowance refresh by rotation | **PLANNED** — no explicit measurement |
+| T-I-04 | Cross-agent isolation (A key on B fails, on A succeeds) | **PLANNED** |
+| T-I-05 | Freeze/unfreeze with audit entries | **PASS** |
+| T-I-06 | Mode B 2-of-2 multisig | **NOT IMPLEMENTED** |
+| T-I-07 | Recovery propose/accept | **PASS** |
+| T-I-08 | Tag revoke removes exactly the tag; other tag remains | **PASS** |
+| T-I-09 | `get_inventory` matches `view_access_key_list` | **PASS** |
+| T-I-10 | Audit export verifies against head | **PASS** |
+| T-I-11 | Tamper detection | **PASS** (SDK + CLI) |
+| T-I-12 | Per-method gas | **PASS** (`gas-profile.md`) |
 
----
-
-## 5. Integration tests (`near-workspaces`)
-
-**Tool gap:** `near-workspaces@4.0.0` was selected (Node ≥14; pulls
-`near-sandbox@0.1.1`), but installation fails on this Linux arm64 host:
-`near-sandbox` reports `Unsupported platform: Linux arm64`. The latest
-`near-sandbox@0.3.4` requires Node ≥22.22.2; this host has Node 22.22.1. The
-integration tests are therefore written for CI/x64 and are **not run locally** in
-Phase 1. This is recorded, not hidden. See `docs/SKILLS_AND_TOOLS.md`.
-
-| ID | Test | Expected | Status |
-| --- | --- | --- | --- |
-| T-I-01 | Provision 3 accounts, each with controller, admin/operator/gas keys, zero full access | 3 accounts; key lists match inventory; no `FullAccess` | PLANNED |
-| T-I-02 | Two-step admin rotation with a fresh key | No `AddKeyAlreadyExists`; old admin inactive; new admin active | PLANNED |
-| T-I-03 | Allowance refresh by rotation | New key has allowance; old key cannot call; no in-place top-up | PLANNED |
-| T-I-04 | Isolation negative + positive | Key for A fails on B, succeeds on A | PLANNED |
-| T-I-05 | Freeze/unfreeze | Frozen execute fails; unfrozen execute succeeds; audit has both | PLANNED |
-| T-I-06 | Mode B 2-of-2 | One confirmation does nothing; two freeze; direct bypass denied | PLANNED |
-| T-I-07 | Recovery | Recovery proposes; pending accepts; fresh admin freezes/unfreezes | PLANNED |
-| T-I-08 | Tag revoke | 3 C keys revoked in one tx; B keys remain and execute after | PLANNED |
-| T-I-09 | Inventory vs native keys | `get_inventory` matches `view_access_key_list` for every role | PLANNED |
-| T-I-10 | Audit export | Export verifies against head; tx hashes/block heights present | PLANNED |
-| T-I-11 | Tamper detection | Edit one audit field → verifier fails; original passes | PLANNED |
-| T-I-12 | Gas profile | Per-method gas/storage recorded; allowance budget calculated | PLANNED |
-
-The integration harness must create its own throwaway testnet accounts (or a
-sandbox) and must not depend on a human-held key. It must clean up or label the
-accounts it leaves behind.
+Canonical facts: parent `fleet-v03-5cff9e99.testnet`; agents `agent-1b`,
+`agent-2`, `agent-3`; wasm 248,644 bytes
+`cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f`; audit 19
+entries, head `cc33b0ea668c9a42d34d5950638e53907009e52c4b197e1328a1f4ce762ee10b`.
 
 ---
 
-## 6. Refusal tests (each with a positive control)
+## 6. Refusal tests
 
 | ID | Refusal | Positive control | Status |
 | --- | --- | --- | --- |
-| T-R-01 | Operator key calls `freeze`/`grant`/`revoke` | Admin key calls the same method successfully | PLANNED |
-| T-R-02 | `execute` while frozen | `execute` after `unfreeze` | PLANNED |
-| T-R-03 | Key for agent A calls agent B's controller | Same key calls agent A | PLANNED |
-| T-R-04 | `revoke_tag("missing")` | `revoke_tag("C")` removes C only | PLANNED |
-| T-R-05 | Pending admin calls `freeze` | Pending admin calls `accept_admin` | PLANNED |
-| T-R-06 | Unauthorized account proposes admin | Active admin proposes | PLANNED |
-| T-R-07 | One Mode B confirmation | Second confirmation executes | PLANNED |
-| T-R-08 | Mainnet RPC configured | Testnet RPC check succeeds | **PASS** (T-S-005) |
-| T-R-09 | Expired pre-signed freeze | Fresh pre-signed freeze lands | PLANNED |
-| T-R-10 | Grant a key that already exists | Grant a fresh key | PLANNED |
+| T-R-01 | Operator key calls `freeze`/admin method | Admin key succeeds | **PASS** (unit + testnet protocol ACL) |
+| T-R-02 | `execute` while frozen | Execute after `unfreeze` | **PASS** (unit + testnet + CLI) |
+| T-R-03 | Key for agent A calls agent B's controller | Same key on agent A | **PLANNED** |
+| T-R-04 | `revoke_tag("missing")` | `revoke_tag("ops-a")` removes only that tag | **PASS** (unit) |
+| T-R-05 | Pending admin calls `freeze` | Pending admin calls `accept_admin` | **PASS** (unit) |
+| T-R-06 | Unauthorized account proposes admin | Active admin proposes | **PARTIAL** (Mode B predecessor test only) |
+| T-R-07 | One Mode B confirmation | Second confirmation executes | **NOT IMPLEMENTED** |
+| T-R-08 | Mainnet RPC configured | Testnet RPC succeeds | **PASS** (CLI/SDK/RPC script) |
+| T-R-09 | Expired pre-signed freeze | Fresh freeze lands | **PLANNED**; no pre-signed path |
+| T-R-10 | Grant a key that already has a role | Grant a fresh key | **PASS** (unit + testnet) |
 
-A refusal test without a positive control is not accepted: it could pass because
-the whole path is broken.
-
----
-
-## 7. Gas profiling
-
-| ID | Measurement | Output | Status |
-| --- | --- | --- | --- |
-| T-G-01 | Gas per method (`init`, `grant`, `rotate`, `revoke`, `revoke_tag`, `freeze`, `accept_admin`, `recover`) | Table with min/median/max, receipt count | PLANNED |
-| T-G-02 | Admin allowance budget | Calls per 0.1/0.5/1 NEAR; recommended default | PLANNED |
-| T-G-03 | Storage growth per audit entry/operator | Bytes/entry; max operators before storage pressure | PLANNED |
-
-The 0.1 NEAR default in `docs/SPEC_v0.3.md` is `INFERRED` from v0.2 research, not
-reproduced here. It becomes `VERIFIED` only after T-G-02.
+Testnet refusal reasons are captured from `FLEET_REFUSAL:` receipt logs:
+`controller is frozen`, `method not allowed`, `receiver not allowed`,
+`gas above policy cap`, `key already has a role`, and pending-rotation refusal.
 
 ---
 
-## 8. Freeze latency
+## 7. Gas profile
 
-| ID | Test | Target | Status |
-| --- | --- | --- | --- |
-| T-L-01 | 20 independent pre-signed Mode A freezes on testnet | p95 wall submit-to-effect ≤5 s; p95 ≤2 blocks | PLANNED |
-| T-L-02 | Freeze during an in-flight execute | Report whether the receipt landed; do not claim cancellation | PLANNED |
-| T-L-03 | Nonce-lane reservation and stale-hash refresh | Pre-signed tx accepted on first try; stale tx discarded | PLANNED |
+Source: `evidence/testnet-v03/gas-profile.md`.
 
-Report the raw samples, p50/p95, block heights, and the RPC endpoint. If the
-target is missed, report the measured value and remove the ≤5 s claim. Mode B
-two-confirmation latency is reported separately and is not the Mode A result.
-
----
-
-## 9. Deterministic end-to-end script
-
-| ID | Test | Expected | Status |
-| --- | --- | --- | --- |
-| T-E-01 | Provision 3 agents from a clean testnet state | 3 accounts, 3 controllers, zero full access | PLANNED |
-| T-E-02 | 12 concurrent calls across 3 agents × 4 lanes | 12/12 succeed; block distribution recorded | PLANNED |
-| T-E-03 | Freeze mid-flight, measure effect | `paused=true`; next execute fails; latency samples saved | PLANNED |
-| T-E-04 | Admin recovery | Fresh admin installs; freeze/unfreeze works | PLANNED |
-| T-E-05 | Allowance refresh | Fresh admin key works; old key inactive | PLANNED |
-| T-E-06 | Audit export + verify | Export verifies; tamper test fails | PLANNED |
-| T-E-07 | Replay the 90-second demo script | Every step matches a tested capability; no untested claim | PLANNED |
-
-The script must be deterministic in ordering, use documented throwaway accounts,
-print every tx hash, and save machine-readable output under `evidence/`.
-
----
-
-## 10. Screener and fresh-clone tests
-
-| ID | Test | Expected | Status |
-| --- | --- | --- | --- |
-| T-SC-01 | Fresh clone, `make setup`, `make verify` | PASS, no prior context | **PASS** 2026-11-03, `FLEET_REQUIRE_RPC=1` |
-| T-SC-02 | Claims checker rejects malformed/unsupported claims | Nonzero exit + clear error | **PASS** (T-S-003) |
-| T-SC-03 | README “do X, see Y” matches reality | Commands work; no product claim without a row | **PASS for Phase 1**; product replay pending |
-| T-SC-04 | No key/credential in clone or history | Secret scan clean | **PASS** working tree + history scan |
-| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | Each row re-run; tx hashes resolve | **N/A** — 0 product claims |
-
-The exact fresh-clone test is `scripts/fresh-clone-test.sh`. It must be green
-before every release candidate, including the submission tag.
-
----
-
-## 11. Harness tests implemented at Phase 1
-
-| ID | Test | Evidence | Status |
-| --- | --- | --- | --- |
-| T-S-001 | `make setup` on a clean clone | `scripts/fresh-clone-test.sh` run log | **PASS** |
-| T-S-002 | `make verify` prints PASS | `make verify` output | **PASS** |
-| T-S-003 | Malformed `VERIFIED` row rejected | Fresh-clone negative control | **PASS** |
-| T-S-004 | Secret scan finds no key material | `./scripts/secret-scan.sh` | **PASS** |
-| T-S-005 | Mainnet RPC refused; testnet accepted | `node scripts/rpc-check.mjs` + negative control | **PASS** |
-| T-S-006 | Web placeholder has no script/key field/network call | `make verify` web check | **PASS** |
-| T-S-007 | Claim-surface references exist in `CLAIMS.md` | `node scripts/check-claims.mjs` | **PASS** |
-
-These prove the harness, not the product. `CLAIMS.md` remains empty of product
-claims.
-
----
-
-## 12. Exit criteria
-
-| Checkpoint | Criteria |
+| Measurement | Result |
 | --- | --- |
-| Core contract (replanned Nov 5) | All invariant unit/property tests green; no `AddKey` on existing keys; audit chain verifies |
-| SDK/CLI/E2E (replanned Nov 7) | Fresh-clone test green; 3-agent E2E runs; every claim has a test |
-| Feature freeze (Nov 10) | No new features; only fixes; gas/latency tables complete |
-| Demo (Nov 12) | Every demo step replayed from the script; no untested claim |
-| README final (Nov 13) | Fresh-clone test on a clean session; claims checker green; diff link ready |
-| Submission (Nov 14 12:00 UTC) | Human review; repo public; license; X post; submission JSON; tag `hackathon-submission` |
+| Provisioning per agent | 43.04 Tgas (36.65 create/deploy + 6.39 init/AddKey) |
+| Concurrent `execute` (n=12) | mean 3.964 Tgas, max 3.965 Tgas |
+| `rotate_operator` | 6.652 Tgas |
+| `recover_admin` | 6.419 Tgas |
+| `propose_admin` | 6.065 Tgas |
+| `grant_operator` | 5.663 Tgas |
+| `revoke_tag` | 3.917 Tgas |
+| `revoke_operator` | 3.173 Tgas |
+| `freeze` / `unfreeze` | 2.312 / 2.348 Tgas |
+| Protocol-rejected tx (key ACL/deposit) | 0 Tgas; rejected before execution |
 
-A checkpoint that slips is recorded with the reason and the scope cut. It is not
+| ID | Measurement | Status |
+| --- | --- | --- |
+| T-G-01 | Per-method gas, min/mean/median/max | **PASS** for sampled methods |
+| T-G-02 | Admin allowance budget (calls per 0.1/0.5/1 NEAR) | **PLANNED** |
+| T-G-03 | Storage growth per audit entry/operator | **PLANNED** |
+
+The 0.1 NEAR default allowance remains `INFERRED`, not verified as a call
+budget.
+
+---
+
+## 8. Latency and limits
+
+| ID | Test | Status |
+| --- | --- | --- |
+| T-L-01 | 20 independent pre-signed Mode A freezes; p95 wall/block | **PLANNED** |
+| T-L-02 | Freeze during an in-flight execute | **PARTIAL** — no cancellation is claimed |
+| T-L-03 | Nonce-lane reservation / stale-hash refresh | **PLANNED**; per-operator keys used for concurrency |
+
+The 12-way concurrency result is a throughput observation (8,633 ms for 12
+submitted calls), not a latency percentile.
+
+---
+
+## 9. SDK/CLI tests (21)
+
+`npm test` builds all packages and runs:
+
+| Area | Tests |
+| --- | --- |
+| SDK version and mainnet refusal | 2 |
+| SDK missing-signer refusal | 1 |
+| big-u64 JSON preservation | 1 |
+| 19-entry canonical audit verification | 1 |
+| tampered entry + broken prev-hash rejection | 2 |
+| raw and `fleet-audit-v1` export verification | 1 |
+| CLI version/help | 3 |
+| CLI unknown command, mainnet, no signer, bad key mode | 4 |
+| CLI canonical audit verify, alias, tamper exit 6 | 3 |
+| API scaffold tests | 3 |
+
+Live CLI evidence: `evidence/cli-v03/` (freeze, refusal, unfreeze, inventory,
+verify, export, tamper).
+
+---
+
+## 10. Mutation, fresh clone, screener
+
+| ID | Test | Status |
+| --- | --- | --- |
+| T-M-01 | 8 semantic mutants each killed by a targeted test | **PASS** 8/8; `evidence/mutation/mutation-report.md` |
+| T-SC-01 | Fresh clone + `make setup` + `make verify` | **PASS for Phase 1**; v0.3 rerun pending commit |
+| T-SC-02 | Claims checker rejects malformed/unsupported rows | **PASS** (fresh-clone negative control) |
+| T-SC-03 | README “do X, see Y” matches reality | **PASS after v0.3 docs; fresh clone pending** |
+| T-SC-04 | No key/credential in clone or history | **PASS** working tree + history scan |
+| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL** — 20 rows, tx hashes public; not one re-run script |
+| T-S-001…T-S-007 | Setup, verify, claims, secret scan, mainnet refusal, static web check | **PASS** (rerun in v0.3 verify) |
+
+---
+
+## 11. Claim-to-test map
+
+| Claim | Primary evidence |
+| --- | --- |
+| F-001 | `run.json` agents/checks; create/init tx |
+| F-002 | `run.json` concurrency |
+| F-003, F-015 | `run.json` lifecycle; `evidence/cli-v03/*` |
+| F-004 | `run.json` lifecycle refusals |
+| F-005 | `run.json` lifecycle |
+| F-006 | `run.json` admin rotation |
+| F-007 | `run.json` recovery |
+| F-008 | `run.json` audit; `audit-agent-1.json` |
+| F-009 | `run.json` final_keys |
+| F-010, F-011 | `run.json` protocol_rejected entries |
+| F-012 | `local-tests.txt`; `run.json` wasm fields |
+| F-013 | `local-tests.txt` |
+| F-014, F-016 | `evidence/cli-v03/*` |
+| F-017 | `evidence/mutation/mutation-report.md` |
+| F-018 | `evidence/testnet-v03/gas-profile.md` |
+| F-019 | `evidence/repro-build/report.md` |
+| F-020 | `local-tests.txt`; SDK/CLI tests |
+
+---
+
+## 12. Gaps and exit criteria
+
+Open gaps, in priority order:
+
+1. Mode B 2-of-2 multisig is not implemented.
+2. Console design and build are approval-gated; `web/` is a placeholder.
+3. No demo recording or replay (`T-E-07`).
+4. No freeze-latency measurement or pre-signed path.
+5. No cross-agent isolation test (`T-R-03`).
+6. No allowance-budget or storage-growth measurement (`T-G-02`, `T-G-03`).
+7. Property tests are deterministic and cover a subset of transitions.
+8. No near-workspaces sandbox run on this arm64 host.
+9. Fresh-clone v0.3 rerun must follow the commit.
+
+| Checkpoint | Criteria | Status |
+| --- | --- | --- |
+| Core contract | invariant/unit/property green; no AddKey on existing keys; audit verifies | **MET 2026-11-03** |
+| SDK/CLI/E2E | 3-agent E2E; SDK/CLI tests; every claim has evidence | **MET 2026-11-03** except fresh clone |
+| Feature freeze (Nov 10) | no new features; gas/latency tables complete | Gas done; latency not done |
+| Demo (Nov 12) | every step replayed; no untested claim | **PENDING** |
+| README final (Nov 13) | fresh clone green; claims checker green; diff link | **PENDING** |
+| Submission (Nov 14 12:00 UTC) | human review; repo public; license; X post; JSON; tag | **PENDING HUMAN** |
+
+A checkpoint that slips is recorded with the reason and scope cut; it is not
 silently moved.

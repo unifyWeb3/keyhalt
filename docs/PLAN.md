@@ -1,9 +1,10 @@
 # FLEET day-by-day plan (Nov 1–14, 2026)
 
-**Status:** Phase 1 closes 2026-11-03, three days after the planned 2026-10-31
-cut-off. The slip is disclosed in `research/BUILD_STATUS.md`; it is not
-backdated. This document preserves the original plan and adds a dated recovery
-plan.
+**Status:** v0.3 update, 2026-11-03. The original plan below is preserved. Phase
+1 closed late on 2026-11-03; the controller, SDK, CLI, and canonical testnet run
+were then completed the same day. Mode B, latency measurement, the console, the
+demo recording, and submission remain. The slip is disclosed in
+`research/BUILD_STATUS.md`; it is not backdated.
 **Deadline:** submission **2026-11-14 12:00 UTC**; event closes
 **2026-11-14 23:59 UTC**. Judging starts 2026-11-16.
 **Track:** `security` only. Testnet only. $0. No mainnet.
@@ -46,8 +47,10 @@ non-custodial.
 
 ## 3. Actual status and recovery plan (as of 2026-11-03)
 
-**Actual status:** Phase 1 scaffold and harness are being closed on 2026-11-03.
-No controller, SDK, CLI, API, or console product code exists. The Nov 3 core
+**Actual status (v0.3):** controller, SDK, CLI, canonical testnet run, mutation
+test, gas profile, and reproducible wasm are complete. Mode B, latency,
+console, and demo recording remain. The earlier Phase 1 note read: no
+controller, SDK, CLI, API, or console product code exists. The Nov 3 core
 checkpoint is therefore **missed**; the recovery date is **Nov 5**. No gate is
 lowered.
 

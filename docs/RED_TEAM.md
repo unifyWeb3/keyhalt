@@ -1,7 +1,9 @@
 # FLEET red-team cases
 
-**Status:** Phase 1 — response plan. Most covering tests are `PLANNED`; where a
-test is not green, the response is to downgrade or remove the claim, not to argue.
+**Status:** v0.3 — response plan. Many covering tests are now green and listed in
+`docs/TEST_PLAN.md`; Mode B, latency, cross-agent isolation, and the console are
+still open. Where a test is not green, the response is to downgrade or remove the
+claim, not to argue.
 **Date:** 2026-11-03 UTC.
 **Rule:** evidence beats rhetoric. If the evidence is missing, say “not claimed.”
 

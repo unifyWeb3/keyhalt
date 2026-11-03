@@ -1,0 +1,144 @@
+{
+  "ok": true,
+  "command": "inventory",
+  "accountId": "agent-2.fleet-v03-5cff9e99.testnet",
+  "state": {
+    "accountId": "agent-2.fleet-v03-5cff9e99.testnet",
+    "contractVersion": "fleet-controller-v0.3.0",
+    "mode": "A",
+    "paused": false,
+    "adminPublicKey": "ed25519:Dof6MFJCZfu2zDHvWkjk61mY2Nbyvnfu3kYAnMwAGQ9e",
+    "adminAccount": null,
+    "recoveryPublicKey": "ed25519:2trz4MFsokn7MH3Dpe4kvi7XhAJDdEv9LGaFU36g9NQL",
+    "pendingAdminPublicKey": null,
+    "pendingOrigin": null,
+    "inflightAdminPublicKey": null,
+    "operators": [
+      {
+        "publicKey": "ed25519:76a4wpbD4jxUPdvKDX2XdYmNPrLdUBQWrmrqNtgt94Ld",
+        "tag": "ops-a",
+        "active": true
+      },
+      {
+        "publicKey": "ed25519:4tgtLkQY4iZ7xWApNnApftKiBtsKABQHLDGuNqF9N6wT",
+        "tag": "ops-a",
+        "active": true
+      },
+      {
+        "publicKey": "ed25519:AAGCBzeas7GWZ8uCqhoxiutyoQXidRiXDYoCbbZATpzo",
+        "tag": "ops-b",
+        "active": true
+      },
+      {
+        "publicKey": "ed25519:8B4MLGwLEWBGemVji2E1MR1onHyBQtBhD25ypzf2wDYV",
+        "tag": "ops-b",
+        "active": true
+      }
+    ],
+    "receiverId": "agent-2.fleet-v03-5cff9e99.testnet",
+    "methodName": "ping",
+    "maxOperators": 16,
+    "provisioned": true,
+    "provisionError": null,
+    "auditHead": {
+      "seq": 4,
+      "entryHash": "6ca11eecb70409d88dacc57947e8f3068872b55a3b0841aeaa0ac40a6e7b97e9",
+      "blockHeight": 276092082,
+      "blockTimestampNs": "1793734391884256794"
+    },
+    "auditLength": 5
+  },
+  "operators": [
+    {
+      "publicKey": "ed25519:76a4wpbD4jxUPdvKDX2XdYmNPrLdUBQWrmrqNtgt94Ld",
+      "tag": "ops-a",
+      "active": true
+    },
+    {
+      "publicKey": "ed25519:4tgtLkQY4iZ7xWApNnApftKiBtsKABQHLDGuNqF9N6wT",
+      "tag": "ops-a",
+      "active": true
+    },
+    {
+      "publicKey": "ed25519:AAGCBzeas7GWZ8uCqhoxiutyoQXidRiXDYoCbbZATpzo",
+      "tag": "ops-b",
+      "active": true
+    },
+    {
+      "publicKey": "ed25519:8B4MLGwLEWBGemVji2E1MR1onHyBQtBhD25ypzf2wDYV",
+      "tag": "ops-b",
+      "active": true
+    }
+  ],
+  "nativeKeys": [
+    {
+      "publicKey": "ed25519:2trz4MFsokn7MH3Dpe4kvi7XhAJDdEv9LGaFU36g9NQL",
+      "permission": "FunctionCall",
+      "allowanceNear": "0.1",
+      "receiverId": "agent-2.fleet-v03-5cff9e99.testnet",
+      "methodNames": [
+        "recover_admin",
+        "cancel_admin"
+      ]
+    },
+    {
+      "publicKey": "ed25519:4tgtLkQY4iZ7xWApNnApftKiBtsKABQHLDGuNqF9N6wT",
+      "permission": "FunctionCall",
+      "allowanceNear": "0.2489447567836708",
+      "receiverId": "agent-2.fleet-v03-5cff9e99.testnet",
+      "methodNames": [
+        "execute"
+      ]
+    },
+    {
+      "publicKey": "ed25519:76a4wpbD4jxUPdvKDX2XdYmNPrLdUBQWrmrqNtgt94Ld",
+      "permission": "FunctionCall",
+      "allowanceNear": "0.2486048968633434",
+      "receiverId": "agent-2.fleet-v03-5cff9e99.testnet",
+      "methodNames": [
+        "execute"
+      ]
+    },
+    {
+      "publicKey": "ed25519:8B4MLGwLEWBGemVji2E1MR1onHyBQtBhD25ypzf2wDYV",
+      "permission": "FunctionCall",
+      "allowanceNear": "0.2489445785747212",
+      "receiverId": "agent-2.fleet-v03-5cff9e99.testnet",
+      "methodNames": [
+        "execute"
+      ]
+    },
+    {
+      "publicKey": "ed25519:AAGCBzeas7GWZ8uCqhoxiutyoQXidRiXDYoCbbZATpzo",
+      "permission": "FunctionCall",
+      "allowanceNear": "0.24894463805998",
+      "receiverId": "agent-2.fleet-v03-5cff9e99.testnet",
+      "methodNames": [
+        "execute"
+      ]
+    },
+    {
+      "publicKey": "ed25519:Dof6MFJCZfu2zDHvWkjk61mY2Nbyvnfu3kYAnMwAGQ9e",
+      "permission": "FunctionCall",
+      "allowanceNear": "0.0991446359708538",
+      "receiverId": "agent-2.fleet-v03-5cff9e99.testnet",
+      "methodNames": [
+        "freeze",
+        "unfreeze",
+        "grant_operator",
+        "revoke_operator",
+        "rotate_operator",
+        "revoke_tag",
+        "propose_admin",
+        "cancel_admin"
+      ]
+    }
+  ],
+  "fullAccessKeys": 0,
+  "auditHead": {
+    "seq": 4,
+    "entryHash": "6ca11eecb70409d88dacc57947e8f3068872b55a3b0841aeaa0ac40a6e7b97e9",
+    "blockHeight": 276092082,
+    "blockTimestampNs": "1793734391884256794"
+  }
+}

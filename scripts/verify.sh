@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-command verification for the Phase 1 scaffold.
+# One-command verification for FLEET v0.3.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -19,8 +19,9 @@ cargo clippy --workspace --all-targets -- -D warnings
 echo "== Rust tests =="
 cargo test --workspace
 
-echo "== Rust wasm check =="
-cargo check --workspace --target wasm32-unknown-unknown
+echo "== Rust wasm release build =="
+cargo build -p fleet-controller --target wasm32-unknown-unknown --release
+sha256sum target/wasm32-unknown-unknown/release/fleet_controller.wasm
 
 echo "== TypeScript build and tests =="
 npm test
@@ -46,9 +47,9 @@ echo "== Read-only testnet RPC =="
 # fail. Set FLEET_REQUIRE_RPC=1 for a release gate that requires testnet.
 node scripts/rpc-check.mjs
 
-echo "== Installed test harness versions =="
+echo "== Optional sandbox harness (not installed on this host) =="
 npm ls near-workspaces near-sandbox --depth=1 2>/dev/null || true
 
 echo
-echo "FLEET scaffold verification: PASS"
+echo "FLEET verification: PASS"
 node scripts/check-claims.mjs

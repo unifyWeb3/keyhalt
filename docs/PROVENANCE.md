@@ -1,6 +1,9 @@
 # Provenance and baseline plan
 
-**Status:** Phase 1 baseline document. No product code exists in this repository yet.
+**Status:** historical baseline document. It describes the `pre-hackathon` tag,
+which intentionally contained no product code. v0.3 product code was added after
+that tag; see `README.md` and `CLAIMS.md`. This page is not rewritten to pretend
+the baseline included the product.
 **Repository:** `fleet` (local only; no remote, no push, no public visibility).
 **Created:** 2026-11-03 UTC (Phase 1 was planned for 2026-10-30/31 and slipped; see `research/BUILD_STATUS.md` in the separate research workspace).
 **License:** MIT (`LICENSE`).
@@ -18,6 +21,12 @@ workspace and it does not contain QFO, VESSEL, or SCAN code. At the
 
 There is **no controller implementation, no multisig implementation, no SDK
 implementation, and no dashboard implementation** at the baseline tag.
+
+**v0.3 note (2026-11-03):** after the baseline tag, this tree gained the
+controller (`contracts/fleet-controller`), SDK/CLI (`packages/sdk`,
+`packages/cli`), testnet evidence (`evidence/`), and the claim table. Mode B and
+the console are still absent. The baseline section above remains accurate for
+tag `pre-hackathon`.
 
 ## 2. Pre-existing material (not copied into this repository)
 

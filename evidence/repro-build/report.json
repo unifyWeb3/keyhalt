@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-11-03T19:52:35Z",
+  "toolchain": {
+    "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
+    "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)"
+  },
+  "command": "CARGO_TARGET_DIR=<isolated-dir> cargo build --locked -p fleet-controller --target wasm32-unknown-unknown --release",
+  "builds": [
+    {
+      "label": "A",
+      "target_dir": "/tmp/opencode/fleet-repro-a",
+      "bytes": 248644,
+      "sha256": "cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f"
+    },
+    {
+      "label": "B",
+      "target_dir": "/tmp/opencode/fleet-repro-b",
+      "bytes": 248644,
+      "sha256": "cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f"
+    }
+  ],
+  "canonical_sha256": "cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f",
+  "byte_identical": true,
+  "matches_canonical_run": true
+}

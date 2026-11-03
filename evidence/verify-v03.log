@@ -1,0 +1,226 @@
+./scripts/verify.sh
+== Rust format ==
+== Rust clippy ==
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /root/fleet/contracts/fleet-controller/Cargo.toml
+workspace: /root/fleet/Cargo.toml
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.85s
+== Rust tests ==
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /root/fleet/contracts/fleet-controller/Cargo.toml
+workspace: /root/fleet/Cargo.toml
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.14s
+     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)
+
+running 35 tests
+test model::tests::init_rejects_both_or_neither_mode ... ok
+test model::tests::grant_and_propose_reject_keys_that_already_have_a_role ... ok
+test model::tests::init_rejects_duplicate_and_colliding_keys ... ok
+test model::tests::freeze_blocks_operator_and_unfreeze_restores_positive_control ... ok
+test model::tests::grant_failure_removes_pending_operator ... ok
+test model::tests::audit_entry_lookup_and_pagination_are_exact ... ok
+test model::tests::cancel_admin_is_allowed_for_admin_or_recovery_and_clears_pending ... ok
+test model::tests::invalid_inputs_revert_before_state_change ... ok
+test model::tests::operator_cannot_freeze_but_admin_can ... ok
+test model::tests::audit_chain_verifies_and_tamper_fails ... ok
+test model::tests::mode_b_admin_is_predecessor_only ... ok
+test model::tests::pending_admin_cannot_freeze_and_accept_performs_no_add ... ok
+test model::tests::missing_tag_reverts_without_audit ... ok
+test model::tests::recovery_proposes_but_cannot_accept_itself ... ok
+test model::tests::recovery_cannot_freeze_or_grant ... ok
+test model::tests::reference_model_matches_a_short_sequence ... ok
+test model::tests::rotate_is_fresh_key_first_and_keeps_old_until_confirmed ... ok
+test model::tests::revoke_tag_is_an_exact_partition ... ok
+test tests::failed_grant_is_not_active_and_is_removed ... ok
+test tests::execute_rejects_wrong_receiver_and_deposit ... ok
+test tests::execute_requires_active_operator_freeze_and_allowlist ... ok
+test tests::init_is_mode_exclusive_and_schedules_no_full_access_key ... ok
+test tests::init_rejects_both_modes ... ok
+test tests::freeze_and_unfreeze_are_admin_only ... ok
+test tests::mode_b_uses_predecessor_account ... ok
+test tests::grant_schedules_function_call_key_and_callback_confirms ... ok
+test tests::provisioning_callback_promotes_operators ... ok
+test tests::admin_rotation_has_no_add_key_on_accept ... ok
+test tests::operator_cannot_call_admin_methods ... ok
+test tests::audit_chain_survives_failed_callbacks ... ok
+test tests::provisioning_failure_leaves_controller_unprovisioned ... ok
+test tests::public_callback_is_private ... ok
+test tests::revoke_and_tag_revoke_are_exact ... ok
+test tests::recovery_proposes_and_pending_key_accepts ... ok
+test model::tests::random_sequences_preserve_reference_and_audit has been running for over 60 seconds
+test model::tests::random_sequences_preserve_reference_and_audit ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 171.03s
+
+   Doc-tests fleet_controller
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+== Rust wasm release build ==
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /root/fleet/contracts/fleet-controller/Cargo.toml
+workspace: /root/fleet/Cargo.toml
+    Finished `release` profile [optimized] target(s) in 2.16s
+cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f  target/wasm32-unknown-unknown/release/fleet_controller.wasm
+== TypeScript build and tests ==
+
+> fleet@0.3.0 test
+> npm run build && node --test packages/sdk/test/sdk.test.mjs packages/cli/test/cli.test.mjs packages/api/test/api.test.mjs
+
+
+> fleet@0.3.0 build
+> tsc -p packages/sdk/tsconfig.json && tsc -p packages/cli/tsconfig.json && tsc -p packages/api/tsconfig.json
+
+TAP version 13
+# Subtest: API health is read-only and explicit about the scaffold
+ok 1 - API health is read-only and explicit about the scaffold
+  ---
+  duration_ms: 4.780781
+  type: 'test'
+  ...
+# Subtest: API refuses every write method
+ok 2 - API refuses every write method
+  ---
+  duration_ms: 1.004167
+  type: 'test'
+  ...
+# Subtest: API returns 501 for planned read routes, not fake data
+ok 3 - API returns 501 for planned read routes, not fake data
+  ---
+  duration_ms: 0.558646
+  type: 'test'
+  ...
+# Subtest: CLI prints its version
+ok 4 - CLI prints its version
+  ---
+  duration_ms: 632.518073
+  type: 'test'
+  ...
+# Subtest: CLI version supports --json
+ok 5 - CLI version supports --json
+  ---
+  duration_ms: 614.729167
+  type: 'test'
+  ...
+# Subtest: CLI help lists implemented product commands
+ok 6 - CLI help lists implemented product commands
+  ---
+  duration_ms: 610.708385
+  type: 'test'
+  ...
+# Subtest: CLI refuses an unknown command with exit code 2
+ok 7 - CLI refuses an unknown command with exit code 2
+  ---
+  duration_ms: 599.135208
+  type: 'test'
+  ...
+# Subtest: CLI refuses a mainnet RPC with exit code 4
+ok 8 - CLI refuses a mainnet RPC with exit code 4
+  ---
+  duration_ms: 600.023958
+  type: 'test'
+  ...
+# Subtest: CLI refuses a write without a signer with exit code 3
+ok 9 - CLI refuses a write without a signer with exit code 3
+  ---
+  duration_ms: 591.937916
+  type: 'test'
+  ...
+# Subtest: CLI refuses a group-readable signer key file with exit code 2
+ok 10 - CLI refuses a group-readable signer key file with exit code 2
+  ---
+  duration_ms: 597.848333
+  type: 'test'
+  ...
+# Subtest: CLI verifies the canonical 19-entry audit file
+ok 11 - CLI verifies the canonical 19-entry audit file
+  ---
+  duration_ms: 604.478333
+  type: 'test'
+  ...
+# Subtest: CLI audit verify alias also accepts the file
+ok 12 - CLI audit verify alias also accepts the file
+  ---
+  duration_ms: 588.163645
+  type: 'test'
+  ...
+# Subtest: CLI rejects a tampered audit file with exit code 6
+ok 13 - CLI rejects a tampered audit file with exit code 6
+  ---
+  duration_ms: 624.979531
+  type: 'test'
+  ...
+# Subtest: SDK exposes the v0.3 version
+ok 14 - SDK exposes the v0.3 version
+  ---
+  duration_ms: 3.170469
+  type: 'test'
+  ...
+# Subtest: SDK refuses a mainnet RPC before any network call
+ok 15 - SDK refuses a mainnet RPC before any network call
+  ---
+  duration_ms: 1.290937
+  type: 'test'
+  ...
+# Subtest: SDK write path refuses a missing signer before any network call
+ok 16 - SDK write path refuses a missing signer before any network call
+  ---
+  duration_ms: 1.250104
+  type: 'test'
+  ...
+# Subtest: parseBigJson preserves u64 audit timestamps as strings
+ok 17 - parseBigJson preserves u64 audit timestamps as strings
+  ---
+  duration_ms: 2.8775
+  type: 'test'
+  ...
+# Subtest: SDK verifies the canonical 19-entry testnet audit chain
+ok 18 - SDK verifies the canonical 19-entry testnet audit chain
+  ---
+  duration_ms: 7.753958
+  type: 'test'
+  ...
+# Subtest: SDK audit verifier rejects a tampered entry
+ok 19 - SDK audit verifier rejects a tampered entry
+  ---
+  duration_ms: 1.772031
+  type: 'test'
+  ...
+# Subtest: SDK audit verifier rejects a broken previous-hash link
+ok 20 - SDK audit verifier rejects a broken previous-hash link
+  ---
+  duration_ms: 1.66724
+  type: 'test'
+  ...
+# Subtest: SDK accepts the raw E2E audit export and the fleet-audit-v1 export
+ok 21 - SDK accepts the raw E2E audit export and the fleet-audit-v1 export
+  ---
+  duration_ms: 1.928854
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6546.784893
+== Claims table ==
+CLAIMS 20/20 verified (20 rows)
+== Secret scan ==
+SECRET SCAN: OK (no credential file or private-key pattern found)
+== Web placeholder ==
+WEB CHECK: OK static placeholder, no script, no key field
+== Read-only testnet RPC ==
+RPC CHECK: OK testnet latest_block_height=276096929 (attempt 1/3)
+== Optional sandbox harness (not installed on this host) ==
+fleet@0.3.0 /root/fleet
+`-- (empty)
+
+
+FLEET verification: PASS
+CLAIMS 20/20 verified (20 rows)

@@ -1,0 +1,87 @@
+{
+  "parent": "fleet-v03-5cff9e99.testnet",
+  "wasm_sha256": "cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f",
+  "agents": [
+    {
+      "id": "agent-1b.fleet-v03-5cff9e99.testnet",
+      "admin_pk": "ed25519:AzeY7q9w4vjdZwfAb4EEVDkjDRH9euCUfnkuzPuvyXpV",
+      "recovery_pk": "ed25519:BgE92x6fT5wpMUKeTrqG1BbWJCiAxCob3h5ZQ5wLUocR",
+      "operator_pks": [
+        "ed25519:CyKEm8L9nTavWRrkLV2a4DPnGq9QS14jvFPFbUp3iCNn",
+        "ed25519:83JqisTunQNXkE6FFGaz62TozYyUMbrQ5kpFvsdNPVgZ",
+        "ed25519:9jDnfdcrnmsxewRoX2tRFhTfcKRRT4CBfGYfSCRmJaJo",
+        "ed25519:799WUWjHfVZLmT1Az4diS8Emr3mpW4VrsAQ6TEAswCZ5"
+      ],
+      "operator_tags": [
+        "ops-a",
+        "ops-a",
+        "ops-b",
+        "ops-b"
+      ],
+      "create_tx": "61t1q3SUv9uHWHmbmerh6PYMeJEA6WpgJCqGWSHruheG",
+      "init_tx": "7KtJ56fLf8SpgrhnyWxmaVmZVHha9r13KN8EwAfDfSrC"
+    },
+    {
+      "id": "agent-2.fleet-v03-5cff9e99.testnet",
+      "admin_pk": "ed25519:Dof6MFJCZfu2zDHvWkjk61mY2Nbyvnfu3kYAnMwAGQ9e",
+      "recovery_pk": "ed25519:2trz4MFsokn7MH3Dpe4kvi7XhAJDdEv9LGaFU36g9NQL",
+      "operator_pks": [
+        "ed25519:76a4wpbD4jxUPdvKDX2XdYmNPrLdUBQWrmrqNtgt94Ld",
+        "ed25519:4tgtLkQY4iZ7xWApNnApftKiBtsKABQHLDGuNqF9N6wT",
+        "ed25519:AAGCBzeas7GWZ8uCqhoxiutyoQXidRiXDYoCbbZATpzo",
+        "ed25519:8B4MLGwLEWBGemVji2E1MR1onHyBQtBhD25ypzf2wDYV"
+      ],
+      "operator_tags": [
+        "ops-a",
+        "ops-a",
+        "ops-b",
+        "ops-b"
+      ],
+      "create_tx": "2rvuqRDD5CUd3Yd8cyTibpDPqWwYd8DidW17LM49KfLb",
+      "init_tx": "AP4URtiTZYMYjLcqKsbNypZ8JAf5jExU1btDTj3Ag4vA"
+    },
+    {
+      "id": "agent-3.fleet-v03-5cff9e99.testnet",
+      "admin_pk": "ed25519:EvcpEN5hiLLvmuztiNcMELCiVs7sqPi6mgjNyW4Ru4qP",
+      "recovery_pk": "ed25519:GczyiZ3Ff5gs6JDgzANXfR3HzjsttmdWcEFKgd8QqGhY",
+      "operator_pks": [
+        "ed25519:FRD1KafZNBij9LQ1AJU3ckpsvEjUUBV8ukjau8odH1ct",
+        "ed25519:3vXMo1JFrzgNqRr51UtDaaDVCrcqkg2zTPwKjGZHmC6f",
+        "ed25519:CrhP6XktwUj2MdHyCRKuERUaZ6BPAiXDAVSWXEFDGJzT",
+        "ed25519:98p2NUDeb1yQdHYXgDG5vkUCymNGFRp8ZtqPbBQgVjrz"
+      ],
+      "operator_tags": [
+        "ops-a",
+        "ops-a",
+        "ops-b",
+        "ops-b"
+      ],
+      "create_tx": "Cxn3hHMRTFNYu5dsaqaeijZ59QGmcXDfReJpd5bf7w1b",
+      "init_tx": "2z5j8sKnfNS7griwCSKJQskPGCahYVNGKPonh8ix1odm"
+    }
+  ],
+  "updated_at": "2026-11-03T19:17:02Z",
+  "pilot_agents": [
+    {
+      "id": "agent-1.fleet-v03-5cff9e99.testnet",
+      "admin_pk": "ed25519:4MvLXDHkSyaQCqgStQJvZnyw6AXpYSjiT29hKWKKRcwP",
+      "recovery_pk": "ed25519:8Rm2m3Q5ChPzPK41keeaJx6MvdULKg2szzqVoUa3ssDG",
+      "operator_pks": [
+        "ed25519:79QpeGPpA3B4pe9qkZMcLb57c3Ld42zNkWrWVgdFhHNk",
+        "ed25519:A7F4gMC87HWoPHYNuQriMG62KkBeCxk9CKZfaWciyKAx",
+        "ed25519:BfGr2PBmbM7GSRwh8547kXTTBA8tgSSdiNbPDUVvtiZ4",
+        "ed25519:Fs7oSYFG5msxkxwMu351jHErwwsZTPhXK5hPvx2DAKh2"
+      ],
+      "operator_tags": [
+        "ops-a",
+        "ops-a",
+        "ops-b",
+        "ops-b"
+      ],
+      "create_tx": "BuvGNLvERe4Re1Tr9YBHySzZgdPGve9yKqKGN6v64puV",
+      "init_tx": "F4CJe4USLPTUKTPGhxtBB9wfYkJEYqjLxUatfhYFfN3R",
+      "note": "pilot account; lifecycle exercised in the pre-canonical run and retained for audit history"
+    }
+  ],
+  "canonical_run": "evidence/testnet-v03/run.json"
+}

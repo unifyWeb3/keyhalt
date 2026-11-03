@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "command": "audit export",
+  "accountId": "agent-2.fleet-v03-5cff9e99.testnet",
+  "out": "/root/fleet/evidence/cli-v03/agent-2-audit.json",
+  "entries": 5,
+  "head": {
+    "seq": 4,
+    "entryHash": "6ca11eecb70409d88dacc57947e8f3068872b55a3b0841aeaa0ac40a6e7b97e9",
+    "blockHeight": 276092082,
+    "blockTimestampNs": "1793734391884256794"
+  },
+  "verified": true
+}

@@ -1,0 +1,101 @@
+{
+  "generated_at": "2026-11-03T19:47:55.450Z",
+  "source": "contracts/fleet-controller/src/model.rs",
+  "command": "cargo test -p fleet-controller --lib <test> -- --exact (one target test per mutant)",
+  "total": 8,
+  "killed": 8,
+  "survived": 0,
+  "invalid": 0,
+  "score": 1,
+  "restored_byte_identical": true,
+  "results": [
+    {
+      "id": "M-01",
+      "name": "frozen-check inversion",
+      "test": "model::tests::freeze_blocks_operator_and_unfreeze_restores_positive_control",
+      "outcome": "KILLED",
+      "reason": "target test failed",
+      "duration_ms": 8762,
+      "find": "        if self.paused {\n            return Err(Error::Frozen);\n        }\n        let Some(op) = self.operator_for(&actor.signer_pk) else {",
+      "replace": "        if !self.paused {\n            return Err(Error::Frozen);\n        }\n        let Some(op) = self.operator_for(&actor.signer_pk) else {",
+      "tail": "package:   /root/fleet/contracts/fleet-controller/Cargo.toml\nworkspace: /root/fleet/Cargo.toml\n   Compiling fleet-controller v0.3.0 (/root/fleet/contracts/fleet-controller)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.61s\n     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)\nerror: test failed, to rerun pass `-p fleet-controller --lib`"
+    },
+    {
+      "id": "M-02",
+      "name": "tag-revoke partition inversion",
+      "test": "model::tests::revoke_tag_is_an_exact_partition",
+      "outcome": "KILLED",
+      "reason": "target test failed",
+      "duration_ms": 8404,
+      "find": "        self.operators.retain(|op| op.tag != tag);",
+      "replace": "        self.operators.retain(|op| op.tag == tag);",
+      "tail": "package:   /root/fleet/contracts/fleet-controller/Cargo.toml\nworkspace: /root/fleet/Cargo.toml\n   Compiling fleet-controller v0.3.0 (/root/fleet/contracts/fleet-controller)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.26s\n     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)\nerror: test failed, to rerun pass `-p fleet-controller --lib`"
+    },
+    {
+      "id": "M-03",
+      "name": "admin check OR -> AND",
+      "test": "model::tests::operator_cannot_freeze_but_admin_can",
+      "outcome": "KILLED",
+      "reason": "target test failed",
+      "duration_ms": 8820,
+      "find": "        if actor.account != current || &actor.signer_pk != admin_pk {",
+      "replace": "        if actor.account != current && &actor.signer_pk != admin_pk {",
+      "tail": "package:   /root/fleet/contracts/fleet-controller/Cargo.toml\nworkspace: /root/fleet/Cargo.toml\n   Compiling fleet-controller v0.3.0 (/root/fleet/contracts/fleet-controller)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.69s\n     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)\nerror: test failed, to rerun pass `-p fleet-controller --lib`"
+    },
+    {
+      "id": "M-04",
+      "name": "key-collision OR -> AND",
+      "test": "model::tests::grant_and_propose_reject_keys_that_already_have_a_role",
+      "outcome": "KILLED",
+      "reason": "target test failed",
+      "duration_ms": 7329,
+      "find": "        if Some(pk) == self.admin_pk() || Some(pk) == self.recovery_pk() {",
+      "replace": "        if Some(pk) == self.admin_pk() && Some(pk) == self.recovery_pk() {",
+      "tail": "package:   /root/fleet/contracts/fleet-controller/Cargo.toml\nworkspace: /root/fleet/Cargo.toml\n   Compiling fleet-controller v0.3.0 (/root/fleet/contracts/fleet-controller)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.20s\n     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)\nerror: test failed, to rerun pass `-p fleet-controller --lib`"
+    },
+    {
+      "id": "M-05",
+      "name": "accept-signer check inversion",
+      "test": "model::tests::recovery_proposes_but_cannot_accept_itself",
+      "outcome": "KILLED",
+      "reason": "target test failed",
+      "duration_ms": 8871,
+      "find": "        if matches!(self.mode, Mode::A { .. }) && actor.signer_pk != pending.pk {",
+      "replace": "        if matches!(self.mode, Mode::A { .. }) && actor.signer_pk == pending.pk {",
+      "tail": "package:   /root/fleet/contracts/fleet-controller/Cargo.toml\nworkspace: /root/fleet/Cargo.toml\n   Compiling fleet-controller v0.3.0 (/root/fleet/contracts/fleet-controller)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.74s\n     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)\nerror: test failed, to rerun pass `-p fleet-controller --lib`"
+    },
+    {
+      "id": "M-06",
+      "name": "cancel authorization OR -> AND",
+      "test": "model::tests::cancel_admin_is_allowed_for_admin_or_recovery_and_clears_pending",
+      "outcome": "KILLED",
+      "reason": "target test failed",
+      "duration_ms": 7989,
+      "find": "        let allowed = self.require_admin(actor, current).is_ok()\n            || self.require_recovery(actor, current).is_ok();",
+      "replace": "        let allowed = self.require_admin(actor, current).is_ok()\n            && self.require_recovery(actor, current).is_ok();",
+      "tail": "package:   /root/fleet/contracts/fleet-controller/Cargo.toml\nworkspace: /root/fleet/Cargo.toml\n   Compiling fleet-controller v0.3.0 (/root/fleet/contracts/fleet-controller)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.86s\n     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)\nerror: test failed, to rerun pass `-p fleet-controller --lib`"
+    },
+    {
+      "id": "M-07",
+      "name": "audit entry-hash check inversion",
+      "test": "model::tests::audit_chain_verifies_and_tamper_fails",
+      "outcome": "KILLED",
+      "reason": "target test failed",
+      "duration_ms": 7806,
+      "find": "            if entry.entry_hash != expected {\n                return false;\n            }",
+      "replace": "            if entry.entry_hash == expected {\n                return false;\n            }",
+      "tail": "package:   /root/fleet/contracts/fleet-controller/Cargo.toml\nworkspace: /root/fleet/Cargo.toml\n   Compiling fleet-controller v0.3.0 (/root/fleet/contracts/fleet-controller)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.64s\n     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)\nerror: test failed, to rerun pass `-p fleet-controller --lib`"
+    },
+    {
+      "id": "M-08",
+      "name": "rotate retains only the new key",
+      "test": "model::tests::rotate_is_fresh_key_first_and_keeps_old_until_confirmed",
+      "outcome": "KILLED",
+      "reason": "target test failed",
+      "duration_ms": 7317,
+      "find": "            .retain(|op| op.pk != old_pk || op.pk == new_pk);",
+      "replace": "            .retain(|op| op.pk != old_pk && op.pk == new_pk);",
+      "tail": "package:   /root/fleet/contracts/fleet-controller/Cargo.toml\nworkspace: /root/fleet/Cargo.toml\n   Compiling fleet-controller v0.3.0 (/root/fleet/contracts/fleet-controller)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.15s\n     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)\nerror: test failed, to rerun pass `-p fleet-controller --lib`"
+    }
+  ]
+}

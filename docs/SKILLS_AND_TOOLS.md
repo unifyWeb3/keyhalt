@@ -1,6 +1,6 @@
 # Skills and tools
 
-**Status:** Phase 0 inventory, updated at Phase 1 close on 2026-11-03 UTC.
+**Status:** Phase 0 inventory, updated after the v0.3 testnet run on 2026-11-03 UTC.
 **Rule:** record what is actually installed, not what would be convenient. A
 missing tool is a documented gap, not an assumed capability.
 
@@ -40,7 +40,7 @@ questions; it was not needed for FLEET product work.
 | wasm32-unknown-unknown | installed | VERIFIED | `rustup target list --installed` |
 | rustfmt | installed 2026-11-03 | VERIFIED | Added with `rustup component add rustfmt` |
 | clippy | installed 2026-11-03 | VERIFIED | Added with `rustup component add clippy` |
-| cargo-near | **not installed** | VERIFIED missing | `cargo near --version` fails; an install attempt was cancelled by a server restart. Not required for Phase 1. |
+| cargo-near | **not installed** | VERIFIED missing | `cargo near --version` fails; an install attempt was cancelled by a server restart. Not required for v0.3. |
 | near-cli-rs | 0.30.1 | VERIFIED | `/root/.near-fallback-tools/near`; used for v0.2 research, not Phase 1 |
 | Node.js | 22.22.1 | VERIFIED | `node --version` |
 | npm | 9.2.0 | VERIFIED | `npm --version` |
@@ -68,7 +68,7 @@ The integration test plan (`docs/TEST_PLAN.md` §5) needs `near-workspaces`.
 - `near-workspaces@5.0.0` depends on the same `near-sandbox@0.1.1`.
 - `near-sandbox@0.3.4` (latest) requires Node `>=22.22.2`; this host has
   `22.22.1`. `near-sandbox@0.3.0`–`0.3.3` have the same engine requirement.
-- Therefore the sandbox integration tests are **not run locally** in Phase 1.
+- Therefore the sandbox integration tests are **not run locally** in v0.3.
   They will run on x64 GitHub Actions / a Node 22.22.2+ environment, or the
   testnet E2E path will be used locally.
 
@@ -103,7 +103,7 @@ control, a mainnet-RPC negative control, and a credential-file check.
 | `cargo-near` missing | No `cargo near` build/deploy helper | Use `cargo build --target wasm32-unknown-unknown`; install `cargo-near` in Phase 2 if needed |
 | `near-workspaces`/`near-sandbox` missing locally | No local sandbox integration tests | Run on x64 CI; use testnet E2E locally; record versions when installed |
 | No Rust/NEAR-specific skill | More manual source reading | Read `near-sdk`/`multisig2` source; pin commits; test on testnet |
-| No browser automation tool verified | UI checks are static/manual | Keep Phase 1 web static; re-check for Phase 2 |
+| No browser automation tool verified | UI checks are static/manual | Keep the v0.3 web placeholder static; re-check before console work |
 | No video tool verified | Demo recording uncertain | Human records/posts; test capture in Phase 2 |
 | Server restarts observed | Lost work/time | Commit often; `research/BUILD_STATUS.md`; short checkpoints |
 

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <title>FLEET — Phase 1 scaffold</title>
+    <title>FLEET — console not built</title>
     <style>
       :root { color-scheme: dark; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
       body { margin: 0; background: #0b0f14; color: #d7e0ea; }
@@ -19,30 +19,35 @@
   </head>
   <body>
     <main>
-      <p class="tag">PHASE 1 SCAFFOLD — NOT A PRODUCT DEMO</p>
+      <p class="tag">V0.3 TESTNET PROTOTYPE — CONSOLE NOT BUILT</p>
       <h1>FLEET</h1>
       <p>A native NEAR account-fleet key-lifecycle control plane.</p>
       <p class="warn">
-        No controller, SDK, CLI, or dashboard is implemented. This page is a
-        static placeholder. It has no JavaScript, no wallet connection, no key
-        input, and no network calls.
+        The controller, TypeScript SDK, and CLI are implemented and have run on
+        NEAR testnet. This page is a static placeholder: the read-only console is
+        waiting for design-system and draft approval. It has no JavaScript, no
+        wallet connection, no key input, and no network calls.
       </p>
       <table>
         <thead>
-          <tr><th>Panel</th><th>Phase 1 state</th></tr>
+          <tr><th>Panel</th><th>v0.3 state</th></tr>
         </thead>
         <tbody>
-          <tr><td>Fleet inventory</td><td>Not implemented</td></tr>
-          <tr><td>Freeze / unfreeze</td><td>Not implemented</td></tr>
-          <tr><td>Tag revocation</td><td>Not implemented</td></tr>
-          <tr><td>Audit export</td><td>Not implemented</td></tr>
-          <tr><td>Claims</td><td>0 product claims; see <code>CLAIMS.md</code></td></tr>
+          <tr><td>Fleet inventory</td><td>Live through the SDK/CLI; console pending</td></tr>
+          <tr><td>Freeze / unfreeze</td><td>Live through the CLI; console pending</td></tr>
+          <tr><td>Tag revocation</td><td>Live through the CLI; console pending</td></tr>
+          <tr><td>Audit export</td><td>Live through the CLI/SDK; console pending</td></tr>
+          <tr><td>Claims</td><td>20 VERIFIED rows; see <code>CLAIMS.md</code></td></tr>
         </tbody>
       </table>
       <p>
-        Planned interfaces are in <code>docs/INTERFACES.md</code>. The design
-        target is in <code>docs/SPEC_v0.3.md</code>. The demo script is a target,
-        not a recording: <code>docs/DEMO_SCRIPT.md</code>.
+        Runbook: <code>README.md</code>. Test plan: <code>docs/TEST_PLAN.md</code>.
+        Canonical testnet run: <code>evidence/testnet-v03/RUN.md</code>. The demo
+        script is a plan, not a recording: <code>docs/DEMO_SCRIPT.md</code>.
+      </p>
+      <p>
+        Testnet only. Unaudited. Mode A is not non-custodial. Mode B is not
+        implemented.
       </p>
     </main>
   </body>
