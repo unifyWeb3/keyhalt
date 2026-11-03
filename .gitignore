@@ -1,0 +1,16 @@
+node_modules/
+packages/*/dist/
+target/
+contracts/*/target/
+*.wasm
+.env
+.env.*
+*.pem
+*.key
+*.seed
+*.mnemonic
+near-credentials/
+.near-credentials/
+coverage/
+tmp/
+.DS_Store

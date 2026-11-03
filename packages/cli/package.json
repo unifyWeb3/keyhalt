@@ -1,0 +1,14 @@
+{
+  "name": "@fleet/cli",
+  "version": "0.0.0-phase1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "fleet": "./dist/index.js"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  }
+}
