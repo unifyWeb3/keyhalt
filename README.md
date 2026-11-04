@@ -11,8 +11,9 @@ and CLI are implemented and have run against NEAR testnet. Mode B (2-of-2
 multisig) is implemented and verified on testnet with a pinned, source-built
 `multisig2` contract. Both Mode B owner accounts are operated by the same test
 harness in this environment, so the evidence proves the 2-of-2 mechanism, not
-independent organizational custody. The read-only console is **not built**: its
-design system and draft are waiting for human approval. Every capability below
+independent organizational custody. The read-only console is **drafted, not
+built**: design system `docs/DESIGN_SYSTEM.md` and screen draft
+`docs/CONSOLE_DRAFT.md` are waiting for human approval. Every capability below
 maps to a `VERIFIED` row in [`CLAIMS.md`](CLAIMS.md).
 
 ## Problem
@@ -269,7 +270,9 @@ Evidence files:
 - No mainnet support, real funds, audit, production readiness, or non-custody.
 - Mode B is not independently custodied: both owner accounts are operated by the
   same test harness here, and the multisig contract is unaudited.
-- The console is not built; `web/` is a static placeholder, not a demo.
+- The console is **drafted, not built**; `web/` is a static placeholder, not a
+  demo. Design system: `docs/DESIGN_SYSTEM.md`; screen draft:
+  `docs/CONSOLE_DRAFT.md`.
 - No freeze-latency target. The measured wall time includes transaction
   finalization and state polling, not only contract execution.
 - No in-flight receipt cancellation, allowance top-up, or paymaster/gas-key
@@ -285,7 +288,7 @@ contracts/        Rust controller workspace (model + near-sdk wrapper)
 packages/sdk/     TypeScript SDK v0.3.0
 packages/cli/     TypeScript CLI v0.3.0
 packages/api/     Read-only API scaffold (health route only)
-web/              Static placeholder; console design is approval-gated
+web/              Static placeholder; console design is approval-gated (drafts in docs/)
 docs/             Spec, threat model, interfaces, test plan, demo, provenance
 scripts/          Setup, verification, E2E, mutation, gas, repro, fresh clone
 evidence/         Testnet, CLI, mutation, gas, and reproducibility records

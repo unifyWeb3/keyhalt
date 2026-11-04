@@ -3,8 +3,9 @@
 **Status:** v0.3 — controller, TypeScript SDK, and CLI are implemented and have
 run on NEAR testnet. Mode B 2-of-2 administration is implemented and verified on
 testnet by the harness, not yet exposed as SDK/CLI write commands. The read-only
-API is still a **scaffold** (`/health` only). The console is not built; its design
-is approval-gated.
+API is still a **scaffold** (`/health` only). The console is **drafted, not
+built**: design system `docs/DESIGN_SYSTEM.md`, screen draft
+`docs/CONSOLE_DRAFT.md`; both are approval-gated.
 **Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC).
 **Rule:** a private key never enters a browser, a server, a log, or the
 repository. Writes are signed locally by the CLI/SDK; the API has no write route.
