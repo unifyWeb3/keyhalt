@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>FLEET</title>
+<style>
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter.ttf") format("truetype");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/JetBrainsMono.ttf") format("truetype");
+  font-weight: 400 700;
+  font-display: swap;
+}
+:root {
+  color-scheme: dark;
+  --bg: #0b0f14;
+  --panel: #121a26;
+  --border: #2a3948;
+  --text: #e6edf3;
+  --muted: #9aa9b8;
+  --code: #a8d8ff;
+  --ok: #4cc38a;
+  --warn: #e0a100;
+  --danger: #ff7b72;
+  --link: #79c0ff;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+a { color: var(--link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+header .wordmark { font-size: 20px; font-weight: 600; letter-spacing: 0.02em; }
+header .chip {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  padding: 2px 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+header .chip b { color: var(--text); font-weight: 600; }
+header .tick { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--code); }
+main { max-width: 72rem; margin: 0 auto; padding: 24px; width: 100%; }
+body > main { margin-top: 0; margin-bottom: 0; }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.panel h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
+.panel h2.id { font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 600; color: var(--code); }
+table { border-collapse: collapse; width: 100%; }
+th, td {
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  padding: 10px 8px;
+  vertical-align: top;
+}
+th { color: var(--muted); font-weight: 500; }
+td.id, td.hash, td.block, td.key {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: var(--code);
+}
+td .tx { font-family: "JetBrains Mono", monospace; font-size: 13px; }
+td .tx a { color: var(--link); }
+.state { font-weight: 600; }
+.state.active { color: var(--ok); }
+.state.frozen { color: var(--danger); }
+.result { color: var(--muted); }
+.result.refused { color: var(--danger); }
+.result.ok { color: var(--ok); }
+.check { color: var(--ok); }
+footer {
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+  color: var(--muted);
+  font-size: 13px;
+}
+footer a { color: var(--link); }
+button {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 16px;
+  font: inherit;
+  cursor: pointer;
+}
+button:hover { border-color: var(--link); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.sheet {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  margin-top: 12px;
+}
+.sheet code {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 13px;
+  color: var(--code);
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.sheet .copied { color: var(--ok); font-size: 13px; }
+.back { display: inline-block; margin-bottom: 12px; }
+.admin-row { font-size: 14px; margin: 8px 0; }
+.muted { color: var(--muted); }
+.notice {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--warn);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+.notice.danger { border-left-color: var(--danger); }
+@media (max-width: 900px) {
+  td.hash { display: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <span class="wordmark">FLEET</span>
+  <span class="chip"><b>testnet</b> · block <span class="tick" id="block">276149637</span></span>
+</header>
+<main id="fleet">
+  <section class="panel" aria-labelledby="fleet-heading">
+    <h2 id="fleet-heading">Agents</h2>
+    <table>
+      <thead>
+        <tr><th scope="col">Name</th><th scope="col">State</th><th scope="col">Full-access keys</th><th scope="col">Last event</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="id"><a href="#agent=agent-1b.fleet-v03-5cff9e99.testnet">agent-1b.fleet-v03-5cff9e99.testnet</a></td>
+          <td class="state active">Active</td>
+          <td>0</td>
+          <td><span class="muted">Unfreeze · block</span> <span class="block">276090540</span> <span class="result ok">· ok</span> <a href="https://testnet.nearblocks.io/txns/4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n" class="check" aria-label="transaction">✓</a></td>
+        </tr>
+        <tr>
+          <td class="id"><a href="#agent=agent-2.fleet-v03-5cff9e99.testnet">agent-2.fleet-v03-5cff9e99.testnet</a></td>
+          <td class="state active">Active</td>
+          <td>0</td>
+          <td><span class="muted">Operator execute · block</span> <span class="block">276090372</span> <span class="result ok">· pong</span> <a href="https://testnet.nearblocks.io/txns/J3Ky41AwidajJM3MzCKH6wJeYD8Z29o7CDds2oc2gMhQ" class="check" aria-label="transaction">✓</a></td>
+        </tr>
+        <tr>
+          <td class="id"><a href="#agent=agent-3.fleet-v03-5cff9e99.testnet">agent-3.fleet-v03-5cff9e99.testnet</a></td>
+          <td class="state active">Active</td>
+          <td>0</td>
+          <td><span class="muted">Operator execute · block</span> <span class="block">276090373</span> <span class="result ok">· pong</span> <a href="https://testnet.nearblocks.io/txns/AuY3EmVKqxsSeYh4VMHBaMf3DZbgFR5W36siWUMGHNMM" class="check" aria-label="transaction">✓</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+  <p><a href="#timeline">Timeline →</a></p>
+</main>
+<main id="agent" hidden>
+  <p class="back"><a href="#">← Fleet</a></p>
+  <section class="panel">
+    <h2 class="id">agent-b1.fleet-modeb-748d4372.testnet</h2>
+    <h2>Operator keys</h2>
+    <table>
+      <thead><tr><th scope="col">Key</th><th scope="col">Scope</th><th scope="col">Active</th></tr></thead>
+      <tbody>
+        <tr><td class="key">ed25519:kB5fcDtfZA6Au6xmd8U2coeBiRg4dHpShADXCAybB2L</td><td>ops-a</td><td>Yes</td></tr>
+        <tr><td class="key">ed25519:4mvncf9kmFT4imDDqAC6CRxXTTfTnK4QjSHem2iHiRrV</td><td>ops-a</td><td>Yes</td></tr>
+        <tr><td class="key">ed25519:DjNFGrMdsB5UWcGiqXcERshD7JyyrX1kQTes5mSzv3dL</td><td>ops-b</td><td>Yes</td></tr>
+        <tr><td class="key">ed25519:HxuTueeDDxxoW5X4f53PEDYD9iGzfEDsnMine7YqyTcZ</td><td>ops-b</td><td>Yes</td></tr>
+      </tbody>
+    </table>
+    <h2>Admin</h2>
+    <p class="admin-row">2 of 2 · 2 owners · demo: same operator</p>
+    <h2>Audit tail</h2>
+    <table>
+      <thead><tr><th scope="col">Seq</th><th scope="col">Action</th><th scope="col">Block</th><th scope="col">History</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>unfreeze</td><td class="block">276110652</td><td class="check">✓ verified</td></tr>
+        <tr><td>1</td><td>freeze</td><td class="block">276110500</td><td class="check">✓ verified</td></tr>
+        <tr><td>0</td><td>init</td><td class="block">276109053</td><td class="check">✓ verified</td></tr>
+      </tbody>
+    </table>
+    <p><button id="export" type="button">Export verified export</button></p>
+    <p><button type="button" id="freeze-btn">Freeze</button></p>
+    <div class="sheet" id="sheet" hidden>
+      <code id="cmd">fleet freeze agent-b1.fleet-modeb-748d4372.testnet --signer-key-file &lt;key-file&gt; --json</code>
+      <p><button type="button" id="copy">Copy</button> <span class="copied" id="copied" hidden>Copied</span></p>
+    </div>
+  </section>
+</main>
+<main id="timeline" hidden>
+  <p class="back"><a href="#">← Fleet</a></p>
+  <section class="panel">
+    <h2>Timeline</h2>
+    <table>
+      <thead><tr><th scope="col">Block</th><th scope="col">Event</th><th scope="col">Result</th><th scope="col">Tx</th></tr></thead>
+      <tbody>
+        <tr><td class="block">276090380</td><td>freeze</td><td class="result ok">ok</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/7tqiVYBosLgGE37C58xEoFCXypw5GFvYcQoowG2JGMeP">7tqiVYBosLgGE37C58xEoFCXypw5GFvYcQoowG2JGMeP</a> <span class="check">✓</span></td></tr>
+        <tr><td class="block">276090389</td><td>execute while frozen</td><td class="result refused">refused · controller is frozen</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/FnEEzuhSRTKSMPR6ox1MuLJiJqEj1qpsZBNufZzVvyhF">FnEEzuhSRTKSMPR6ox1MuLJiJqEj1qpsZBNufZzVvyhF</a> <span class="check">✓</span></td></tr>
+        <tr><td class="block">276090396</td><td>unfreeze</td><td class="result ok">ok</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/5LuCwM3Nv3WX2awA6jV4U5AKY29GVcVKMXj6hBxkQc2m">5LuCwM3Nv3WX2awA6jV4U5AKY29GVcVKMXj6hBxkQc2m</a> <span class="check">✓</span></td></tr>
+        <tr><td class="block">276090405</td><td>operator execute</td><td class="result ok">pong</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/5piMKPcwkEokqNiX6CqdQibjchSdD3wzHczKqseh8iN">5piMKPcwkEokqNiX6CqdQibjchSdD3wzHczKqseh8iN</a> <span class="check">✓</span></td></tr>
+        <tr><td class="block">276090413</td><td>execute, wrong method</td><td class="result refused">refused · method not allowed</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/283uKM9bcWhGNVe4tg9NUSXXbjtNjQFGBpF5pARfWiGc">283uKM9bcWhGNVe4tg9NUSXXbjtNjQFGBpF5pARfWiGc</a> <span class="check">✓</span></td></tr>
+        <tr><td class="block">276090418</td><td>execute, wrong receiver</td><td class="result refused">refused · receiver not allowed</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/4pCwwpqDRWzd9SQmeJHdu3EHNriaZWn8gv3CPKGtREdg">4pCwwpqDRWzd9SQmeJHdu3EHNriaZWn8gv3CPKGtREdg</a> <span class="check">✓</span></td></tr>
+        <tr><td class="block">276090533</td><td>freeze</td><td class="result ok">ok</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/C17ztrDHerug5ysYKvFWAFuz15davmD5XX59bRkxo9ci">C17ztrDHerug5ysYKvFWAFuz15davmD5XX59bRkxo9ci</a> <span class="check">✓</span></td></tr>
+        <tr><td class="block">276090540</td><td>unfreeze</td><td class="result ok">ok</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n">4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n</a> <span class="check">✓</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+<footer>
+  Verified <a href="../CLAIMS.md">28/28</a> · <a href="../docs/THREAT_MODEL.md">Threat model</a>
+</footer>
+<script>
+(function () {
+  var blockEl = document.getElementById("block");
+  var height = 276149637;
+  function tick() { height += 1; blockEl.textContent = String(height); }
+  setInterval(tick, 1200);
+  var mains = { fleet: document.getElementById("fleet"), agent: document.getElementById("agent"), timeline: document.getElementById("timeline") };
+  function show(name) {
+    for (var k in mains) mains[k].hidden = (k !== name);
+  }
+  function route() {
+    var h = location.hash;
+    if (h.indexOf("#agent=") === 0) show("agent");
+    else if (h === "#timeline") show("timeline");
+    else show("fleet");
+  }
+  window.addEventListener("hashchange", route);
+  route();
+  var freezeBtn = document.getElementById("freeze-btn");
+  var sheet = document.getElementById("sheet");
+  if (freezeBtn) freezeBtn.addEventListener("click", function () { sheet.hidden = !sheet.hidden; });
+  var copyBtn = document.getElementById("copy");
+  if (copyBtn) copyBtn.addEventListener("click", function () {
+    var text = document.getElementById("cmd").textContent;
+    function done() { document.getElementById("copied").hidden = false; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, done);
+    } else { done(); }
+  });
+})();
+</script>
+</body>
+</html>
