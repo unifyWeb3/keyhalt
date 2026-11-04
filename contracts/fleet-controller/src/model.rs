@@ -1344,8 +1344,26 @@ mod tests {
         // (reference_model.rs, written from SPEC alone). Outer loop covers
         // multiple seeded sequences; each runs 5,000 steps compared after
         // every step. Total: 3 sequences × 5,000 steps = 15,000 comparisons.
+        //
+        // The length is configurable so that automated mutation runs can use
+        // a short sequence. The default is the published length; any run
+        // with a different length prints the effective configuration.
         let seeds: [u64; 3] = [0x9e3779b97f4a7c15, 0x1234567890abcdef, 0x0fedcba987654321];
-        for seed0 in seeds {
+        let steps = std::env::var("FLEET_PROPERTY_STEPS")
+            .ok()
+            .and_then(|value| value.parse::<u64>().ok())
+            .filter(|value| *value > 0)
+            .unwrap_or(5_000);
+        let seed_count = std::env::var("FLEET_PROPERTY_SEEDS")
+            .ok()
+            .and_then(|value| value.parse::<usize>().ok())
+            .filter(|value| *value > 0 && *value <= seeds.len())
+            .unwrap_or(seeds.len());
+        println!(
+            "property run: seeds={seed_count} steps={steps} comparisons={}",
+            seed_count as u64 * steps
+        );
+        for seed0 in seeds.iter().take(seed_count).copied() {
             let mut seed = seed0;
             let mut next = || {
                 seed ^= seed << 13;
@@ -1355,7 +1373,7 @@ mod tests {
             };
             let mut state = state();
             let mut reference = Reference::from_state(&state);
-            for step in 0..5_000u64 {
+            for step in 0..steps {
                 match next() % 6 {
                     0 => {
                         if state.paused {

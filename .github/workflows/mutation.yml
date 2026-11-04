@@ -3,6 +3,10 @@ name: mutation
 # Automated mutation testing with cargo-mutants on x64.
 # The local host is arm64, so this workflow is the score source.
 # Runs only on manual dispatch to avoid surprising runner usage.
+#
+# The differential property test is shortened for this run (the published
+# run uses 3 seeds x 5,000 steps; see docs/INVARIANTS.md). Every other test
+# runs unchanged. The effective property length is printed by the test.
 
 on:
   workflow_dispatch:
@@ -13,9 +17,11 @@ permissions:
 jobs:
   mutation:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 300
     env:
       CARGO_TARGET_DIR: /tmp/cargo-target
+      FLEET_PROPERTY_STEPS: "20"
+      FLEET_PROPERTY_SEEDS: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,11 +42,35 @@ jobs:
 
       - name: Run mutation tests on the controller
         run: |
-          cargo mutants -p fleet-controller --test-threads=4
+          set -uo pipefail
+          nohup cargo mutants -p fleet-controller \
+            --jobs 4 \
+            --timeout-multiplier 4 \
+            --minimum-test-timeout 30 \
+            --output-dir mutants.out \
+            -- --test-threads=4 \
+            > mutants.stdout.txt 2>&1 &
+          echo $! > mutants.pid
+          for i in $(seq 1 60); do
+            sleep 240
+            if ! kill -0 "$(cat mutants.pid)" 2>/dev/null; then
+              break
+            fi
+            echo "snapshot ${i}"
+            cp -r mutants.out "mutants.snapshot.${i}" 2>/dev/null || true
+            cp mutants.stdout.txt "mutants.snapshot.${i}.stdout.txt" 2>/dev/null || true
+          done
+          wait "$(cat mutants.pid)" || true
+          tail -n 80 mutants.stdout.txt
 
       - name: Upload mutation report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cargo-mutants-report
-          path: mutants.out/
+          path: |
+            mutants.out/
+            mutants.stdout.txt
+            mutants.snapshot.*/
+            mutants.snapshot.*.stdout.txt
+          if-no-files-found: warn
