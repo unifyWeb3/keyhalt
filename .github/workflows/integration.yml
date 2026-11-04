@@ -1,0 +1,42 @@
+name: integration
+
+# near-workspaces integration tests on x64.
+# The local host is arm64 and near-workspaces cannot run there; this
+# workflow is the integration pass source. Sandbox only: no testnet, no
+# mainnet, no secrets.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install integration dependencies
+        run: npm --prefix integrations/js ci --no-audit --no-fund
+
+      - name: Build the controller wasm
+        run: cargo build -p fleet-controller --target wasm32-unknown-unknown --release
+
+      - name: Run integration tests
+        run: npm --prefix integrations/js test

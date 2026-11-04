@@ -1,0 +1,46 @@
+name: mutation
+
+# Automated mutation testing with cargo-mutants on x64.
+# The local host is arm64, so this workflow is the score source.
+# Runs only on manual dispatch to avoid surprising runner usage.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CARGO_TARGET_DIR: /tmp/cargo-target
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install pinned cargo-mutants (prebuilt x86_64 tarball)
+        run: |
+          curl -fsSL -o cm.tar.gz \
+            https://github.com/sourcefrog/cargo-mutants/releases/download/v27.1.0/cargo-mutants-x86_64-unknown-linux-gnu.tar.gz
+          echo "dfe6dc37d0342c891d2829b5a695aa57c2d0edecef7e7d0399a30cc6e206411e  cm.tar.gz" | sha256sum -c -
+          tar -xzf cm.tar.gz
+          sudo install -m 0755 cargo-mutants /usr/local/bin/cargo-mutants
+          cargo mutants --version
+
+      - name: Run mutation tests on the controller
+        run: |
+          cargo mutants -p fleet-controller --test-threads=4
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-mutants-report
+          path: mutants.out/
