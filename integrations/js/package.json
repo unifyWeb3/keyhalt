@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "test": "node --test integrations.test.mjs"
+    "test": "node --test --test-force-exit integrations.test.mjs"
   },
   "dependencies": {
     "near-api-js": "5.1.1",

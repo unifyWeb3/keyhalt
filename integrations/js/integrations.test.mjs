@@ -20,6 +20,9 @@ const WASM = fileURLToPath(
 );
 
 const GAS = 30_000_000_000_000n;
+// The init call adds the operator keys and runs the provisioning callback, so
+// it needs more gas than a plain state change.
+const INIT_GAS = 100_000_000_000_000n;
 const AGENT_BALANCE = BigInt(parseNEAR("10"));
 const OPERATOR_BALANCE = BigInt(parseNEAR("2"));
 
@@ -74,7 +77,9 @@ async function setup() {
     admin_allowance_yocto: null,
     operator_allowance_yocto: null,
   };
-  await root.call(agent, "new", config, {gas: GAS});
+  // The init argument is named: the controller takes a single `config`
+  // argument, so the JSON must be {"config": {...}}.
+  await root.call(agent, "new", {config}, {gas: INIT_GAS});
 
   return {worker, root, agent, operators, config};
 }
@@ -90,7 +95,13 @@ describe("fleet-controller integration (near-workspaces sandbox)", () => {
   });
 
   after(async () => {
-    if (worker) await worker.tearDown();
+    if (!worker) return;
+    // The sandbox child process keeps handles open; bound the teardown so a
+    // failed run cannot hang the CI job.
+    await Promise.race([
+      worker.tearDown(),
+      new Promise((resolve) => setTimeout(resolve, 30_000)),
+    ]);
   });
 
   it("provisions a Mode B agent with four active FunctionCall operators", async () => {

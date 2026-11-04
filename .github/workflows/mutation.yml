@@ -39,16 +39,18 @@ jobs:
           tar -xzf cm.tar.gz
           sudo install -m 0755 cargo-mutants /usr/local/bin/cargo-mutants
           cargo mutants --version
+          cargo mutants --help > mutants-help.txt 2>&1 || true
 
       - name: Run mutation tests on the controller
         run: |
           set -uo pipefail
+          # cargo-mutants v27 writes its report to ./mutants.out (the
+          # --output flag is the parent directory of that folder, so the
+          # default is used here).
           nohup cargo mutants -p fleet-controller \
             --jobs 4 \
             --timeout-multiplier 4 \
             --minimum-test-timeout 30 \
-            --output-dir mutants.out \
-            -- --test-threads=4 \
             > mutants.stdout.txt 2>&1 &
           echo $! > mutants.pid
           for i in $(seq 1 60); do
