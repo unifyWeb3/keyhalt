@@ -4,7 +4,8 @@
 which intentionally contained no product code. v0.3 product code was added after
 that tag; see `README.md` and `CLAIMS.md`. This page is not rewritten to pretend
 the baseline included the product.
-**Repository:** `fleet` (local only; no remote, no push, no public visibility).
+**Repository:** `fleet` (private remote configured; no push from this working
+session, no public visibility).
 **Created:** 2026-11-03 UTC (Phase 1 was planned for 2026-10-30/31 and slipped; see `research/BUILD_STATUS.md` in the separate research workspace).
 **License:** MIT (`LICENSE`).
 

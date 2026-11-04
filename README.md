@@ -306,8 +306,9 @@ CLAIMS.md         Claim table; every product claim maps to evidence
 ## Baseline and diff (Q-003)
 
 The baseline tag is `pre-hackathon` (commit `5a26e22`). The submission tag will
-be `hackathon-submission` if the human approves publication. The compare link
-will be added after the repository is public; there is no remote at this time.
+be `hackathon-submission` if the human approves publication. A remote is
+configured, but no push was made from this working session; the compare link
+will be added only if the repository is made public.
 
 ## License
 
