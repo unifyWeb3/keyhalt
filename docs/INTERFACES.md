@@ -1,9 +1,11 @@
 # FLEET interfaces (v0.3)
 
 **Status:** v0.3 — controller, TypeScript SDK, and CLI are implemented and have
-run on NEAR testnet. The read-only API is still a **scaffold** (`/health` only).
-The console is not built; its design is approval-gated.
-**Date:** 2026-11-03 UTC.
+run on NEAR testnet. Mode B 2-of-2 administration is implemented and verified on
+testnet by the harness, not yet exposed as SDK/CLI write commands. The read-only
+API is still a **scaffold** (`/health` only). The console is not built; its design
+is approval-gated.
+**Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC).
 **Rule:** a private key never enters a browser, a server, a log, or the
 repository. Writes are signed locally by the CLI/SDK; the API has no write route.
 
@@ -286,7 +288,70 @@ Views never expose a private key. `signer_pk` is a public key.
 
 ---
 
-## 6. Contract events
+## 6. Mode B 2-of-2 administration
+
+Mode B replaces the Mode A admin key with a 2-of-2 multisig account. The
+controller still enforces the same state machine; only the predecessor identity
+changes.
+
+### 6.1 Shape
+
+- A fresh parent account becomes the multisig account. The pinned `multisig2`
+  contract is deployed to it and initialized with two **account members** and
+  `num_confirmations = 2`.
+- The managed agent is a sub-account of that parent and is initialized with
+  `admin_account = <parent>`, `admin_public_key = null`, and
+  `recovery_public_key = null`.
+- The parent's bootstrap FullAccess key is deleted after multisig init. The
+  recorded run leaves zero access keys on the parent.
+- The agent has four FunctionCall operator keys and zero FullAccess keys.
+
+### 6.2 Flow
+
+A lifecycle change is two outer transactions plus one confirmation:
+
+1. Owner 1 submits `add_request` to the multisig account with a `FunctionCall`
+   action whose receiver is the agent and method is `freeze` or `unfreeze`.
+   This creates a request and returns its id; the agent is unchanged.
+2. Owner 1 (or owner 2) submits `confirm({request_id})`. One confirmation is
+   recorded but does not execute while the threshold is 2.
+3. The other member submits `confirm({request_id})`. The multisig executes the
+   inner call with the parent as predecessor, and the controller requires that
+   predecessor to equal `admin_account`.
+
+The harness submits these calls; the v0.3 SDK and CLI do not yet expose
+multisig `add_request`/`confirm` write commands. SDK/CLI reads (`inventory`,
+`verify`, `audit`) work against a Mode B agent. A direct `freeze` sent to the
+agent with an owner key is refused because the predecessor is not the parent.
+
+### 6.3 Recorded result
+
+`evidence/modeb-v03/run.json` (52/52 checks, 2026-11-03) records:
+
+- parent/multisig `fleet-modeb-748d4372.testnet`; agent
+  `agent-b1.fleet-modeb-748d4372.testnet`;
+- multisig wasm 293,734 bytes,
+  sha256 `df73f72595382e9e5839431d6589410e37175b04e2ac09aa03a8d793f249c82f`,
+  built from commit `1b0436c96379c63aee7d2429c6d5d24019031ab8`;
+- freeze submit-to-observed 20,884 ms; unfreeze 27,064 ms (includes finality and
+  polling);
+- a direct member `freeze` refused with `active admin required`, a non-member
+  `add_request` rejected, and a duplicate confirmation rejected;
+- audit actions attributed to the multisig account, with the outer owner key
+  recorded as `signer_pk`.
+
+### 6.4 Limitations
+
+- Both owner accounts were operated by the same test harness. The run proves the
+  2-of-2 mechanism, not independent organizational custody.
+- The multisig contract is third-party and unaudited; its upstream README
+  disclaims guarantees. Known concerns are listed in `docs/PROVENANCE.md`.
+- No SDK/CLI Mode B write path, no multisig request UI, and no relay/paymaster
+  path exist in v0.3.
+
+---
+
+## 7. Contract events
 
 Every successful mutation logs one NEP-297 event:
 
@@ -310,3 +375,7 @@ Every successful mutation logs one NEP-297 event:
 
 A refused call logs `FLEET_REFUSAL:<reason>` before trapping, so the reason is
 visible in the public receipt logs even though the call fails.
+
+In Mode B, `actor_account` is the multisig parent and `signer_pk` is the owner
+key that signed the outer transaction. The controller cannot see the multisig's
+internal confirmation count; it only observes the executed predecessor call.

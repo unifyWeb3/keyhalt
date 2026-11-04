@@ -1,10 +1,11 @@
 # FLEET test plan (v0.3)
 
-**Status:** v0.3 controller, SDK, CLI, canonical testnet run, mutation test, gas
-profile, and reproducibility build are complete. Tests below are marked with the
-result that actually ran. `PARTIAL` means a narrower test exists but the full
-property is not covered. `PLANNED` and `NOT IMPLEMENTED` are not evidence.
-**Date:** 2026-11-03 UTC.
+**Status:** v0.3 controller, SDK, CLI, canonical Mode A testnet run, Mode B
+2-of-2 testnet run, mutation test, gas profile, and reproducibility builds are
+complete. Tests below are marked with the result that actually ran. `PARTIAL`
+means a narrower test exists but the full property is not covered. `PLANNED` and
+`NOT IMPLEMENTED` are not evidence.
+**Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC).
 **Rule:** a `VERIFIED` row in `CLAIMS.md` must name a test that ran or a public
 testnet transaction hash. A flaky, skipped, or unrun test is not evidence.
 
@@ -18,12 +19,13 @@ testnet transaction hash. A flaky, skipped, or unrun test is not evidence.
 | Property-style | deterministic xorshift sequences | 5,000-step state/reference equivalence + audit verification | **pass** (`random_sequences_preserve_reference_and_audit`) |
 | Differential | `Reference` model | state matches an independent simple model after each step | **pass** (short + 5,000-step) |
 | Mutation | `scripts/mutation-test.mjs` | targeted tests constrain eight critical branches | **8/8 killed** |
-| Testnet E2E | `scripts/testnet-e2e.mjs` | deployed wasm, real keys, receipts, gas, callbacks | **63/63 checks**, 2026-11-03 |
+| Testnet E2E (Mode A) | `scripts/testnet-e2e.mjs` | deployed wasm, real keys, receipts, gas, callbacks | **63/63 checks**, 2026-11-03 |
+| Testnet E2E (Mode B) | `scripts/testnet-modeb.mjs` | pinned multisig, 2-of-2 confirmation, refusals, audit, latency, storage, isolation | **52/52 checks**, 2026-11-03 |
 | SDK/CLI | `npm test` | read paths, audit verify/tamper, exit codes, signer rules | **21/21 pass** |
 | Gas | `scripts/gas-profile.mjs` | per-operation cost from canonical evidence | **29 groups**, 3 provision rows |
-| Repro | `scripts/repro-build.sh` | two clean `--locked` builds | **byte-identical** |
+| Repro | `scripts/repro-build.sh` + multisig source build | two clean `--locked` builds per wasm | **byte-identical** |
 | Fresh clone | `scripts/fresh-clone-test.sh` | clean clone can reproduce | **PASS** 2026-11-03 (`evidence/fresh-clone-v03.log`) |
-| Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **20/20 verified** |
+| Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **28/28 verified** |
 
 **Sandbox gap:** `near-workspaces` is not installed on this Linux arm64 host.
 `near-workspaces@4.0.0` selects `near-sandbox@0.1.1`, which reports
@@ -41,7 +43,7 @@ sandbox tests remain a CI x64 item.
 | I-02 | No lifecycle method calls `AddKey` for a key that may already exist; activation performs no `AddKey`. | `admin_rotation_has_no_add_key_on_accept`, `pending_admin_cannot_freeze_and_accept_performs_no_add`, `grant_and_propose_reject_keys_that_already_have_a_role` | **VERIFIED** |
 | I-03 | No method adds `FullAccess`; every added key is `FunctionCall` with `receiver = current account` and an allowlisted method set. | `init_is_mode_exclusive_and_schedules_no_full_access_key`, `grant_schedules_function_call_key_and_callback_confirms`; testnet key list | **VERIFIED** for scheduled paths |
 | I-04 | `paused = true` blocks every `execute`; `unfreeze` restores the positive control. | `freeze_blocks_operator_and_unfreeze_restores_positive_control`, `execute_requires_active_operator_freeze_and_allowlist`, testnet F-003 | **VERIFIED** |
-| I-05 | Only the active admin (Mode A) or `admin_account` (Mode B) can freeze/unfreeze or change lifecycle state; the pending key can only accept. | `operator_cannot_freeze_but_admin_can`, `freeze_and_unfreeze_are_admin_only`, `operator_cannot_call_admin_methods`, `pending_admin_cannot_freeze_and_accept_performs_no_add`, `mode_b_admin_is_predecessor_only` | **VERIFIED** for Mode A; Mode B check is wrapper-only |
+| I-05 | Only the active admin (Mode A) or `admin_account` (Mode B) can freeze/unfreeze or change lifecycle state; the pending key can only accept. | `operator_cannot_freeze_but_admin_can`, `freeze_and_unfreeze_are_admin_only`, `operator_cannot_call_admin_methods`, `pending_admin_cannot_freeze_and_accept_performs_no_add`, `mode_b_admin_is_predecessor_only`; Mode B testnet direct-member and non-member refusals | **VERIFIED** for Mode A and Mode B |
 | I-06 | A recovery key can propose a fresh admin, but cannot freeze, grant, revoke, or execute; the pending key must accept. | `recovery_cannot_freeze_or_grant`, `recovery_proposes_but_cannot_accept_itself`, `recovery_proposes_and_pending_key_accepts`, testnet F-007 | **VERIFIED** |
 | I-07 | `revoke_tag(tag)` removes exactly the operators with that tag; other tags remain and can execute after. | `revoke_tag_is_an_exact_partition`, `revoke_and_tag_revoke_are_exact`, testnet F-005 | **VERIFIED** (deterministic set) |
 | I-08 | An unauthorized or malformed call reverts; no state, audit entry, or native key changes. | `invalid_inputs_revert_before_state_change`, `missing_tag_reverts_without_audit`, `grant_failure_removes_pending_operator`, testnet refusals | **VERIFIED** for covered paths |
@@ -137,9 +139,9 @@ Evidence: `evidence/testnet-v03/run.json` (63 checks), `RUN.md`,
 | T-I-01 | 3 native accounts, zero FullAccess | **PASS** |
 | T-I-02 | Admin rotation with a fresh key; accept adds no key | **PASS** |
 | T-I-03 | Allowance refresh by rotation | **PLANNED** — no explicit measurement |
-| T-I-04 | Cross-agent isolation (A key on B fails, on A succeeds) | **PLANNED** |
+| T-I-04 | Cross-agent isolation (A key on B fails, on A succeeds) | **PASS** both directions; `modeb-v03/run.json` isolation |
 | T-I-05 | Freeze/unfreeze with audit entries | **PASS** |
-| T-I-06 | Mode B 2-of-2 multisig | **NOT IMPLEMENTED** |
+| T-I-06 | Mode B 2-of-2 multisig | **PASS**; `modeb-v03/run.json`, 52 checks |
 | T-I-07 | Recovery propose/accept | **PASS** |
 | T-I-08 | Tag revoke removes exactly the tag; other tag remains | **PASS** |
 | T-I-09 | `get_inventory` matches `view_access_key_list` | **PASS** |
@@ -147,10 +149,19 @@ Evidence: `evidence/testnet-v03/run.json` (63 checks), `RUN.md`,
 | T-I-11 | Tamper detection | **PASS** (SDK + CLI) |
 | T-I-12 | Per-method gas | **PASS** (`gas-profile.md`) |
 
-Canonical facts: parent `fleet-v03-5cff9e99.testnet`; agents `agent-1b`,
+Canonical Mode A facts: parent `fleet-v03-5cff9e99.testnet`; agents `agent-1b`,
 `agent-2`, `agent-3`; wasm 248,644 bytes
 `cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f`; audit 19
 entries, head `cc33b0ea668c9a42d34d5950638e53907009e52c4b197e1328a1f4ce762ee10b`.
+
+Mode B facts: parent/multisig `fleet-modeb-748d4372.testnet`; agent
+`agent-b1.fleet-modeb-748d4372.testnet`; two account members
+`fleet-v03-5cff9e99.testnet` and `fleet-v03-fund2-8b91351d.testnet`; multisig wasm
+293,734 bytes
+`df73f72595382e9e5839431d6589410e37175b04e2ac09aa03a8d793f249c82f`; audit 3
+entries, head `82d6e41d73dbbc53144af462bf09340e35dac76e11e8da21a4f2b5bb8796d39b`.
+Both owner accounts were operated by the same test harness; this does not prove
+independent custody.
 
 ---
 
@@ -160,11 +171,11 @@ entries, head `cc33b0ea668c9a42d34d5950638e53907009e52c4b197e1328a1f4ce762ee10b`
 | --- | --- | --- | --- |
 | T-R-01 | Operator key calls `freeze`/admin method | Admin key succeeds | **PASS** (unit + testnet protocol ACL) |
 | T-R-02 | `execute` while frozen | Execute after `unfreeze` | **PASS** (unit + testnet + CLI) |
-| T-R-03 | Key for agent A calls agent B's controller | Same key on agent A | **PLANNED** |
+| T-R-03 | Key for agent A calls agent B's controller | Same key on agent A | **PASS** both directions; native receiver ACL |
 | T-R-04 | `revoke_tag("missing")` | `revoke_tag("ops-a")` removes only that tag | **PASS** (unit) |
 | T-R-05 | Pending admin calls `freeze` | Pending admin calls `accept_admin` | **PASS** (unit) |
-| T-R-06 | Unauthorized account proposes admin | Active admin proposes | **PARTIAL** (Mode B predecessor test only) |
-| T-R-07 | One Mode B confirmation | Second confirmation executes | **NOT IMPLEMENTED** |
+| T-R-06 | Unauthorized account proposes admin | Active admin proposes | **PARTIAL** (Mode B non-member request refusal only) |
+| T-R-07 | One Mode B confirmation | Second confirmation executes | **PASS**; freeze/unfreeze both confirmed by two account members |
 | T-R-08 | Mainnet RPC configured | Testnet RPC succeeds | **PASS** (CLI/SDK/RPC script) |
 | T-R-09 | Expired pre-signed freeze | Fresh freeze lands | **PLANNED**; no pre-signed path |
 | T-R-10 | Grant a key that already has a role | Grant a fresh key | **PASS** (unit + testnet) |
@@ -195,11 +206,13 @@ Source: `evidence/testnet-v03/gas-profile.md`.
 | ID | Measurement | Status |
 | --- | --- | --- |
 | T-G-01 | Per-method gas, min/mean/median/max | **PASS** for sampled methods |
-| T-G-02 | Admin allowance budget (calls per 0.1/0.5/1 NEAR) | **PLANNED** |
-| T-G-03 | Storage growth per audit entry/operator | **PLANNED** |
+| T-G-02 | Admin allowance budget (calls per 0.1/0.5/1 NEAR) | **PARTIAL** — derived from the measured mean tokens burnt; not an exhaustion test |
+| T-G-03 | Storage growth per audit entry/operator | **PASS** — 1,713 bytes for 6 added entries (285.5 bytes/entry including vector growth) |
 
-The 0.1 NEAR default allowance remains `INFERRED`, not verified as a call
-budget.
+The measured Mode A admin allowance was 0.0986856 NEAR after the latency run;
+at the measured mean of `217287439890900000000` yocto burnt per freeze, the
+derived upper bound is 454 freeze calls. This is an arithmetic bound, not a live
+exhaustion test.
 
 ---
 
@@ -210,9 +223,13 @@ budget.
 | T-L-01 | 20 independent pre-signed Mode A freezes; p95 wall/block | **PLANNED** |
 | T-L-02 | Freeze during an in-flight execute | **PARTIAL** — no cancellation is claimed |
 | T-L-03 | Nonce-lane reservation / stale-hash refresh | **PLANNED**; per-operator keys used for concurrency |
+| T-L-04 | Three Mode A freeze and three unfreeze cycles; submit → observed state | **PASS** — mean 22,716 ms / 21,997 ms on `rpc.testnet.near.org`; includes finalization and polling |
+| T-L-05 | Mode B 2-of-2 freeze and unfreeze wall time | **PASS** — 20,884 ms and 27,064 ms submit → observed state |
 
 The 12-way concurrency result is a throughput observation (8,633 ms for 12
-submitted calls), not a latency percentile.
+submitted calls), not a latency percentile. The latency numbers above are
+single-host observations that include RPC finality and state polling; they are
+not a contract-execution SLA and no target is claimed.
 
 ---
 
@@ -247,7 +264,7 @@ verify, export, tamper).
 | T-SC-02 | Claims checker rejects malformed/unsupported rows | **PASS** (fresh-clone negative control) |
 | T-SC-03 | README “do X, see Y” matches reality | **PASS** in the fresh-clone run |
 | T-SC-04 | No key/credential in clone or history | **PASS** working tree + history scan |
-| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL** — 20 rows, tx hashes public; not one re-run script |
+| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL** — 28 rows, tx hashes public; not one re-run script |
 | T-S-001…T-S-007 | Setup, verify, claims, secret scan, mainnet refusal, static web check | **PASS** (v0.3 verify + fresh clone) |
 
 ---
@@ -273,6 +290,10 @@ verify, export, tamper).
 | F-018 | `evidence/testnet-v03/gas-profile.md` |
 | F-019 | `evidence/repro-build/report.md` |
 | F-020 | `local-tests.txt`; SDK/CLI tests |
+| F-021…F-024 | `evidence/modeb-v03/run.json`, `RUN.md`, `audit-modeb.json` |
+| F-025 | `evidence/modeb-v03/multisig-repro-build.md/json`; `run.json` |
+| F-026, F-027 | `evidence/modeb-v03/run.json` latency |
+| F-028 | `evidence/modeb-v03/run.json` isolation |
 
 ---
 
@@ -280,12 +301,16 @@ verify, export, tamper).
 
 Open gaps, in priority order:
 
-1. Mode B 2-of-2 multisig is not implemented.
-2. Console design and build are approval-gated; `web/` is a placeholder.
-3. No demo recording or replay (`T-E-07`).
-4. No freeze-latency measurement or pre-signed path.
-5. No cross-agent isolation test (`T-R-03`).
-6. No allowance-budget or storage-growth measurement (`T-G-02`, `T-G-03`).
+1. Mode B owner independence is not proven: both owner accounts are operated by
+   the same test harness. The 2-of-2 mechanism is verified; independent
+   organizational custody is not.
+2. The multisig contract is third-party and unaudited; its upstream README
+   disclaims guarantees.
+3. Console design and build are approval-gated; `web/` is a placeholder.
+4. No demo recording or replay (`T-E-07`).
+5. No pre-signed 20-freeze latency percentile; the three-cycle measurement is an
+   observation, not an SLA.
+6. Allowance budget is derived, not exhausted (`T-G-02`).
 7. Property tests are deterministic and cover a subset of transitions.
 8. No near-workspaces sandbox run on this arm64 host.
 9. Docs/evidence changed after the fresh-clone commit; re-run the clone test before the submission tag.
@@ -294,7 +319,7 @@ Open gaps, in priority order:
 | --- | --- | --- |
 | Core contract | invariant/unit/property green; no AddKey on existing keys; audit verifies | **MET 2026-11-03** |
 | SDK/CLI/E2E | 3-agent E2E; SDK/CLI tests; every claim has evidence | **MET 2026-11-03** including fresh clone |
-| Feature freeze (Nov 10) | no new features; gas/latency tables complete | Gas done; latency not done |
+| Feature freeze (Nov 10) | no new features; gas/latency tables complete | Gas and measurement tables done; no latency target |
 | Demo (Nov 12) | every step replayed; no untested claim | **PENDING** |
 | README final (Nov 13) | fresh clone green; claims checker green; diff link | **PENDING** |
 | Submission (Nov 14 12:00 UTC) | human review; repo public; license; X post; JSON; tag | **PENDING HUMAN** |

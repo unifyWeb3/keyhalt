@@ -1,0 +1,48 @@
+{
+  "generated_at": "2026-11-03T22:10:00Z",
+  "repository": "https://github.com/near/core-contracts",
+  "commit": "1b0436c96379c63aee7d2429c6d5d24019031ab8",
+  "subdirectory": "multisig2",
+  "version": "0.4.0",
+  "license": "MIT OR Apache-2.0",
+  "source_tarball": {
+    "url": "https://github.com/near/core-contracts/archive/1b0436c96379c63aee7d2429c6d5d24019031ab8.tar.gz",
+    "bytes": 1413758,
+    "sha256": "7e6595a60e8cd4d7924408147768571af34483b4b8c54cd36e9c94dba28a7b3c"
+  },
+  "source_hashes": {
+    "Cargo.toml": "e701331328e5a6d4c9945ec261560a73c68723b049205dde58771e4b95be414d",
+    "Cargo.lock": "e00a5ad4dcf75d055cb1e8d0cbdce051c429194fb23e3fd6b3a677e3619cf90e",
+    "src/lib.rs": "65bc055731f6c5a9344ba3155b9685f95ebdfafe83d938cf3c5bdd10ad458046",
+    "README.md": "fc40966324c1ad0b08184d0f43e637537080dff6944db6b5817ce4b848bbfdeb",
+    "res/multisig2.wasm": "f3f9ee3e5e29d020dc73f581ff1490c03dff875ed01327dfebbe666724930a76"
+  },
+  "prebuilt_wasm": {
+    "bytes": 340613,
+    "sha256": "f3f9ee3e5e29d020dc73f581ff1490c03dff875ed01327dfebbe666724930a76",
+    "used": false,
+    "note": "Checked-in artifact. The testnet run used the source build below."
+  },
+  "build_command": "CARGO_TARGET_DIR=<isolated-dir> CARGO_BUILD_JOBS=2 RUSTFLAGS='-C link-arg=-s' cargo build --locked --target wasm32-unknown-unknown --release",
+  "toolchain": {
+    "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
+    "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)"
+  },
+  "builds": [
+    {
+      "label": "A",
+      "target_dir": "/tmp/opencode/multisig2-target",
+      "bytes": 293734,
+      "sha256": "df73f72595382e9e5839431d6589410e37175b04e2ac09aa03a8d793f249c82f"
+    },
+    {
+      "label": "B",
+      "target_dir": "/tmp/opencode/multisig2-target-2",
+      "bytes": 293734,
+      "sha256": "df73f72595382e9e5839431d6589410e37175b04e2ac09aa03a8d793f249c82f"
+    }
+  ],
+  "byte_identical": true,
+  "matches_testnet_wasm": true,
+  "reproduction_scope": "Same commit, lockfile, toolchain, and release flags. A different rustc or dependency resolution may change the hash."
+}

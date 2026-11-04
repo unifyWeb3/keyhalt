@@ -1,0 +1,10 @@
+{
+  "account": "fleet-modeb-748d4372.testnet",
+  "public_key": "ed25519:8K28C9yCQEg34aeup31S52qRzc2LbZVDxXM69J8Juo3e",
+  "faucet_tx": "3kkxz3tGJWYf36YmdfPgXAjBJYpmUsfQkadQeJod8f2U",
+  "response_captured": false,
+  "response_error": null,
+  "balance_yocto": "7189556394320227800000000",
+  "code_hash": "11111111111111111111111111111111",
+  "recorded_at": "2026-11-03T22:28:55.814Z"
+}

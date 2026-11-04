@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-11-03T22:54:21.415Z",
+  "multisig": {
+    "repository": "https://github.com/near/core-contracts",
+    "commit": "1b0436c96379c63aee7d2429c6d5d24019031ab8",
+    "version": "0.4.0",
+    "license": "MIT OR Apache-2.0",
+    "source_hashes": {
+      "Cargo.toml": "e701331328e5a6d4c9945ec261560a73c68723b049205dde58771e4b95be414d",
+      "Cargo.lock": "e00a5ad4dcf75d055cb1e8d0cbdce051c429194fb23e3fd6b3a677e3619cf90e",
+      "src/lib.rs": "65bc055731f6c5a9344ba3155b9685f95ebdfafe83d938cf3c5bdd10ad458046",
+      "README": "fc40966324c1ad0b08184d0f43e637537080dff6944db6b5817ce4b848bbfdeb",
+      "res/multisig2.wasm": "f3f9ee3e5e29d020dc73f581ff1490c03dff875ed01327dfebbe666724930a76"
+    },
+    "prebuilt_wasm": {
+      "bytes": 340613,
+      "sha256": "f3f9ee3e5e29d020dc73f581ff1490c03dff875ed01327dfebbe666724930a76",
+      "note": "Checked-in artifact; not used. The run used the source build below."
+    },
+    "source_build": {
+      "bytes": 293734,
+      "sha256": "df73f72595382e9e5839431d6589410e37175b04e2ac09aa03a8d793f249c82f",
+      "command": "CARGO_TARGET_DIR=<isolated> CARGO_BUILD_JOBS=2 RUSTFLAGS='-C link-arg=-s' cargo build --locked --target wasm32-unknown-unknown --release",
+      "toolchain": "rustc 1.93.0 (254b59607 2026-01-19), cargo 1.93.0 (083ac5135 2025-12-15)"
+    },
+    "notes": [
+      "The access-key allowlist in MULTISIG_METHOD_NAMES names 'add_and_confirm_request' while the method is 'add_request_and_confirm'. Account members are used, so this ACL typo is not exercised.",
+      "SetNumConfirmations has no bound check against the member count; this run never calls it.",
+      "execute_request removes the request before the promise executes; a failed inner call loses the request. This run verifies the inner call succeeded.",
+      "The multisig can deploy code to itself through the DeployContract action; that is the owner's power, not the controller's.",
+      "No third-party audit was found; the upstream README disclaims guarantees."
+    ]
+  }
+}

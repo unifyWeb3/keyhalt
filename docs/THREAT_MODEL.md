@@ -1,11 +1,11 @@
 # FLEET threat model
 
-**Status:** v0.3 design document. The controller, SDK, and CLI are implemented
-and have run on testnet; the console and Mode B are not. Mitigations with a green
-test in `docs/TEST_PLAN.md` are marked there; the rest remain design
+**Status:** v0.3 design document. The controller, SDK, CLI, and Mode B 2-of-2
+path are implemented and have run on testnet; the console is not. Mitigations
+with a green test in `docs/TEST_PLAN.md` are marked there; the rest remain design
 requirements. This is not an audit.
-**Date:** 2026-11-03 UTC (Phase 1 target was 2026-10-31; slip disclosed in
-`research/BUILD_STATUS.md`).
+**Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC; Phase 1 target was
+2026-10-31, slip disclosed in `research/BUILD_STATUS.md`).
 **Scope:** NEAR testnet only. Mode A (team-held admin key) and Mode B (2-of-2
 multisig admin).
 
@@ -187,6 +187,6 @@ specified but not implemented in v0.3.
 | Is the controller immutable after deploy, or who can upgrade it? | `UNKNOWN` | Decide before contract freeze; document in README |
 | Can the audit head be anchored without a new trust assumption? | `HYPOTHESIS` | Optional after core; not required for demo |
 | Does a pre-signed freeze meet p95 ≤5 s / ≤2 blocks? | `UNKNOWN` | 20-run testnet measurement |
-| Does `multisig2` 2-of-2 call the controller with enough gas? | `HYPOTHESIS` | Mode B reuse gate |
+| Does `multisig2` 2-of-2 call the controller with enough gas? | **PASS** 2026-11-03 | Mode B run: 2-of-2 freeze/unfreeze executed; `evidence/modeb-v03/run.json` |
 | Can the read API detect a stale RPC? | `HYPOTHESIS` | Block-height/finality test + multi-provider comparison |
 | Is any component audited? | **No** | Do not claim audit |

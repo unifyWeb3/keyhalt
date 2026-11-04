@@ -1,0 +1,971 @@
+{
+  "run": {
+    "started_at": "2026-11-03T22:28:44.788Z",
+    "finished_at": "2026-11-03T22:54:21.415Z",
+    "network": "testnet",
+    "rpc": "https://rpc.testnet.near.org",
+    "parent": "fleet-modeb-748d4372.testnet",
+    "parent_created_by_faucet": true,
+    "agent": "agent-b1.fleet-modeb-748d4372.testnet",
+    "latency_agent": "agent-lat1.fleet-modeb-748d4372.testnet",
+    "owners": [
+      "fleet-v03-5cff9e99.testnet",
+      "fleet-v03-fund2-8b91351d.testnet"
+    ],
+    "stranger": "fleet-modeb-stranger-31508239.testnet",
+    "controller_wasm": {
+      "bytes": 248644,
+      "sha256": "cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f"
+    },
+    "multisig_wasm": {
+      "bytes": 293734,
+      "sha256": "df73f72595382e9e5839431d6589410e37175b04e2ac09aa03a8d793f249c82f",
+      "source": "https://github.com/near/core-contracts/tree/1b0436c96379c63aee7d2429c6d5d24019031ab8/multisig2",
+      "commit": "1b0436c96379c63aee7d2429c6d5d24019031ab8",
+      "version": "0.4.0",
+      "license": "MIT OR Apache-2.0"
+    }
+  },
+  "faucet": {
+    "parent_tx": "3kkxz3tGJWYf36YmdfPgXAjBJYpmUsfQkadQeJod8f2U",
+    "stranger_tx": "7VmXXfS2mqJCDwxCquPu1zh7DRM4HDzRjEMGAcJ1Q8ZB"
+  },
+  "multisig": {
+    "members": [
+      {
+        "account_id": "fleet-v03-5cff9e99.testnet"
+      },
+      {
+        "account_id": "fleet-v03-fund2-8b91351d.testnet"
+      }
+    ],
+    "numConfirmations": 2,
+    "keysBefore": 1,
+    "keysAfter": 0,
+    "deployTx": {
+      "tx": "8DfC8CZfgLT6S66oH26R6QJ7zvVDn75SLCujnHGkoqT8",
+      "block_hash": "DrZ9VWs5n9yL95BmnVvr5FV1oF9e57Py9xXoA3jDnwRP",
+      "block_height": 276110066,
+      "gas_burnt": "21777311643662",
+      "tokens_burnt": "2155412908116200000000",
+      "status": "success",
+      "refusal": null,
+      "top_status": {
+        "SuccessValue": ""
+      },
+      "failure_text": null,
+      "failed_receipts": 0,
+      "logs": [],
+      "action": "multisig_deploy"
+    },
+    "initTx": {
+      "tx": "6sEkb5Ga2piDHHwXnNN1vszMBjn3o1RpcuDzm3xG5Efx",
+      "block_hash": "HgDMkNmjbuNaqNUTmeKRUP7FfaCy9sT4kh2LZcpskNCh",
+      "block_height": 276110108,
+      "gas_burnt": "2975685889736",
+      "tokens_burnt": "252932076473600000000",
+      "status": "success",
+      "refusal": null,
+      "top_status": {
+        "SuccessValue": ""
+      },
+      "failure_text": null,
+      "failed_receipts": 0,
+      "logs": [],
+      "action": "multisig_init"
+    },
+    "deleteBootstrapTx": {
+      "tx": "CoefaWo5T7Vqq1bWkVJ2rZNnW3LPVud453LUPz6NRPjp",
+      "block_hash": "4r353yhYRPFPi34TNMeKApuMfxufcNwPBjXRoD7wbBPN",
+      "block_height": 276110162,
+      "gas_burnt": "629194812500",
+      "tokens_burnt": "40601225000000000000",
+      "status": "success",
+      "refusal": null,
+      "top_status": {
+        "SuccessValue": ""
+      },
+      "failure_text": null,
+      "failed_receipts": 0,
+      "logs": [],
+      "action": "delete_bootstrap_key"
+    },
+    "requestNonce": 0,
+    "codeHash": "G3GUfe8ZJ2RLe2XphKiKA7YXB4iyjBjUK8knd6T8X1jC"
+  },
+  "mode_b": {
+    "provision": {
+      "create_tx": "FC4TRS6e7FRX9zvb1eS5aP6UYrzYcLzKRkZeY2y43Edh",
+      "init_tx": "4QHPzixTgcJk2wB1SE3cUpkmMWCe5bXKLvzhsdT2ja5Y",
+      "create_tx_source": "env_override",
+      "init_tx_source": "env_override"
+    },
+    "state": {
+      "account_id": "agent-b1.fleet-modeb-748d4372.testnet",
+      "version": "fleet-controller-v0.3.0",
+      "mode": "B",
+      "paused": false,
+      "admin_pk": null,
+      "admin_account": "fleet-modeb-748d4372.testnet",
+      "recovery_pk": null,
+      "pending_admin_pk": null,
+      "pending_origin": null,
+      "inflight_admin_pk": null,
+      "operators": [
+        {
+          "pk": "ed25519:kB5fcDtfZA6Au6xmd8U2coeBiRg4dHpShADXCAybB2L",
+          "tag": "ops-a",
+          "active": true
+        },
+        {
+          "pk": "ed25519:4mvncf9kmFT4imDDqAC6CRxXTTfTnK4QjSHem2iHiRrV",
+          "tag": "ops-a",
+          "active": true
+        },
+        {
+          "pk": "ed25519:DjNFGrMdsB5UWcGiqXcERshD7JyyrX1kQTes5mSzv3dL",
+          "tag": "ops-b",
+          "active": true
+        },
+        {
+          "pk": "ed25519:HxuTueeDDxxoW5X4f53PEDYD9iGzfEDsnMine7YqyTcZ",
+          "tag": "ops-b",
+          "active": true
+        }
+      ],
+      "receiver": "agent-b1.fleet-modeb-748d4372.testnet",
+      "method": "ping",
+      "max_operators": 16,
+      "provisioned": true,
+      "provision_error": null,
+      "audit_head": {
+        "seq": 0,
+        "entry_hash": "445c311a628d6906a23d01db4d90d01e682cbb0881249e31e57903152a8d2777",
+        "block_height": 276109053,
+        "block_timestamp": "1793744455724271447"
+      },
+      "audit_len": 1
+    },
+    "native_keys": [
+      {
+        "public_key": "ed25519:kB5fcDtfZA6Au6xmd8U2coeBiRg4dHpShADXCAybB2L",
+        "permission": "FunctionCall",
+        "receiver_id": "agent-b1.fleet-modeb-748d4372.testnet",
+        "method_names": [
+          "execute"
+        ],
+        "allowance": "250000000000000000000000"
+      },
+      {
+        "public_key": "ed25519:4mvncf9kmFT4imDDqAC6CRxXTTfTnK4QjSHem2iHiRrV",
+        "permission": "FunctionCall",
+        "receiver_id": "agent-b1.fleet-modeb-748d4372.testnet",
+        "method_names": [
+          "execute"
+        ],
+        "allowance": "250000000000000000000000"
+      },
+      {
+        "public_key": "ed25519:DjNFGrMdsB5UWcGiqXcERshD7JyyrX1kQTes5mSzv3dL",
+        "permission": "FunctionCall",
+        "receiver_id": "agent-b1.fleet-modeb-748d4372.testnet",
+        "method_names": [
+          "execute"
+        ],
+        "allowance": "250000000000000000000000"
+      },
+      {
+        "public_key": "ed25519:HxuTueeDDxxoW5X4f53PEDYD9iGzfEDsnMine7YqyTcZ",
+        "permission": "FunctionCall",
+        "receiver_id": "agent-b1.fleet-modeb-748d4372.testnet",
+        "method_names": [
+          "execute"
+        ],
+        "allowance": "250000000000000000000000"
+      }
+    ],
+    "direct_bypass": {
+      "tx": "6pYC2CBPQmH8YA51LR3ArETuzNhBekWWnwcu9btyKvus",
+      "block_hash": "EZiZA83GnKo2Jf9yDbJP7rtqSGZfXDxCttsPyJensb3i",
+      "block_height": 276110253,
+      "gas_burnt": "1879137722275",
+      "tokens_burnt": "165595515977500000000",
+      "status": "failure",
+      "refusal": "active admin required",
+      "top_status": {
+        "Failure": {
+          "ActionError": {
+            "index": 0,
+            "kind": {
+              "FunctionCallError": {
+                "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+              }
+            }
+          }
+        }
+      },
+      "failure_text": "[{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"WebAssembly trap: An `unreachable` opcode was executed.\"}}}}},{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"WebAssembly trap: An `unreachable` opcode was executed.\"}}}}}]",
+      "failed_receipts": 1,
+      "logs": [
+        "FLEET_REFUSAL:active admin required"
+      ],
+      "action": "direct_member_bypass"
+    },
+    "non_member": {
+      "tx": "B1ZBWv9uh6oUTGrzHY9FGiFWBQvdgMc4EqpS9QrKMre5",
+      "block_hash": "DSpUT9ao8rfLZYVvqZqdNoKDWSdH5Hn8HUynMRdQ1QWD",
+      "block_height": 276110304,
+      "gas_burnt": "1977024932280",
+      "tokens_burnt": "175384236978000000000",
+      "status": "failure",
+      "refusal": null,
+      "top_status": {
+        "Failure": {
+          "ActionError": {
+            "index": 0,
+            "kind": {
+              "FunctionCallError": {
+                "ExecutionError": "Smart contract panicked: Predecessor must be a member or transaction signed with key of given account"
+              }
+            }
+          }
+        }
+      },
+      "failure_text": "[{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: Predecessor must be a member or transaction signed with key of given account\"}}}}},{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: Predecessor must be a member or transaction signed with key of given account\"}}}}}]",
+      "failed_receipts": 1,
+      "logs": [],
+      "action": "non_member_add_request"
+    },
+    "freeze": {
+      "request_id": 0,
+      "add_request": {
+        "tx": "dEjn26NbgqFtY1GSczDJVHmgmunUkuQUciNG9Rq1YQB",
+        "block_hash": "3jzaY9amhGLuE1guYvmF93uexuQ6x9wNxmnJxGedJk6A",
+        "block_height": 276110352,
+        "gas_burnt": "2805949634101",
+        "tokens_burnt": "258276707160100000000",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "MA=="
+        },
+        "failure_text": null,
+        "failed_receipts": 0,
+        "logs": [],
+        "action": "freeze_add_request",
+        "request_id": 0
+      },
+      "first_confirm": {
+        "tx": "E9GSJFVXTX1CexZYS9nRPriJHFQFYr5XaRe4pmP65MDj",
+        "block_hash": "CU4n5unCWVwvEDGCgQ7ruapd2B6KDzy1vBDL7isZox94",
+        "block_height": 276110400,
+        "gas_burnt": "2578040839099",
+        "tokens_burnt": "235485827659900000000",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "dHJ1ZQ=="
+        },
+        "failure_text": null,
+        "failed_receipts": 0,
+        "logs": [],
+        "action": "freeze_first_confirm",
+        "request_id": 0
+      },
+      "duplicate_confirm": {
+        "tx": "7CNu6Ee1fZ17a2DrA22tnzkTMeH3PuSa8UeqhSzVPbVN",
+        "block_hash": "77SLLHx7JqGEYkCcJ1Ez8mUN2Krk8yFREgfML45p1DXs",
+        "block_height": 276110459,
+        "gas_burnt": "2332813754673",
+        "tokens_burnt": "210963119217300000000",
+        "status": "failure",
+        "refusal": null,
+        "top_status": {
+          "Failure": {
+            "ActionError": {
+              "index": 0,
+              "kind": {
+                "FunctionCallError": {
+                  "ExecutionError": "Smart contract panicked: Already confirmed this request with this key"
+                }
+              }
+            }
+          }
+        },
+        "failure_text": "[{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: Already confirmed this request with this key\"}}}}},{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: Already confirmed this request with this key\"}}}}}]",
+        "failed_receipts": 1,
+        "logs": [],
+        "action": "freeze_duplicate_confirm",
+        "request_id": 0
+      },
+      "second_confirm": {
+        "tx": "3GY9rkAWxmrAkqEwf9TBv3rSo5M9iBPWQfmU8coRZtuk",
+        "block_hash": "8xkidkQ8pGF49BiGVPmHZdw2wrAnj3fBGw2ktva1vsdx",
+        "block_height": 276110498,
+        "gas_burnt": "5554887307775",
+        "tokens_burnt": "510852218277500000000",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        },
+        "failure_text": null,
+        "failed_receipts": 0,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"seq\":1,\"action\":\"freeze\",\"actor_account\":\"fleet-modeb-748d4372.testnet\",\"signer_pk\":\"ed25519:27zeqN555dhm6B65WCk4QePiztXthKpPG92nj44z6f5t\",\"subject\":\"paused=true\",\"block_height\":276110500,\"block_timestamp\":1793745312223423045,\"entry_hash\":\"39b615220a16f3bf79628d14e1aa9fb4317fea431b4270f7a0042ecf9593e57a\"}}"
+        ],
+        "action": "freeze_second_confirm",
+        "request_id": 0,
+        "wall_ms_to_paused": 20884
+      },
+      "wall_ms_to_paused": 20884,
+      "paused": true,
+      "confirmations_after_first": 1,
+      "confirmations_after_add": 0
+    },
+    "frozen_execute": {
+      "tx": "An7vQH16RQAup3kMVEGJDZyKN9Jpw6Dxa8CkJvF8vS2f",
+      "block_hash": "FHuh9urZimcNF1FNJ2Zo5MgnNKuPB6sR7S5JPU8r8Y4J",
+      "block_height": 276110538,
+      "gas_burnt": "1909841387366",
+      "tokens_burnt": "168665882486600000000",
+      "status": "failure",
+      "refusal": "controller is frozen",
+      "top_status": {
+        "Failure": {
+          "ActionError": {
+            "index": 0,
+            "kind": {
+              "FunctionCallError": {
+                "ExecutionError": "WebAssembly trap: An `unreachable` opcode was executed."
+              }
+            }
+          }
+        }
+      },
+      "failure_text": "[{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"WebAssembly trap: An `unreachable` opcode was executed.\"}}}}},{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"WebAssembly trap: An `unreachable` opcode was executed.\"}}}}}]",
+      "failed_receipts": 1,
+      "logs": [
+        "FLEET_REFUSAL:controller is frozen"
+      ],
+      "action": "execute_while_frozen"
+    },
+    "unfreeze": {
+      "request_id": 1,
+      "add_request": {
+        "tx": "BM5Xcw17BBvQe2mV3KsUsShF2NYLfaAXpFXfbV82qFaG",
+        "block_hash": "HNQPyySPNBbF88Wpxfyeuj7B7jWfYrDo3iMpnqCNuYcS",
+        "block_height": 276110566,
+        "gas_burnt": "2829667551321",
+        "tokens_burnt": "260648498882100000000",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "MQ=="
+        },
+        "failure_text": null,
+        "failed_receipts": 0,
+        "logs": [],
+        "action": "unfreeze_add_request",
+        "request_id": 1
+      },
+      "first_confirm": {
+        "tx": "EUHXnabokXLGdkFqfCfmHtJRpBFzkSjDpofwF9bwbEMc",
+        "block_hash": "94aK7PFoVqgybVTngQgzwKeW4pCdD74DYnmjvSKPtUS",
+        "block_height": 276110600,
+        "gas_burnt": "2578035689687",
+        "tokens_burnt": "235485312718700000000",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": "dHJ1ZQ=="
+        },
+        "failure_text": null,
+        "failed_receipts": 0,
+        "logs": [],
+        "action": "unfreeze_first_confirm",
+        "request_id": 1
+      },
+      "second_confirm": {
+        "tx": "GFvHeSRbbTGiGH765Ef6BBkWCKYu8inDuV8fd1SDT1bm",
+        "block_hash": "HEtykHsaJ5jfq7gThSMpg5KsbYcgTZCoGvShfZ9rezKX",
+        "block_height": 276110650,
+        "gas_burnt": "5590479087837",
+        "tokens_burnt": "514411396283700000000",
+        "status": "success",
+        "refusal": null,
+        "top_status": {
+          "SuccessValue": ""
+        },
+        "failure_text": null,
+        "failed_receipts": 0,
+        "logs": [
+          "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"seq\":2,\"action\":\"unfreeze\",\"actor_account\":\"fleet-modeb-748d4372.testnet\",\"signer_pk\":\"ed25519:27zeqN555dhm6B65WCk4QePiztXthKpPG92nj44z6f5t\",\"subject\":\"paused=false\",\"block_height\":276110652,\"block_timestamp\":1793745404643658260,\"entry_hash\":\"82d6e41d73dbbc53144af462bf09340e35dac76e11e8da21a4f2b5bb8796d39b\"}}"
+        ],
+        "action": "unfreeze_second_confirm",
+        "request_id": 1,
+        "wall_ms_to_unpaused": 27064
+      },
+      "wall_ms_to_unpaused": 27064,
+      "paused": false
+    },
+    "restored_execute": {
+      "tx": "GR69FWJU4n2xdn58KPbR7wgjCteLz1g826E5Ja8hnLS7",
+      "block_hash": "GeqtptjWrRe3hnuL2ByAZh1LXK2PGdwpTwkpuz9A799W",
+      "block_height": 276110695,
+      "gas_burnt": "4008316892013",
+      "tokens_burnt": "356195176701300000000",
+      "status": "success",
+      "refusal": null,
+      "top_status": {
+        "SuccessValue": "InBvbmci"
+      },
+      "failure_text": null,
+      "failed_receipts": 0,
+      "logs": [
+        "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"execute\",\"actor_account\":\"agent-b1.fleet-modeb-748d4372.testnet\",\"signer_pk\":\"ed25519:kB5fcDtfZA6Au6xmd8U2coeBiRg4dHpShADXCAybB2L\",\"subject\":\"agent-b1.fleet-modeb-748d4372.testnet.ping\",\"block_height\":276110695,\"block_timestamp\":1793745431089449303,\"entry_hash\":\"\"}}",
+        "EVENT_JSON:{\"standard\":\"nep297\",\"version\":\"1.0.0\",\"event\":\"fleet_controller\",\"data\":{\"action\":\"ping\"}}"
+      ],
+      "action": "execute_after_unfreeze"
+    },
+    "audit": {
+      "len": 3,
+      "head": "82d6e41d73dbbc53144af462bf09340e35dac76e11e8da21a4f2b5bb8796d39b",
+      "on_chain_verify": true,
+      "js_verify": true,
+      "entries": [
+        {
+          "seq": 0,
+          "action": "init",
+          "actor_account": "",
+          "signer_pk": "",
+          "subject": "provisioned",
+          "block_height": 276109053,
+          "block_timestamp": "1793744455724271447",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "entry_hash": "445c311a628d6906a23d01db4d90d01e682cbb0881249e31e57903152a8d2777"
+        },
+        {
+          "seq": 1,
+          "action": "freeze",
+          "actor_account": "fleet-modeb-748d4372.testnet",
+          "signer_pk": "ed25519:27zeqN555dhm6B65WCk4QePiztXthKpPG92nj44z6f5t",
+          "subject": "paused=true",
+          "block_height": 276110500,
+          "block_timestamp": "1793745312223423045",
+          "prev_hash": "445c311a628d6906a23d01db4d90d01e682cbb0881249e31e57903152a8d2777",
+          "entry_hash": "39b615220a16f3bf79628d14e1aa9fb4317fea431b4270f7a0042ecf9593e57a"
+        },
+        {
+          "seq": 2,
+          "action": "unfreeze",
+          "actor_account": "fleet-modeb-748d4372.testnet",
+          "signer_pk": "ed25519:27zeqN555dhm6B65WCk4QePiztXthKpPG92nj44z6f5t",
+          "subject": "paused=false",
+          "block_height": 276110652,
+          "block_timestamp": "1793745404643658260",
+          "prev_hash": "39b615220a16f3bf79628d14e1aa9fb4317fea431b4270f7a0042ecf9593e57a",
+          "entry_hash": "82d6e41d73dbbc53144af462bf09340e35dac76e11e8da21a4f2b5bb8796d39b"
+        }
+      ]
+    }
+  },
+  "latency": {
+    "agent": "agent-lat1.fleet-modeb-748d4372.testnet",
+    "freeze": {
+      "n": 3,
+      "min_ms": 19518,
+      "mean_ms": 22716,
+      "max_ms": 28576,
+      "samples": [
+        {
+          "cycle": 1,
+          "wall_ms": 19518,
+          "tx": "3kgAvdzUs7cjzJ5edEsi67FnnmMSYfwRT3y2rBuvLgJB",
+          "block_height": 276110760,
+          "gas_burnt": "2326433059134",
+          "tokens_burnt": "210325049663400000000",
+          "paused": true
+        },
+        {
+          "cycle": 2,
+          "wall_ms": 20053,
+          "tx": "84Z9ZpdFaCWRbR4wWpnNBKmr74cRCePpecTeXcVFoUbf",
+          "block_height": 276110827,
+          "gas_burnt": "2395915995881",
+          "tokens_burnt": "217273343338100000000",
+          "paused": true
+        },
+        {
+          "cycle": 3,
+          "wall_ms": 28576,
+          "tx": "9BiJMjjso2HLiMoF5321boXmbRSBb1qdoUZBuJhzfxzF",
+          "block_height": 276110901,
+          "gas_burnt": "2465821829212",
+          "tokens_burnt": "224263926671200000000",
+          "paused": true
+        }
+      ]
+    },
+    "unfreeze": {
+      "n": 3,
+      "min_ms": 20312,
+      "mean_ms": 21997,
+      "max_ms": 25203,
+      "samples": [
+        {
+          "cycle": 1,
+          "wall_ms": 20475,
+          "tx": "GCdNNb7G4bvRrhpXnrFWSb7vdvin2CFpvAGkbRv4PyNB",
+          "block_height": 276110793,
+          "gas_burnt": "2363088449363",
+          "tokens_burnt": "213990588686300000000",
+          "paused": false
+        },
+        {
+          "cycle": 2,
+          "wall_ms": 25203,
+          "tx": "65WKeR1UkxqtpNyyRqVBbsPhd71a5iyCXABKe2VeAxwB",
+          "block_height": 276110868,
+          "gas_burnt": "2430641200534",
+          "tokens_burnt": "220745863803400000000",
+          "paused": false
+        },
+        {
+          "cycle": 3,
+          "wall_ms": 20312,
+          "tx": "5GimXEXS1c3Q1vodrWnTRZYgWM15U6Bf8vAGfNG9WHzR",
+          "block_height": 276110949,
+          "gas_burnt": "2501146822989",
+          "tokens_burnt": "227796426048900000000",
+          "paused": false
+        }
+      ]
+    },
+    "storage": {
+      "before": 250508,
+      "after": 252221,
+      "delta": 1713,
+      "audit_entries_before": 1,
+      "audit_entries_after": 7,
+      "audit_entries_added": 6,
+      "bytes_per_audit_entry_including_vector_growth": 285.5
+    },
+    "admin_allowance_yocto": "98685604801788700000000",
+    "derived_budget": {
+      "mean_tokens_burnt_per_freeze": "217287439890900000000",
+      "upper_bound_freeze_calls": 454,
+      "note": "Derived from the measured per-call tokens burnt and the native key allowance; this is not a live exhaustion test."
+    },
+    "audit": {
+      "len": 7,
+      "head": "a90f0fd4e7425072e5103060263cf9106b97cbac328c491b52830d8c9e74abdc",
+      "on_chain_verify": true,
+      "js_verify": true,
+      "entries": [
+        {
+          "seq": 0,
+          "action": "init",
+          "actor_account": "",
+          "signer_pk": "",
+          "subject": "provisioned",
+          "block_height": 276109997,
+          "block_timestamp": "1793745011370373799",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "entry_hash": "9862fe967344074f845d08989175c6a2c647a5de02de546d97ab8f09d14a61fd"
+        },
+        {
+          "seq": 1,
+          "action": "freeze",
+          "actor_account": "agent-lat1.fleet-modeb-748d4372.testnet",
+          "signer_pk": "ed25519:6XKhouPqXjoczQbjt9t6wdcKv8XFeF8o1j3orPGYJiQp",
+          "subject": "paused=true",
+          "block_height": 276110760,
+          "block_timestamp": "1793745473109768438",
+          "prev_hash": "9862fe967344074f845d08989175c6a2c647a5de02de546d97ab8f09d14a61fd",
+          "entry_hash": "40ff831563a107e116fbb8f4c2972b9457eec7c3bb7168d733b8e7c97b0bf5cd"
+        },
+        {
+          "seq": 2,
+          "action": "unfreeze",
+          "actor_account": "agent-lat1.fleet-modeb-748d4372.testnet",
+          "signer_pk": "ed25519:6XKhouPqXjoczQbjt9t6wdcKv8XFeF8o1j3orPGYJiQp",
+          "subject": "paused=false",
+          "block_height": 276110793,
+          "block_timestamp": "1793745493184456119",
+          "prev_hash": "40ff831563a107e116fbb8f4c2972b9457eec7c3bb7168d733b8e7c97b0bf5cd",
+          "entry_hash": "d11f8e690c49b688b37621155e9061a4612aa82ac31e81842b085c23f26f5687"
+        },
+        {
+          "seq": 3,
+          "action": "freeze",
+          "actor_account": "agent-lat1.fleet-modeb-748d4372.testnet",
+          "signer_pk": "ed25519:6XKhouPqXjoczQbjt9t6wdcKv8XFeF8o1j3orPGYJiQp",
+          "subject": "paused=true",
+          "block_height": 276110827,
+          "block_timestamp": "1793745513744450630",
+          "prev_hash": "d11f8e690c49b688b37621155e9061a4612aa82ac31e81842b085c23f26f5687",
+          "entry_hash": "c67da25a644b888675f03b3668327da7ace674fd6ead02a281596c5d4f261c2e"
+        },
+        {
+          "seq": 4,
+          "action": "unfreeze",
+          "actor_account": "agent-lat1.fleet-modeb-748d4372.testnet",
+          "signer_pk": "ed25519:6XKhouPqXjoczQbjt9t6wdcKv8XFeF8o1j3orPGYJiQp",
+          "subject": "paused=false",
+          "block_height": 276110868,
+          "block_timestamp": "1793745538545935920",
+          "prev_hash": "c67da25a644b888675f03b3668327da7ace674fd6ead02a281596c5d4f261c2e",
+          "entry_hash": "ebbd07c78b24fca8c1d45495238388914d1f143c5704dd1045afa28ce48a6a7b"
+        },
+        {
+          "seq": 5,
+          "action": "freeze",
+          "actor_account": "agent-lat1.fleet-modeb-748d4372.testnet",
+          "signer_pk": "ed25519:6XKhouPqXjoczQbjt9t6wdcKv8XFeF8o1j3orPGYJiQp",
+          "subject": "paused=true",
+          "block_height": 276110901,
+          "block_timestamp": "1793745558523700081",
+          "prev_hash": "ebbd07c78b24fca8c1d45495238388914d1f143c5704dd1045afa28ce48a6a7b",
+          "entry_hash": "bd097c3179493370dc3ce297f9fd053f0b438c174c2cabf4058bafa3c000093f"
+        },
+        {
+          "seq": 6,
+          "action": "unfreeze",
+          "actor_account": "agent-lat1.fleet-modeb-748d4372.testnet",
+          "signer_pk": "ed25519:6XKhouPqXjoczQbjt9t6wdcKv8XFeF8o1j3orPGYJiQp",
+          "subject": "paused=false",
+          "block_height": 276110949,
+          "block_timestamp": "1793745586973499205",
+          "prev_hash": "bd097c3179493370dc3ce297f9fd053f0b438c174c2cabf4058bafa3c000093f",
+          "entry_hash": "a90f0fd4e7425072e5103060263cf9106b97cbac328c491b52830d8c9e74abdc"
+        }
+      ]
+    }
+  },
+  "isolation": [
+    {
+      "name": "latency operator key against the Mode B agent",
+      "kind": "cross_agent",
+      "status": "protocol_rejected",
+      "error": "Access key receiver agent-lat1.fleet-modeb-748d4372.testnet does not match transaction receiver agent-b1.fleet-modeb-748d4372.testnet"
+    },
+    {
+      "name": "latency operator key on the latency agent",
+      "kind": "positive_control",
+      "status": "success",
+      "tx": "uSE8JBV9NJa3MUUQNMnE7cCBJDcsHsSK6qW3Xe2sbLZ",
+      "block_height": 276111729,
+      "gas_burnt": "4112658485520",
+      "result": "\"pong\""
+    },
+    {
+      "name": "Mode B operator key against the latency agent",
+      "kind": "cross_agent",
+      "status": "protocol_rejected",
+      "error": "Access key receiver agent-b1.fleet-modeb-748d4372.testnet does not match transaction receiver agent-lat1.fleet-modeb-748d4372.testnet"
+    },
+    {
+      "name": "Mode B operator key on the Mode B agent",
+      "kind": "positive_control",
+      "status": "success",
+      "tx": "3YkKFigE2PLq65YZQAbTEY9NiQ7ZsoBigQp2y9uCxTpR",
+      "block_height": 276112408,
+      "gas_burnt": "4008316892013",
+      "result": "\"pong\""
+    }
+  ],
+  "checks": [
+    {
+      "name": "controller wasm matches the canonical deployed hash",
+      "ok": true,
+      "detail": "cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f"
+    },
+    {
+      "name": "fleet-v03-5cff9e99.testnet owner key is FullAccess",
+      "ok": true,
+      "detail": "FullAccess"
+    },
+    {
+      "name": "fleet-v03-fund2-8b91351d.testnet owner key is FullAccess",
+      "ok": true,
+      "detail": "FullAccess"
+    },
+    {
+      "name": "Mode B agent reports mode B",
+      "ok": true,
+      "detail": "B"
+    },
+    {
+      "name": "Mode B admin is the multisig account",
+      "ok": true,
+      "detail": "fleet-modeb-748d4372.testnet"
+    },
+    {
+      "name": "Mode B agent has no admin or recovery key",
+      "ok": true,
+      "detail": "null null"
+    },
+    {
+      "name": "Mode B agent has four active operators",
+      "ok": true,
+      "detail": "[true,true,true,true]"
+    },
+    {
+      "name": "Mode B agent has four FunctionCall keys and zero FullAccess",
+      "ok": true,
+      "detail": "[\"FunctionCall\",\"FunctionCall\",\"FunctionCall\",\"FunctionCall\"]"
+    },
+    {
+      "name": "Mode B agent has no key for the multisig account",
+      "ok": true,
+      "detail": "[\"agent-b1.fleet-modeb-748d4372.testnet\",\"agent-b1.fleet-modeb-748d4372.testnet\",\"agent-b1.fleet-modeb-748d4372.testnet\",\"agent-b1.fleet-modeb-748d4372.testnet\"]"
+    },
+    {
+      "name": "Mode B agent on-chain code hash matches the controller wasm",
+      "ok": true,
+      "detail": "Eqxd68F8dPX5ikDdoPD3xmuiZ1r6rVkvBd39woLRFYE2 -> cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f"
+    },
+    {
+      "name": "latency agent reports mode A",
+      "ok": true,
+      "detail": "A"
+    },
+    {
+      "name": "latency agent has six FunctionCall keys and zero FullAccess",
+      "ok": true,
+      "detail": "[\"FunctionCall\",\"FunctionCall\",\"FunctionCall\",\"FunctionCall\",\"FunctionCall\",\"FunctionCall\"]"
+    },
+    {
+      "name": "latency agent on-chain code hash matches the controller wasm",
+      "ok": true,
+      "detail": "Eqxd68F8dPX5ikDdoPD3xmuiZ1r6rVkvBd39woLRFYE2 -> cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f"
+    },
+    {
+      "name": "multisig has exactly two account members",
+      "ok": true,
+      "detail": "[\"fleet-v03-5cff9e99.testnet\",\"fleet-v03-fund2-8b91351d.testnet\"]"
+    },
+    {
+      "name": "multisig requires two confirmations",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "name": "multisig account has zero access keys after bootstrap",
+      "ok": true,
+      "detail": "1 before, 0 after"
+    },
+    {
+      "name": "multisig on-chain code hash matches the built wasm",
+      "ok": true,
+      "detail": "G3GUfe8ZJ2RLe2XphKiKA7YXB4iyjBjUK8knd6T8X1jC -> df73f72595382e9e5839431d6589410e37175b04e2ac09aa03a8d793f249c82f"
+    },
+    {
+      "name": "Mode B agent starts with only the provisioning audit entry",
+      "ok": true,
+      "detail": "[\"init\"]"
+    },
+    {
+      "name": "member direct freeze is rejected",
+      "ok": true,
+      "detail": "failure refusal=active admin required"
+    },
+    {
+      "name": "member direct freeze leaves the agent unpaused",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "name": "non-member cannot create a multisig request",
+      "ok": true,
+      "detail": "failure [{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: Predecessor must be a member or transaction signed with key of given account\"}}}}},{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked"
+    },
+    {
+      "name": "non-member request does not consume a request id",
+      "ok": true,
+      "detail": "0 -> 0"
+    },
+    {
+      "name": "freeze request id parsed",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "new freeze request has zero confirmations",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "unconfirmed request does not pause the agent",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "name": "one confirmation is recorded",
+      "ok": true,
+      "detail": "[\"{\\\"account_id\\\":\\\"fleet-v03-5cff9e99.testnet\\\"}\"]"
+    },
+    {
+      "name": "one confirmation does not pause the agent",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "name": "the same member cannot confirm twice",
+      "ok": true,
+      "detail": "true [{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: Already confirmed this request with this key\"}}}}},{\"Failure\":{\"ActionError\":{\"index\":0,\"kind\":{\"FunctionCallError\":{\"ExecutionError\":\"Smart contract panicked: Already confirmed this request"
+    },
+    {
+      "name": "second confirmation pauses the agent",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "name": "second confirmation has no failed receipts",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "executed freeze request is removed",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "frozen execute is refused with the recorded reason",
+      "ok": true,
+      "detail": "failure refusal=controller is frozen"
+    },
+    {
+      "name": "one unfreeze confirmation does not unpause",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "name": "second unfreeze confirmation unpauses the agent",
+      "ok": true,
+      "detail": "false"
+    },
+    {
+      "name": "second unfreeze confirmation has no failed receipts",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "operator execute succeeds after unfreeze",
+      "ok": true,
+      "detail": "success {\"SuccessValue\":\"InBvbmci\"}"
+    },
+    {
+      "name": "restored execute returns pong",
+      "ok": true,
+      "detail": "\"pong\""
+    },
+    {
+      "name": "Mode B audit chain recomputes",
+      "ok": true,
+      "detail": "3 entries, head 82d6e41d73…"
+    },
+    {
+      "name": "Mode B audit verifies on-chain",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "name": "Mode B audit contains init, freeze, and unfreeze",
+      "ok": true,
+      "detail": "[\"init\",\"freeze\",\"unfreeze\"]"
+    },
+    {
+      "name": "Mode B audit has one freeze and one unfreeze entry",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "name": "init audit entry is the provisioning callback",
+      "ok": true,
+      "detail": "{\"actor\":\"\",\"signer\":\"\",\"subject\":\"provisioned\"}"
+    },
+    {
+      "name": "audit seq 1 attributes the action to the multisig",
+      "ok": true,
+      "detail": "fleet-modeb-748d4372.testnet"
+    },
+    {
+      "name": "audit seq 1 records an owner signature",
+      "ok": true,
+      "detail": "ed25519:27zeqN555dhm6B65WCk4QePiztXthKpPG92nj44z6f5t"
+    },
+    {
+      "name": "audit seq 2 attributes the action to the multisig",
+      "ok": true,
+      "detail": "fleet-modeb-748d4372.testnet"
+    },
+    {
+      "name": "audit seq 2 records an owner signature",
+      "ok": true,
+      "detail": "ed25519:27zeqN555dhm6B65WCk4QePiztXthKpPG92nj44z6f5t"
+    },
+    {
+      "name": "latency agent audit chain recomputes",
+      "ok": true,
+      "detail": "7 entries"
+    },
+    {
+      "name": "latency agent audit verifies on-chain",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "name": "latency operator key against the Mode B agent is rejected by the native key ACL",
+      "ok": true,
+      "detail": "Access key receiver agent-lat1.fleet-modeb-748d4372.testnet does not match transaction receiver agent-b1.fleet-modeb-748d4372.testnet"
+    },
+    {
+      "name": "latency operator key on the latency agent succeeds on its own agent",
+      "ok": true,
+      "detail": "uSE8JBV9NJa3MUUQNMnE7cCBJDcsHsSK6qW3Xe2sbLZ \"pong\""
+    },
+    {
+      "name": "Mode B operator key against the latency agent is rejected by the native key ACL",
+      "ok": true,
+      "detail": "Access key receiver agent-b1.fleet-modeb-748d4372.testnet does not match transaction receiver agent-lat1.fleet-modeb-748d4372.testnet"
+    },
+    {
+      "name": "Mode B operator key on the Mode B agent succeeds on its own agent",
+      "ok": true,
+      "detail": "3YkKFigE2PLq65YZQAbTEY9NiQ7ZsoBigQp2y9uCxTpR \"pong\""
+    }
+  ],
+  "steps": [
+    {
+      "name": "faucet_parent",
+      "at": "2026-11-03T22:28:55.814Z",
+      "account": "fleet-modeb-748d4372.testnet",
+      "public_key": "ed25519:8K28C9yCQEg34aeup31S52qRzc2LbZVDxXM69J8Juo3e",
+      "faucet_tx": "3kkxz3tGJWYf36YmdfPgXAjBJYpmUsfQkadQeJod8f2U",
+      "response_captured": false,
+      "response_error": null,
+      "balance_yocto": "7189556394320227800000000",
+      "code_hash": "11111111111111111111111111111111",
+      "reused": true
+    },
+    {
+      "name": "agent_provision_metadata",
+      "at": "2026-11-03T22:29:15.626Z",
+      "agent": "agent-b1.fleet-modeb-748d4372.testnet",
+      "create_tx": "FC4TRS6e7FRX9zvb1eS5aP6UYrzYcLzKRkZeY2y43Edh",
+      "init_tx": "4QHPzixTgcJk2wB1SE3cUpkmMWCe5bXKLvzhsdT2ja5Y",
+      "source": "env_override"
+    },
+    {
+      "name": "agent_provision_metadata",
+      "at": "2026-11-03T22:30:24.290Z",
+      "agent": "agent-lat1.fleet-modeb-748d4372.testnet",
+      "create_tx": "FY2fKhM3xXo7v36PKD6rNcyjZhuHKtMuMzozvW8fFUQK",
+      "init_tx": "GzioLDH2xrFsciY2mJ8d4WU6Mu7nsY6PYKxXReTiAYyN",
+      "source": "this_run"
+    }
+  ],
+  "ok": true
+}

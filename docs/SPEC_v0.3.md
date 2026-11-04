@@ -1,12 +1,12 @@
 # FLEET controller specification v0.3
 
 **Status:** design target, now implemented as the v0.3 controller. The contract,
-SDK, and CLI exist and ran on testnet on 2026-11-03. Every `HYPOTHESIS` still
-needs a test before it is claimed; the current claim status is in
-`docs/TEST_PLAN.md`. Mode B and the console are not implemented. This is not a
+SDK, CLI, and Mode B 2-of-2 path exist and ran on testnet on 2026-11-03. The
+console is not implemented. Every `HYPOTHESIS` still needs a test before it is
+claimed; the current claim status is in `docs/TEST_PLAN.md`. This is not a
 security audit.
-**Date:** 2026-11-03 UTC. Phase 1 target was 2026-10-31; the slip is disclosed in
-`research/BUILD_STATUS.md`.
+**Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC). Phase 1 target
+was 2026-10-31; the slip is disclosed in `research/BUILD_STATUS.md`.
 **Base evidence:** v0.2 controller `fleet-controller-v2/0.2.0` and multisig
 `fleet-multisig-v2/0.1.0`, tested on NEAR testnet 2026-10-29. Evidence lives in
 the separate research workspace, not in this repository.
@@ -340,6 +340,15 @@ not the product default.
 
 If the gate fails, Mode B falls back to Mode A with the “not non-custodial”
 label; it does not silently become a custom multisig claim.
+
+**Gate result (2026-11-03):** **PASS**. The run used two **account members**
+rather than access-key members, so the method-name ACL typo was not exercised;
+the parent ended with zero access keys, which is stricter than “no FullAccess.”
+One confirmation was a no-op; the second froze the agent; a second 2-of-2
+unfreeze restored execution; direct member and non-member calls were refused.
+Evidence: `evidence/modeb-v03/run.json`, 52/52 checks; claims F-021…F-025.
+Both owner accounts were operated by the same test harness, so this proves the
+mechanism, not independent custody.
 
 ---
 

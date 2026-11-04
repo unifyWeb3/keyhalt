@@ -1,9 +1,11 @@
 # FLEET 90-second demo script
 
-**Status:** v0.3 — **planned, not recorded**. The commands below work against
-the canonical testnet evidence, but no video exists and `T-E-07` is still
-planned. Do not present this script as a recording.
-**Date:** 2026-11-03 UTC.
+**Status:** v0.3 — **planned, not recorded**. The Mode A commands below work
+against the canonical testnet evidence, but no video exists and `T-E-07` is still
+planned. Mode B 2-of-2 was verified separately by `scripts/testnet-modeb.mjs`;
+it is not part of this 90-second Mode A walkthrough. Do not present this script
+as a recording.
+**Date:** 2026-11-04 UTC (canonical runs executed 2026-11-03 UTC).
 **Rule:** every step maps to a `VERIFIED` row in `CLAIMS.md`. If a step is not
 green during rehearsal, cut it rather than softening the claim.
 
@@ -156,10 +158,11 @@ Claim: F-008, F-016. Test: `evidence/cli-v03/tamper-verify.json`.
 node scripts/check-claims.mjs
 ```
 
-Show `CLAIMS 20/20 verified`. End on the README status line or say:
+Show `CLAIMS 28/28 verified`. End on the README status line or say:
 
-> Testnet only. Unaudited. Mode A is not non-custodial. Mode B is not
-> implemented. Freeze does not cancel an in-flight receipt.
+> Testnet only. Unaudited. Mode A is not non-custodial. Mode B reduces
+> single-admin-key trust with a 2-of-2 multisig, but it is not independently
+> custodied in this evidence. Freeze does not cancel an in-flight receipt.
 
 Do not show a console, wallet, hosted service, or a mainnet transaction.
 
@@ -178,6 +181,10 @@ Do not show a console, wallet, hosted service, or a mainnet transaction.
 
 Every step also depends on the testnet-only guard (F-014) and the 35-test /
 21-test suites (F-013, F-020).
+
+Mode B is deliberately outside the 90-second Mode A take. If the submission
+needs it, point to `evidence/modeb-v03/RUN.md` and claims F-021…F-028 rather
+than adding unrecorded steps.
 
 ---
 
