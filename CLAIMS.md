@@ -42,6 +42,11 @@ hash. A claim without evidence is removed, not softened.
 | F-027 | Six added audit entries grew storage by 1,713 bytes (about 285.5 bytes per entry including vector growth). The remaining 0.0986856 NEAR admin allowance derives to 454 freeze calls at the measured mean tokens burnt; this is a derived bound, not an exhaustion test. | VERIFIED | `evidence/modeb-v03/run.json` latency.storage/derived_budget | 2026-11-03 |
 | F-028 | A FunctionCall operator key for one agent is rejected by the other agent's native receiver ACL and succeeds on its own agent, in both directions. | VERIFIED | `evidence/modeb-v03/run.json` isolation; txs `uSE8JBV9NJa3MUUQNMnE7cCBJDcsHsSK6qW3Xe2sbLZ`, `3YkKFigE2PLq65YZQAbTEY9NiQ7ZsoBigQp2y9uCxTpR` | 2026-11-03 |
 
+**Correction 2026-11-04:** F-017 was relabeled "Eight semantic mutations in the
+controller state machine" → "Eight hand-written mutants in the controller
+state machine" before any new automated score. The hand-written set is a
+targeted regression set, not an automated mutation score.
+
 **Correction 2026-11-03:** F-013 previously read "33 Rust tests". Two tests
 were added (`cancel_admin` authorization and key-role collision) and two
 existing tests were strengthened before any commit or public claim; the current
