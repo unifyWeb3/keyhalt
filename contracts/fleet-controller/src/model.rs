@@ -900,56 +900,12 @@ impl State {
     }
 }
 
-/// Independent reference model used only by tests. It is deliberately written
-/// with simple sets and flags, not by calling `State` methods.
-#[cfg(test)]
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Reference {
-    pub mode: &'static str,
-    pub admin: String,
-    pub recovery: String,
-    pub admin_account: String,
-    pub paused: bool,
-    pub active: Vec<String>,
-    pub pending: Option<String>,
-    pub audit_len: usize,
-    pub provisioned: bool,
-}
-
-#[cfg(test)]
-impl Reference {
-    pub fn from_state(state: &State) -> Self {
-        Self {
-            mode: state.admin_mode(),
-            admin: state.admin_pk().unwrap_or("").to_string(),
-            recovery: state.recovery_pk().unwrap_or("").to_string(),
-            admin_account: state.admin_account().unwrap_or("").to_string(),
-            paused: state.paused,
-            active: state
-                .operators
-                .iter()
-                .filter(|op| op.active)
-                .map(|op| op.pk.clone())
-                .collect(),
-            pending: state.pending_admin.as_ref().map(|p| p.pk.clone()),
-            audit_len: state.audit.len(),
-            provisioned: state.provisioned,
-        }
-    }
-
-    pub fn compare(&self, state: &State) -> Result<(), String> {
-        let other = Self::from_state(state);
-        if self == &other {
-            Ok(())
-        } else {
-            Err(format!("reference mismatch: {:?} != {:?}", self, other))
-        }
-    }
-}
+// Reference model lives in `reference_model.rs` (written from SPEC alone).
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::reference_model::Reference;
 
     const ADMIN: &str = "ed25519:2dckMmmyFQdr4J78vGfqm7XaK4ck2HgCvN8gSDfiQyx2";
     const RECOVERY: &str = "ed25519:GBBrXTPNg3sSXBKbpdHnRv1RwC5edoFd5j5KnkG5ffbp";
@@ -1383,87 +1339,104 @@ mod tests {
 
     #[test]
     fn random_sequences_preserve_reference_and_audit() {
-        // Small deterministic xorshift PRNG: no external property-test crate.
-        let mut seed = 0x9e3779b97f4a7c15u64;
-        let mut next = || {
-            seed ^= seed << 13;
-            seed ^= seed >> 7;
-            seed ^= seed << 17;
-            seed
-        };
-        let mut state = state();
-        let mut reference = Reference::from_state(&state);
-        for step in 0..5_000u64 {
-            match next() % 6 {
-                0 => {
-                    if state.paused {
-                        if state.unfreeze(&admin_actor(), CURRENT, step, step).is_ok() {
+        // Differential test: the same xorshift sequences drive the
+        // implementation (State) and the independent reference model
+        // (reference_model.rs, written from SPEC alone). Outer loop covers
+        // multiple seeded sequences; each runs 5,000 steps compared after
+        // every step. Total: 3 sequences × 5,000 steps = 15,000 comparisons.
+        let seeds: [u64; 3] = [0x9e3779b97f4a7c15, 0x1234567890abcdef, 0x0fedcba987654321];
+        for seed0 in seeds {
+            let mut seed = seed0;
+            let mut next = || {
+                seed ^= seed << 13;
+                seed ^= seed >> 7;
+                seed ^= seed << 17;
+                seed
+            };
+            let mut state = state();
+            let mut reference = Reference::from_state(&state);
+            for step in 0..5_000u64 {
+                match next() % 6 {
+                    0 => {
+                        if state.paused {
+                            if state.unfreeze(&admin_actor(), CURRENT, step, step).is_ok() {
+                                reference.paused = false;
+                                reference.audit_len += 1;
+                            }
+                        } else if state.freeze(&admin_actor(), CURRENT, step, step).is_ok() {
+                            reference.paused = true;
+                            reference.audit_len += 1;
+                        }
+                    }
+                    1 => {
+                        let idx = (next() % 10) as u8;
+                        let pk = format!("ed25519:RandomOperator{:02}1111111111111111111111", idx);
+                        if state
+                            .prepare_grant(&admin_actor(), CURRENT, &pk, "r", step, step)
+                            .is_ok()
+                        {
+                            reference.audit_len += 1;
+                            reference.registered.insert(pk.clone());
+                            if next() % 2 == 0 {
+                                state.confirm_grant(&pk, true, step, step).unwrap();
+                                reference.active.insert(pk);
+                            } else {
+                                state.confirm_grant(&pk, false, step, step).unwrap();
+                                state.operators.retain(|op| op.pk != pk);
+                                reference.registered.remove(&pk);
+                            }
+                            reference.audit_len += 1;
+                        }
+                    }
+                    2 => {
+                        let pk = reference.active_list().into_iter().next();
+                        if let Some(pk) = pk {
+                            if state
+                                .revoke_operator(&admin_actor(), CURRENT, &pk, step, step)
+                                .is_ok()
+                            {
+                                reference.active.remove(&pk);
+                                reference.registered.remove(&pk);
+                                reference.audit_len += 1;
+                            }
+                        }
+                    }
+                    3 => {
+                        if !state.paused {
+                            state.freeze(&admin_actor(), CURRENT, step, step).unwrap();
+                            reference.paused = true;
+                            reference.audit_len += 1;
+                        }
+                    }
+                    4 => {
+                        if state.paused {
+                            state.unfreeze(&admin_actor(), CURRENT, step, step).unwrap();
                             reference.paused = false;
                             reference.audit_len += 1;
                         }
-                    } else if state.freeze(&admin_actor(), CURRENT, step, step).is_ok() {
-                        reference.paused = true;
-                        reference.audit_len += 1;
+                    }
+                    _ => {
+                        let before = state.audit.len();
+                        let _ = state.revoke_tag(&admin_actor(), CURRENT, "missing", step, step);
+                        assert_eq!(state.audit.len(), before);
                     }
                 }
-                1 => {
-                    let idx = (next() % 10) as u8;
-                    let pk = format!("ed25519:RandomOperator{:02}1111111111111111111111", idx);
-                    if state
-                        .prepare_grant(&admin_actor(), CURRENT, &pk, "r", step, step)
-                        .is_ok()
-                    {
-                        reference.audit_len += 1;
-                        if next() % 2 == 0 {
-                            state.confirm_grant(&pk, true, step, step).unwrap();
-                            reference.active.push(pk);
-                        } else {
-                            state.confirm_grant(&pk, false, step, step).unwrap();
-                            state.operators.retain(|op| op.pk != pk);
-                        }
-                        reference.audit_len += 1;
-                    }
-                }
-                2 => {
-                    if let Some(pk) = reference.active.first().cloned() {
-                        if state
-                            .revoke_operator(&admin_actor(), CURRENT, &pk, step, step)
-                            .is_ok()
-                        {
-                            reference.active.retain(|k| k != &pk);
-                            reference.audit_len += 1;
-                        }
-                    }
-                }
-                3 => {
-                    if !state.paused {
-                        state.freeze(&admin_actor(), CURRENT, step, step).unwrap();
-                        reference.paused = true;
-                        reference.audit_len += 1;
-                    }
-                }
-                4 => {
-                    if state.paused {
-                        state.unfreeze(&admin_actor(), CURRENT, step, step).unwrap();
-                        reference.paused = false;
-                        reference.audit_len += 1;
-                    }
-                }
-                _ => {
-                    let before = state.audit.len();
-                    let _ = state.revoke_tag(&admin_actor(), CURRENT, "missing", step, step);
-                    assert_eq!(state.audit.len(), before);
-                }
+                reference.compare(&state).unwrap_or_else(|error| {
+                    panic!(
+                        "seed {:x} step {}: {} (audit heads: {:?})",
+                        seed0,
+                        step,
+                        error,
+                        state.audit_head()
+                    )
+                });
+                assert!(
+                    state.verify_audit(),
+                    "audit broken at seed {:x} step {}",
+                    seed0,
+                    step
+                );
             }
-            reference.compare(&state).unwrap_or_else(|error| {
-                panic!(
-                    "step {}: {} (audit heads: {:?})",
-                    step,
-                    error,
-                    state.audit_head()
-                )
-            });
-            assert!(state.verify_audit(), "audit broken at step {}", step);
         }
     }
 }

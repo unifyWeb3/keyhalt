@@ -7,6 +7,9 @@
 
 mod model;
 
+#[cfg(test)]
+mod reference_model;
+
 use model::{Actor, Mode, Operator, PendingOrigin, State, MAX_ARGS_LEN, MAX_EXECUTE_GAS, VERSION};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::serde_json::{json, Value};
@@ -710,6 +713,7 @@ mod tests {
     const OP1: &str = "ed25519:6fwVD6BjbUyZ9Xq1UWCpfbnrtonRaa75a28sw7v6k2WX";
     const OP2: &str = "ed25519:65WruDfYoZ5A5dkDWcxkXjtNCfUvvbSWELPo9T38cynD";
     const OP3: &str = "ed25519:2ez7EPpss9wTAGFBTFfpejNRNtDnMiDdYX7qaEjfEpmm";
+    const OP4: &str = "ed25519:EVfpzNBztFza3BxPViKsk3Gy9sg92HxZzgSZBCeGJGzd";
     const CURRENT: &str = "agent.fleet.testnet";
     const ADMIN_ACCOUNT: &str = "multisig.fleet.testnet";
 
@@ -773,6 +777,10 @@ mod tests {
 
     fn admin_ctx() -> near_sdk::VMContext {
         context(CURRENT, ADMIN)
+    }
+
+    fn operator_ctx() -> near_sdk::VMContext {
+        context(CURRENT, OP1)
     }
 
     #[test]
@@ -864,6 +872,174 @@ mod tests {
         testing_env_with_promise_results(admin_ctx(), PromiseResult::Failed);
         assert!(!contract.on_grant(OP3.to_string()));
         assert!(contract.state.operator_for(OP3).is_none());
+    }
+
+    #[test]
+    fn grant_and_rotate_add_only_function_call_keys() {
+        let mut contract = provisioned();
+        testing_env!(admin_ctx());
+        let grant_promise = contract.grant_operator(OP3.to_string(), "c".to_string());
+        drop(grant_promise);
+        let receipts = get_created_receipts();
+        let actions = receipts
+            .iter()
+            .flat_map(|receipt| receipt.actions.iter())
+            .collect::<Vec<_>>();
+        assert!(actions
+            .iter()
+            .any(|action| matches!(action, VmAction::AddKeyWithFunctionCall { .. })));
+        assert!(!actions
+            .iter()
+            .any(|action| matches!(action, VmAction::AddKeyWithFullAccess { .. })));
+
+        testing_env_with_promise_results(admin_ctx(), PromiseResult::Successful(vec![]));
+        assert!(contract.on_grant(OP3.to_string()));
+        testing_env!(admin_ctx());
+        let rotate_promise =
+            contract.rotate_operator(OP3.to_string(), OP4.to_string(), "c".to_string());
+        drop(rotate_promise);
+        let receipts = get_created_receipts();
+        let actions = receipts
+            .iter()
+            .flat_map(|receipt| receipt.actions.iter())
+            .collect::<Vec<_>>();
+        assert!(actions
+            .iter()
+            .any(|action| matches!(action, VmAction::AddKeyWithFunctionCall { .. })));
+        assert!(!actions
+            .iter()
+            .any(|action| matches!(action, VmAction::AddKeyWithFullAccess { .. })));
+    }
+
+    #[test]
+    fn no_lifecycle_receipt_contains_deploy_transfer_stake_delete_account_or_full_access() {
+        fn assert_no_forbidden(receipts: &[near_sdk::mock::Receipt]) {
+            let forbidden: Vec<&near_sdk::mock::MockAction> = receipts
+                .iter()
+                .flat_map(|receipt| receipt.actions.iter())
+                .filter(|action| {
+                    matches!(
+                        action,
+                        VmAction::DeployContract { .. }
+                            | VmAction::DeployGlobalContract { .. }
+                            | VmAction::UseGlobalContract { .. }
+                            | VmAction::Transfer { .. }
+                            | VmAction::Stake { .. }
+                            | VmAction::DeleteAccount { .. }
+                            | VmAction::AddKeyWithFullAccess { .. }
+                    )
+                })
+                .collect();
+            assert!(
+                forbidden.is_empty(),
+                "found forbidden actions: {forbidden:?}"
+            );
+        }
+
+        let mut contract = provisioned();
+        testing_env!(admin_ctx());
+        let grant_promise = contract.grant_operator(OP3.to_string(), "c".to_string());
+        drop(grant_promise);
+        assert_no_forbidden(&get_created_receipts());
+
+        testing_env_with_promise_results(admin_ctx(), PromiseResult::Successful(vec![]));
+        assert!(contract.on_grant(OP3.to_string()));
+        testing_env!(admin_ctx());
+        let rotate_promise =
+            contract.rotate_operator(OP3.to_string(), OP4.to_string(), "c".to_string());
+        drop(rotate_promise);
+        assert_no_forbidden(&get_created_receipts());
+
+        testing_env_with_promise_results(admin_ctx(), PromiseResult::Successful(vec![]));
+        assert!(contract.on_rotate(OP3.to_string(), OP4.to_string()));
+        testing_env!(admin_ctx());
+        contract.revoke_operator(OP2.to_string());
+        assert_no_forbidden(&get_created_receipts());
+    }
+
+    #[test]
+    fn rotation_never_leaves_zero_active_admins() {
+        let mut contract = provisioned();
+        assert_eq!(contract.state.admin_pk(), Some(ADMIN));
+        testing_env!(admin_ctx());
+        let _promise = contract.propose_admin(OP3.to_string());
+        testing_env_with_promise_results(admin_ctx(), PromiseResult::Successful(vec![]));
+        assert!(contract.on_propose(OP3.to_string()));
+        assert!(contract.state.admin_pk().is_some());
+        assert!(contract.state.pending_admin.is_some());
+        testing_env!(context(CURRENT, OP3));
+        contract.accept_admin();
+        assert!(contract.state.admin_pk().is_some());
+        assert_eq!(contract.state.admin_pk(), Some(OP3));
+    }
+
+    #[test]
+    fn unauthorized_admin_call_does_not_change_state() {
+        let mut contract = provisioned();
+        let before_audit = contract.state.audit.len();
+        testing_env!(operator_ctx());
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| contract.freeze()));
+        assert!(result.is_err());
+        assert!(!contract.state.paused);
+        assert_eq!(contract.state.audit.len(), before_audit);
+    }
+
+    #[test]
+    fn failed_rotate_add_receipt_is_removed_and_old_key_stays_active() {
+        let mut contract = provisioned();
+        testing_env!(admin_ctx());
+        let _promise = contract.rotate_operator(OP1.to_string(), OP3.to_string(), "c".to_string());
+        testing_env_with_promise_results(admin_ctx(), PromiseResult::Failed);
+        assert!(!contract.on_rotate(OP1.to_string(), OP3.to_string()));
+        assert!(contract.state.operator_for(OP3).is_none());
+        let old = contract.state.operator_for(OP1).unwrap();
+        assert!(old.active);
+    }
+
+    #[test]
+    fn failed_rotate_receipt_keeps_audit_and_active_set_consistent() {
+        let mut contract = provisioned();
+        testing_env!(admin_ctx());
+        let _promise = contract.rotate_operator(OP1.to_string(), OP3.to_string(), "c".to_string());
+        testing_env_with_promise_results(admin_ctx(), PromiseResult::Failed);
+        assert!(!contract.on_rotate(OP1.to_string(), OP3.to_string()));
+        assert!(contract.state.verify_audit());
+        assert_eq!(
+            contract
+                .state
+                .audit
+                .iter()
+                .filter(|entry| entry.action == "rotate_failed")
+                .count(),
+            1
+        );
+    }
+
+    #[test]
+    fn failed_rotation_self_callback_clears_inflight_and_allows_retry() {
+        let mut contract = provisioned();
+        testing_env!(admin_ctx());
+        let _promise = contract.propose_admin(OP3.to_string());
+        testing_env_with_promise_results(admin_ctx(), PromiseResult::Failed);
+        assert!(!contract.on_propose(OP3.to_string()));
+        assert!(contract.state.pending_admin.is_none());
+        assert!(contract.state.inflight_admin.is_none());
+        // A fresh rotation after the failed callback must be accepted.
+        let _retry = contract.propose_admin(OP3.to_string());
+        assert_eq!(contract.state.inflight_admin.as_deref(), Some(OP3));
+    }
+
+    #[test]
+    fn failed_recovery_callback_leaves_no_inflight_and_allows_retry() {
+        let mut contract = provisioned();
+        testing_env!(context(CURRENT, RECOVERY));
+        let _promise = contract.recover_admin(OP3.to_string());
+        testing_env_with_promise_results(context(CURRENT, RECOVERY), PromiseResult::Failed);
+        assert!(!contract.on_propose(OP3.to_string()));
+        assert!(contract.state.pending_admin.is_none());
+        assert!(contract.state.inflight_admin.is_none());
+        let _retry = contract.recover_admin(OP3.to_string());
+        assert_eq!(contract.state.inflight_admin.as_deref(), Some(OP3));
     }
 
     #[test]
