@@ -259,6 +259,7 @@ Evidence files:
 - `evidence/modeb-v03/multisig-repro-build.md` — two-build multisig wasm record
 - `evidence/verify-v03-modeb.log` — full local verification after Mode B
 - `evidence/fresh-clone-v03-modeb.log` — fresh-clone test on commit `eea0ccb`
+- `evidence/fresh-clone-v03-final.log` — fresh-clone test on commit `a88ef57`
 - `evidence/mutation/mutation-report.md` — mutation score and per-mutant result
 - `evidence/repro-build/report.md` — two-build wasm reproducibility
 - `evidence/local-tests.txt` — local fmt/clippy/test/npm/wasm log
