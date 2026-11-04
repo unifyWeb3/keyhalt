@@ -260,7 +260,7 @@ verify, export, tamper).
 | ID | Test | Status |
 | --- | --- | --- |
 | T-M-01 | 8 semantic mutants each killed by a targeted test | **PASS** 8/8; `evidence/mutation/mutation-report.md` |
-| T-SC-01 | Fresh clone + `make setup` + `make verify` | **PASS** v0.3 2026-11-03; `evidence/fresh-clone-v03.log` |
+| T-SC-01 | Fresh clone + `make setup` + `make verify` | **PASS** v0.3 2026-11-04 on commit `eea0ccb`; `evidence/fresh-clone-v03-modeb.log` (earlier v0.3 run: `evidence/fresh-clone-v03.log`) |
 | T-SC-02 | Claims checker rejects malformed/unsupported rows | **PASS** (fresh-clone negative control) |
 | T-SC-03 | README “do X, see Y” matches reality | **PASS** in the fresh-clone run |
 | T-SC-04 | No key/credential in clone or history | **PASS** working tree + history scan |
