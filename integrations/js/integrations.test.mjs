@@ -7,17 +7,32 @@
 
 import {after, before, describe, it} from "node:test";
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
+import {existsSync, readFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {KeyPair} from "near-api-js";
 import {parseNEAR, Worker} from "near-workspaces";
 
-const WASM = fileURLToPath(
+// The sandbox runtime (nearcore 2.6.2) does not enable the bulk-memory wasm
+// proposal, so the integration workflow lowers the memory.copy/memory.fill
+// instructions first and points this suite at the lowered module. The Rust
+// source is identical; only instruction selection differs.
+const SANDBOX_WASM = fileURLToPath(
+  new URL(
+    "../../target/wasm32-unknown-unknown/release/fleet_controller.sandbox.wasm",
+    import.meta.url,
+  ),
+);
+const PLAIN_WASM = fileURLToPath(
   new URL(
     "../../target/wasm32-unknown-unknown/release/fleet_controller.wasm",
     import.meta.url,
   ),
 );
+const WASM = process.env.FLEET_INTEGRATION_WASM
+  ? process.env.FLEET_INTEGRATION_WASM
+  : existsSync(SANDBOX_WASM)
+    ? SANDBOX_WASM
+    : PLAIN_WASM;
 
 const GAS = 30_000_000_000_000n;
 // The init call adds the operator keys and runs the provisioning callback, so
@@ -33,6 +48,7 @@ async function setup() {
   const worker = await Worker.init({network: "sandbox"});
   const root = worker.rootAccount;
   const wasm = readFileSync(WASM);
+  console.log(`[integration] wasm=${WASM}`);
 
   // Operator keys are fresh key pairs, exactly like the testnet flow: the
   // managed account receives them as FunctionCall-only keys, so no operator

@@ -32,11 +32,23 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Install integration dependencies
-        run: npm --prefix integrations/js ci --no-audit --no-fund
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          npm --prefix integrations/js ci --no-audit --no-fund
 
       - name: Build the controller wasm
         run: cargo build -p fleet-controller --target wasm32-unknown-unknown --release
+
+      - name: Lower bulk-memory instructions for the sandbox runtime
+        run: |
+          # The sandbox runtime (nearcore 2.6.2) runs contracts without the
+          # bulk-memory proposal, so the memory.copy/memory.fill instructions
+          # are lowered to loops before the sandbox sees the module. The
+          # testnet contract is deployed unmodified.
+          node scripts/lower-wasm-bulk-memory.mjs \
+            target/wasm32-unknown-unknown/release/fleet_controller.wasm \
+            target/wasm32-unknown-unknown/release/fleet_controller.sandbox.wasm
 
       - name: Run integration tests
         run: npm --prefix integrations/js test

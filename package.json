@@ -2,7 +2,7 @@
   "name": "fleet",
   "version": "0.3.0",
   "private": true,
-  "description": "FLEET \u2014 native NEAR account-fleet key-lifecycle control plane (testnet, unaudited)",
+  "description": "FLEET — native NEAR account-fleet key-lifecycle control plane (testnet, unaudited)",
   "license": "MIT",
   "type": "module",
   "workspaces": [
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "22.20.5",
+    "binaryen": "^132.0.0",
     "typescript": "5.9.3"
   },
   "dependencies": {
