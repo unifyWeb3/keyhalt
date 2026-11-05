@@ -51,6 +51,12 @@ if [ -d "$HOME/.cargo/bin" ]; then
   export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
+# near-sys 0.2.4 declares the host functions in a plain `extern "C"` block
+# without the wasm import-module attribute (added in near-sys 0.2.9+). Current
+# rustc no longer passes --allow-undefined for wasm32-unknown-unknown, so the
+# link step needs it explicitly to turn those declarations into "env" imports.
+export RUSTFLAGS="${RUSTFLAGS:-} -C link-arg=--allow-undefined"
+
 cargo update -p near-sdk --precise 5.16.0 --quiet
 cargo update -p near-sys --precise 0.2.4 --quiet
 cargo build -p fleet-controller --target wasm32-unknown-unknown --release
