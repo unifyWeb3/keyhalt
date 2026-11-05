@@ -223,7 +223,7 @@ pub fn hex_encode(bytes: &[u8]) -> String {
 }
 
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn hash_message(
+fn hash_message(
     prev_hash: &str,
     seq: u64,
     action: &str,
@@ -446,7 +446,7 @@ impl State {
         true
     }
 
-    pub(crate) fn require_admin(&self, actor: &Actor, current: &str) -> Result<(), Error> {
+    fn require_admin(&self, actor: &Actor, current: &str) -> Result<(), Error> {
         match &self.mode {
             Mode::A { admin_pk, .. } => {
                 if actor.account != current || &actor.signer_pk != admin_pk {
@@ -462,7 +462,7 @@ impl State {
         Ok(())
     }
 
-    pub(crate) fn require_recovery(&self, actor: &Actor, current: &str) -> Result<(), Error> {
+    fn require_recovery(&self, actor: &Actor, current: &str) -> Result<(), Error> {
         match &self.mode {
             Mode::A { recovery_pk, .. } => {
                 if actor.account != current || &actor.signer_pk != recovery_pk {
@@ -490,7 +490,7 @@ impl State {
         Ok(())
     }
 
-    pub(crate) fn fresh_key(&self, pk: &str) -> bool {
+    fn fresh_key(&self, pk: &str) -> bool {
         if Some(pk) == self.admin_pk() || Some(pk) == self.recovery_pk() {
             return false;
         }
@@ -1456,5 +1456,52 @@ mod tests {
                 );
             }
         }
+    }
+}
+
+/// Test-only accessors for private helpers.
+///
+/// The mutation suite pins the private role gates, the key-freshness check,
+/// and the audit hash function. Exposing them through `#[cfg(test)]` keeps the
+/// release wasm byte-identical to the artifact deployed on testnet: test-only
+/// code is not compiled into a release build, and changing the visibility of
+/// a function does change the wasm symbol table.
+#[cfg(test)]
+pub(crate) mod test_hooks {
+    use super::*;
+
+    pub fn require_admin(state: &State, actor: &Actor, current: &str) -> Result<(), Error> {
+        state.require_admin(actor, current)
+    }
+
+    pub fn require_recovery(state: &State, actor: &Actor, current: &str) -> Result<(), Error> {
+        state.require_recovery(actor, current)
+    }
+
+    pub fn fresh_key(state: &State, pk: &str) -> bool {
+        state.fresh_key(pk)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn hash_message(
+        prev_hash: &str,
+        seq: u64,
+        action: &str,
+        actor_account: &str,
+        signer_pk: &str,
+        subject: &str,
+        block_height: u64,
+        block_timestamp: u64,
+    ) -> String {
+        super::hash_message(
+            prev_hash,
+            seq,
+            action,
+            actor_account,
+            signer_pk,
+            subject,
+            block_height,
+            block_timestamp,
+        )
     }
 }

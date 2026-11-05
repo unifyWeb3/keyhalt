@@ -7,12 +7,6 @@
 
 mod model;
 
-#[cfg(test)]
-mod mutation_tests;
-
-#[cfg(test)]
-mod reference_model;
-
 use model::{Actor, Mode, Operator, PendingOrigin, State, MAX_ARGS_LEN, MAX_EXECUTE_GAS, VERSION};
 use near_sdk::serde::{Deserialize, Serialize};
 use near_sdk::serde_json::{json, Value};
@@ -186,7 +180,7 @@ impl Controller {
             NearToken::from_yoctonear(0),
             Gas::from_tgas(20),
         );
-        drop(batch.then(callback));
+        batch.then(callback).detach();
 
         Self { state }
     }
@@ -386,7 +380,9 @@ impl Controller {
             )
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
-        drop(Promise::new(env::current_account_id()).delete_key(parse_key(&public_key)));
+        Promise::new(env::current_account_id())
+            .delete_key(parse_key(&public_key))
+            .detach();
     }
 
     pub fn revoke_tag(&mut self, tag: String) -> Vec<String> {
@@ -404,7 +400,9 @@ impl Controller {
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
         for key in &revoked {
-            drop(Promise::new(env::current_account_id()).delete_key(parse_key(key)));
+            Promise::new(env::current_account_id())
+                .delete_key(parse_key(key))
+                .detach();
         }
         revoked
     }
@@ -475,7 +473,9 @@ impl Controller {
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
         if !old.is_empty() {
-            drop(Promise::new(env::current_account_id()).delete_key(parse_key(&old)));
+            Promise::new(env::current_account_id())
+                .delete_key(parse_key(&old))
+                .detach();
         }
     }
 
@@ -493,7 +493,9 @@ impl Controller {
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
         if let Some(pk) = pending {
-            drop(Promise::new(env::current_account_id()).delete_key(parse_key(&pk)));
+            Promise::new(env::current_account_id())
+                .delete_key(parse_key(&pk))
+                .detach();
         }
     }
 
@@ -536,7 +538,9 @@ impl Controller {
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
         if ok {
-            drop(Promise::new(env::current_account_id()).delete_key(parse_key(&old_public_key)));
+            Promise::new(env::current_account_id())
+                .delete_key(parse_key(&old_public_key))
+                .detach();
         }
         ok
     }
@@ -561,7 +565,7 @@ impl Controller {
 fn current_actor() -> Actor {
     Actor {
         account: env::predecessor_account_id().to_string(),
-        signer_pk: String::from(&env::signer_account_pk()),
+        signer_pk: env::signer_account_pk().to_string(),
     }
 }
 
@@ -1187,3 +1191,15 @@ mod tests {
             .any(|entry| entry.action == "grant_failed"));
     }
 }
+
+// The test-only modules are declared at the end of this file on purpose.
+// A `#[cfg(test)]` module is not compiled into a release build, but its
+// position still shifts the line numbers recorded in the panic-location
+// table, and those line numbers are part of the deployed wasm bytes.
+// Keeping the declarations at the end keeps the release artifact
+// byte-identical to the contract deployed on testnet.
+#[cfg(test)]
+mod mutation_tests;
+
+#[cfg(test)]
+mod reference_model;

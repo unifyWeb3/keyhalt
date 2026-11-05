@@ -6,6 +6,7 @@
 //! controls that a mutated operator or deleted guard would flip.
 #![allow(deprecated)]
 
+use crate::model::test_hooks;
 use crate::model::*;
 use crate::*;
 use near_sdk::mock::MockAction as VmAction;
@@ -542,7 +543,7 @@ fn mt_record_length_boundaries() {
     assert_eq!(s.audit[0].action, ok64);
     assert_eq!(
         s.audit[0].entry_hash,
-        hash_message(&"0".repeat(64), 0, &ok64, "", "", "", 1, 1)
+        test_hooks::hash_message(&"0".repeat(64), 0, &ok64, "", "", "", 1, 1)
     );
 }
 
@@ -582,7 +583,7 @@ fn mt_verify_audit_rejects_consistent_but_mislinked_entry() {
     let mut s = state_a();
     s.record("init", "", "", "provisioned", 1, 1).unwrap();
     let prev = s.audit[0].entry_hash.clone();
-    let entry_hash = hash_message(&prev, 9, "freeze", "", "", "x", 2, 2);
+    let entry_hash = test_hooks::hash_message(&prev, 9, "freeze", "", "", "x", 2, 2);
     s.audit.push(AuditEntry {
         seq: 9,
         action: "freeze".to_string(),
@@ -606,14 +607,21 @@ fn mt_verify_audit_rejects_consistent_but_mislinked_entry() {
 #[test]
 fn mt_role_gates_positive_and_negative() {
     let s = state_a();
-    assert_eq!(s.require_admin(&admin_actor(), CURRENT), Ok(()));
-    assert_eq!(s.require_admin(&op_actor(), CURRENT), Err(Error::AdminOnly));
     assert_eq!(
-        s.require_admin(&admin_actor(), ADMIN_ACCOUNT),
+        test_hooks::require_admin(&s, &admin_actor(), CURRENT),
+        Ok(())
+    );
+    assert_eq!(
+        test_hooks::require_admin(&s, &op_actor(), CURRENT),
         Err(Error::AdminOnly)
     );
     assert_eq!(
-        s.require_admin(
+        test_hooks::require_admin(&s, &admin_actor(), ADMIN_ACCOUNT),
+        Err(Error::AdminOnly)
+    );
+    assert_eq!(
+        test_hooks::require_admin(
+            &s,
             &Actor {
                 account: ADMIN_ACCOUNT.to_string(),
                 signer_pk: ADMIN.to_string(),
@@ -622,9 +630,12 @@ fn mt_role_gates_positive_and_negative() {
         ),
         Err(Error::AdminOnly)
     );
-    assert_eq!(s.require_recovery(&recovery_actor(), CURRENT), Ok(()));
     assert_eq!(
-        s.require_recovery(&admin_actor(), CURRENT),
+        test_hooks::require_recovery(&s, &recovery_actor(), CURRENT),
+        Ok(())
+    );
+    assert_eq!(
+        test_hooks::require_recovery(&s, &admin_actor(), CURRENT),
         Err(Error::RecoveryOnly)
     );
     assert_eq!(s.require_operator(&op_actor(), CURRENT), Ok(()));
@@ -659,7 +670,8 @@ fn mt_role_gates_positive_and_negative() {
 
     let b = state_b();
     assert_eq!(
-        b.require_admin(
+        test_hooks::require_admin(
+            &b,
             &Actor {
                 account: ADMIN_ACCOUNT.to_string(),
                 signer_pk: OP1.to_string(),
@@ -669,11 +681,11 @@ fn mt_role_gates_positive_and_negative() {
         Ok(())
     );
     assert_eq!(
-        b.require_admin(&admin_actor(), CURRENT),
+        test_hooks::require_admin(&b, &admin_actor(), CURRENT),
         Err(Error::AdminOnly)
     );
     assert_eq!(
-        b.require_recovery(&recovery_actor(), CURRENT),
+        test_hooks::require_recovery(&b, &recovery_actor(), CURRENT),
         Err(Error::RecoveryOnly)
     );
 }
@@ -758,10 +770,10 @@ fn mt_prepare_grant_checks() {
         Err(Error::NotProvisioned)
     );
     // A reserved (not yet active) operator is not a fresh key.
-    assert!(!unprovisioned.fresh_key(OP1));
+    assert!(!test_hooks::fresh_key(&unprovisioned, OP1));
     // Any key that is not reserved is still fresh while the reserve is
     // populated.
-    assert!(unprovisioned.fresh_key(FRESH));
+    assert!(test_hooks::fresh_key(&unprovisioned, FRESH));
 }
 
 /// Kills the pending/inactive lookup in `confirm_grant` and both branches.
@@ -988,7 +1000,7 @@ fn mt_propose_paths_and_boundaries() {
         Err(Error::PendingExists)
     );
     // The pending admin is not a fresh key.
-    assert!(!s.fresh_key(OP3));
+    assert!(!test_hooks::fresh_key(&s, OP3));
 
     let mut failed = state_a();
     failed

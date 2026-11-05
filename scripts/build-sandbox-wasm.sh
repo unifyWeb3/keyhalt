@@ -14,37 +14,67 @@
 #     imports all exist in nearcore 2.6.2 (verified against
 #     runtime/near-vm-runner/src/imports.rs at tag 2.6.2).
 #
-# The deployed testnet contract keeps the repository pin (near-sdk 5.29.1).
-# The integration build exercises the same contract logic; the wasm is not
-# byte-identical to the deployed artifact. See docs/INVARIANTS.md.
+# The deployed testnet contract keeps the repository pin (near-sdk 5.29.1) and
+# the repository source byte-for-byte: the release artifact deployed on
+# testnet is 248644 bytes with sha256
+# cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f, and
+# `cargo build --locked` reproduces it. The sandbox build therefore never
+# edits the contract source in the repository; it applies the three
+# near-sdk-5.16 compatibility edits below to a temporary copy and restores
+# every file afterwards.
 #
-# The manifest and lock file are restored on exit, so the working tree is
-# unchanged after a successful run.
+# Sandbox-only source edits (all semantically neutral):
+#   1. `near-sdk = "=5.29.1"` -> `=5.16.0` in the crate manifest.
+#   2. `Promise::detach()` does not exist in near-sdk 5.16.0. The promise is
+#      dropped instead, which is what `detach()` does in near-sdk 5.29.1 (it
+#      is an empty function; the `Drop` impl schedules the promise).
+#   3. `PublicKey` does not implement `Display` in near-sdk 5.16.0. The
+#      signer key is built with `String::from(&public_key)`, which calls the
+#      same `to_string()` in near-sdk 5.29.1
+#      (`impl From<&PublicKey> for String` delegates to `to_string()`).
+#
+# The manifest, the lock file and the contract source are restored on exit, so
+# the working tree is unchanged after a successful run.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 MANIFEST=contracts/fleet-controller/Cargo.toml
 LOCK=Cargo.lock
+SOURCE=contracts/fleet-controller/src/lib.rs
 BACKUP_MANIFEST=$(mktemp)
 BACKUP_LOCK=$(mktemp)
+BACKUP_SOURCE=$(mktemp)
 cp "$MANIFEST" "$BACKUP_MANIFEST"
 cp "$LOCK" "$BACKUP_LOCK"
+cp "$SOURCE" "$BACKUP_SOURCE"
 restore() {
   cp "$BACKUP_MANIFEST" "$MANIFEST"
   cp "$BACKUP_LOCK" "$LOCK"
-  rm -f "$BACKUP_MANIFEST" "$BACKUP_LOCK"
+  cp "$BACKUP_SOURCE" "$SOURCE"
+  rm -f "$BACKUP_MANIFEST" "$BACKUP_LOCK" "$BACKUP_SOURCE"
 }
 trap restore EXIT
 
-python3 - "$MANIFEST" <<'PY'
+python3 - "$MANIFEST" "$SOURCE" <<'PY'
 import sys
 
-path = sys.argv[1]
-text = open(path).read()
+manifest, source = sys.argv[1], sys.argv[2]
+
+text = open(manifest).read()
 text = text.replace('near-sdk = "=5.29.1"', 'near-sdk = "=5.16.0"')
 text = text.replace('"=5.29.1"', '"=5.16.0"')
 text = text.replace('near-sdk-env = "=0.1.6"\n', "")
-open(path, "w").write(text)
+open(manifest, "w").write(text)
+
+code = open(source).read()
+assert code.count(".detach()") == 6, code.count(".detach()")
+code = code.replace(".detach()", "")
+assert code.count("env::signer_account_pk().to_string()") == 1
+code = code.replace(
+    "env::signer_account_pk().to_string()",
+    "String::from(&env::signer_account_pk())",
+)
+open(source, "w").write(code)
 PY
 
 if [ -d "$HOME/.cargo/bin" ]; then

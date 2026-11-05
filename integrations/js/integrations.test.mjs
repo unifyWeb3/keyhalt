@@ -177,9 +177,15 @@ describe("fleet-controller integration (near-workspaces sandbox)", () => {
       {gas: GAS, signWithKey: operators[0].keyPair},
     );
     assert.equal(result.succeeded, true, JSON.stringify(result.failures));
+    // The controller emits its own execute event, and the receiver method it
+    // called (`ping`) emits the fleet_controller event with action "ping".
     assert.ok(
-      result.logsContain("pong") || result.logsContain('"event":"ping"'),
-      `expected ping logs, got: ${JSON.stringify(result.logs)}`,
+      result.logsContain('"action":"execute"'),
+      `expected the execute event, got: ${JSON.stringify(result.logs)}`,
+    );
+    assert.ok(
+      result.logsContain('"action":"ping"'),
+      `expected the ping event, got: ${JSON.stringify(result.logs)}`,
     );
   });
 
