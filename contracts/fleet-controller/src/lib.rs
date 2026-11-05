@@ -8,6 +8,9 @@
 mod model;
 
 #[cfg(test)]
+mod mutation_tests;
+
+#[cfg(test)]
 mod reference_model;
 
 use model::{Actor, Mode, Operator, PendingOrigin, State, MAX_ARGS_LEN, MAX_EXECUTE_GAS, VERSION};
@@ -183,7 +186,7 @@ impl Controller {
             NearToken::from_yoctonear(0),
             Gas::from_tgas(20),
         );
-        batch.then(callback).detach();
+        drop(batch.then(callback));
 
         Self { state }
     }
@@ -383,9 +386,7 @@ impl Controller {
             )
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
-        Promise::new(env::current_account_id())
-            .delete_key(parse_key(&public_key))
-            .detach();
+        drop(Promise::new(env::current_account_id()).delete_key(parse_key(&public_key)));
     }
 
     pub fn revoke_tag(&mut self, tag: String) -> Vec<String> {
@@ -403,9 +404,7 @@ impl Controller {
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
         for key in &revoked {
-            Promise::new(env::current_account_id())
-                .delete_key(parse_key(key))
-                .detach();
+            drop(Promise::new(env::current_account_id()).delete_key(parse_key(key)));
         }
         revoked
     }
@@ -476,9 +475,7 @@ impl Controller {
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
         if !old.is_empty() {
-            Promise::new(env::current_account_id())
-                .delete_key(parse_key(&old))
-                .detach();
+            drop(Promise::new(env::current_account_id()).delete_key(parse_key(&old)));
         }
     }
 
@@ -496,9 +493,7 @@ impl Controller {
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
         if let Some(pk) = pending {
-            Promise::new(env::current_account_id())
-                .delete_key(parse_key(&pk))
-                .detach();
+            drop(Promise::new(env::current_account_id()).delete_key(parse_key(&pk)));
         }
     }
 
@@ -541,9 +536,7 @@ impl Controller {
             .unwrap_or_else(|error| refuse(error.message()));
         emit_last(&self.state);
         if ok {
-            Promise::new(env::current_account_id())
-                .delete_key(parse_key(&old_public_key))
-                .detach();
+            drop(Promise::new(env::current_account_id()).delete_key(parse_key(&old_public_key)));
         }
         ok
     }
@@ -568,7 +561,7 @@ impl Controller {
 fn current_actor() -> Actor {
     Actor {
         account: env::predecessor_account_id().to_string(),
-        signer_pk: env::signer_account_pk().to_string(),
+        signer_pk: String::from(&env::signer_account_pk()),
     }
 }
 

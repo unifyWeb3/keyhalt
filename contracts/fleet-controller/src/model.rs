@@ -223,7 +223,7 @@ pub fn hex_encode(bytes: &[u8]) -> String {
 }
 
 #[allow(clippy::too_many_arguments)]
-fn hash_message(
+pub(crate) fn hash_message(
     prev_hash: &str,
     seq: u64,
     action: &str,
@@ -446,7 +446,7 @@ impl State {
         true
     }
 
-    fn require_admin(&self, actor: &Actor, current: &str) -> Result<(), Error> {
+    pub(crate) fn require_admin(&self, actor: &Actor, current: &str) -> Result<(), Error> {
         match &self.mode {
             Mode::A { admin_pk, .. } => {
                 if actor.account != current || &actor.signer_pk != admin_pk {
@@ -462,7 +462,7 @@ impl State {
         Ok(())
     }
 
-    fn require_recovery(&self, actor: &Actor, current: &str) -> Result<(), Error> {
+    pub(crate) fn require_recovery(&self, actor: &Actor, current: &str) -> Result<(), Error> {
         match &self.mode {
             Mode::A { recovery_pk, .. } => {
                 if actor.account != current || &actor.signer_pk != recovery_pk {
@@ -490,7 +490,7 @@ impl State {
         Ok(())
     }
 
-    fn fresh_key(&self, pk: &str) -> bool {
+    pub(crate) fn fresh_key(&self, pk: &str) -> bool {
         if Some(pk) == self.admin_pk() || Some(pk) == self.recovery_pk() {
             return false;
         }

@@ -19,7 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300
     env:
-      CARGO_TARGET_DIR: /tmp/cargo-target
+      # NOTE: no shared CARGO_TARGET_DIR here. cargo-mutants runs each mutant
+      # in its own temporary copy of the tree; a shared target dir lets one
+      # worker reuse another worker's artifact (cargo sees the source as
+      # "Fresh") and the mutant is never compiled. Each worker now builds into
+      # the target dir inside its own copy.
       FLEET_PROPERTY_STEPS: "20"
       FLEET_PROPERTY_SEEDS: "1"
     steps:
