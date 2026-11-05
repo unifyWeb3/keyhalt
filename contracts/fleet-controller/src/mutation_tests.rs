@@ -575,12 +575,13 @@ fn mt_verify_audit_detects_every_tamper() {
 
 /// The seq and prev-hash checks must fail even when the tampered entry has a
 /// hash that is internally consistent with its own fields; otherwise a
-/// rewritten tail could pass the hash loop.
+/// rewritten tail could pass the hash loop. The seq is wrong while the
+/// prev-hash link is correct, so an `||` mutated to `&&` cannot fall through.
 #[test]
 fn mt_verify_audit_rejects_consistent_but_mislinked_entry() {
     let mut s = state_a();
     s.record("init", "", "", "provisioned", 1, 1).unwrap();
-    let prev = "f".repeat(64);
+    let prev = s.audit[0].entry_hash.clone();
     let entry_hash = hash_message(&prev, 9, "freeze", "", "", "x", 2, 2);
     s.audit.push(AuditEntry {
         seq: 9,
@@ -758,6 +759,9 @@ fn mt_prepare_grant_checks() {
     );
     // A reserved (not yet active) operator is not a fresh key.
     assert!(!unprovisioned.fresh_key(OP1));
+    // Any key that is not reserved is still fresh while the reserve is
+    // populated.
+    assert!(unprovisioned.fresh_key(FRESH));
 }
 
 /// Kills the pending/inactive lookup in `confirm_grant` and both branches.
@@ -1161,6 +1165,44 @@ fn mt_config_allowance_is_the_documented_default() {
 fn mt_origin_str_is_exact() {
     assert_eq!(origin_str(&PendingOrigin::Admin), "admin");
     assert_eq!(origin_str(&PendingOrigin::Recovery), "recovery");
+}
+
+/// Kills `Error::message` replacement with a constant: every refusal reason a
+/// caller can observe must be the documented sentence.
+#[test]
+fn mt_error_messages_are_exact() {
+    let expected = [
+        (Error::NotProvisioned, "controller is not provisioned"),
+        (
+            Error::AlreadyProvisioned,
+            "controller is already provisioned",
+        ),
+        (Error::InvalidMode, "exactly one admin mode is required"),
+        (Error::InvalidKey, "invalid public key"),
+        (Error::InvalidAccount, "invalid account id"),
+        (Error::InvalidTag, "invalid tag"),
+        (Error::InvalidMethod, "invalid method"),
+        (Error::InvalidArgs, "invalid arguments"),
+        (Error::InvalidGas, "gas above policy cap"),
+        (Error::KeyCollision, "key already has a role"),
+        (Error::Capacity, "operator capacity reached"),
+        (Error::AdminOnly, "active admin required"),
+        (Error::RecoveryOnly, "recovery key required"),
+        (Error::PendingOnly, "pending admin key required"),
+        (Error::DirectCallOnly, "direct call to this account only"),
+        (Error::Frozen, "controller is frozen"),
+        (Error::NotFrozen, "controller is not frozen"),
+        (Error::NoPending, "no pending admin"),
+        (Error::PendingExists, "a rotation is already pending"),
+        (Error::OperatorMissing, "operator not registered"),
+        (Error::TagMissing, "no operators with that tag"),
+        (Error::NotActive, "operator key is not active"),
+        (Error::BadDeposit, "deposit must be zero"),
+        (Error::AuditBroken, "audit chain is broken"),
+    ];
+    for (error, message) in expected {
+        assert_eq!(error.message(), message, "message for {error:?}");
+    }
 }
 
 /// Kills the `emit_event` body replacement: the only execution path must
