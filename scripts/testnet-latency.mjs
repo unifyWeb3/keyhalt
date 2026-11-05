@@ -25,7 +25,7 @@
  * live outside the repository and are never printed; the evidence contains
  * only public data.
  */
-import { Account, actions, teraToGas } from "near-api-js";
+import { Account, SignedTransaction, actions, teraToGas } from "near-api-js";
 import { setDefaultResultOrder } from "node:dns";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -76,7 +76,7 @@ async function withRetry(fn, label, attempts = 6) {
       lastError = error;
       const text = `${error?.message ?? error} ${error?.cause ?? ""}`;
       const retryable =
-        /fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND|socket hang up|\b429\b|\b500\b|\b502\b|\b503\b|\b504\b|timeout/i.test(
+        /fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND|socket hang up|\b429\b|\b500\b|\b502\b|\b503\b|\b504\b|timeout|unknown block|garbage collected|does not exist/i.test(
           text,
         );
       if (!retryable || attempt === attempts) throw error;
@@ -161,19 +161,33 @@ function tokensBurnt(result) {
 }
 
 async function optimisticCall(account, receiverId, method, args, options = {}) {
-  return account.signAndSendTransaction({
-    receiverId,
-    actions: [
-      actions.functionCall(
-        method,
-        args,
-        teraToGas(options.gasTgas ?? 30),
-        options.deposit ?? 0n,
+  // Sign once, then retry the identical signed transaction. A retry after a
+  // dropped connection is safe: the network deduplicates by transaction hash.
+  const signed = await withRetry(
+    async () =>
+      account.createSignedTransaction({
+        receiverId,
+        actions: [
+          actions.functionCall(
+            method,
+            args,
+            teraToGas(options.gasTgas ?? 30),
+            options.deposit ?? 0n,
+          ),
+        ],
+        signer: account.getSigner(),
+      }),
+    `${method} sign`,
+  );
+  const bytes = new Uint8Array(Buffer.from(signed.encode()));
+  return withRetry(
+    () =>
+      account.provider.sendTransactionUntil(
+        SignedTransaction.decode(bytes),
+        "EXECUTED_OPTIMISTIC",
       ),
-    ],
-    waitUntil: "EXECUTED_OPTIMISTIC",
-    throwOnFailure: false,
-  });
+    `${method} send`,
+  );
 }
 
 async function finalize(provider, txHash, senderId) {
@@ -222,25 +236,75 @@ async function waitForOptimisticEffect(provider, agentId, predicate, startMs) {
 /**
  * Finds the earliest block whose post-state shows the effect. The observation
  * block is an upper bound; the submit block is a lower bound. Bisection keeps
- * the number of view calls small.
+ * the number of view calls small. If the node has already garbage-collected a
+ * bisection height (fastnear load-balances across nodes), fall back to walking
+ * backwards from the observation block by hash, which only touches recent
+ * blocks.
  */
-async function findEffectBlock(provider, agentId, predicate, lowHeight, highHeight) {
+async function findEffectBlock(
+  provider,
+  agentId,
+  predicate,
+  lowHeight,
+  highHeight,
+  highHash,
+) {
   if (lowHeight >= highHeight) return highHeight;
-  let low = lowHeight;
-  let high = highHeight;
-  while (low < high) {
-    const mid = Math.floor((low + high) / 2);
-    const block = await blockAt(provider, mid);
-    const observation = await queryState(provider, agentId, {
-      blockId: block.hash,
-    });
-    if (predicate(observation.state)) {
-      high = mid;
-    } else {
-      low = mid + 1;
+  try {
+    let low = lowHeight;
+    let high = highHeight;
+    while (low < high) {
+      const mid = Math.floor((low + high) / 2);
+      const block = await blockAt(provider, mid);
+      const observation = await queryState(provider, agentId, {
+        blockId: block.hash,
+      });
+      if (predicate(observation.state)) {
+        high = mid;
+      } else {
+        low = mid + 1;
+      }
     }
+    return low;
+  } catch (error) {
+    if (!highHash) throw error;
+    console.warn(
+      `[warn] block bisection failed (${error?.message ?? error}); walking back from ${highHeight}`,
+    );
+    return findEffectBlockByWalk(
+      provider,
+      agentId,
+      predicate,
+      highHash,
+      highHeight,
+      lowHeight,
+    );
   }
-  return low;
+}
+
+async function findEffectBlockByWalk(
+  provider,
+  agentId,
+  predicate,
+  startHash,
+  startHeight,
+  lowHeight,
+) {
+  let hash = startHash;
+  let height = startHeight;
+  while (height > lowHeight) {
+    const block = await rpc(provider, "block", { block_id: hash });
+    const prevHash = block.header.prev_hash;
+    const prevHeight = Number(block.header.height) - 1;
+    if (prevHeight < lowHeight) return lowHeight;
+    const observation = await queryState(provider, agentId, {
+      blockId: prevHash,
+    });
+    if (!predicate(observation.state)) return prevHeight + 1;
+    hash = prevHash;
+    height = prevHeight;
+  }
+  return lowHeight;
 }
 
 function nearestRank(sorted, percentile) {
@@ -321,6 +385,7 @@ async function runOneDirect(account, provider, agentId, method, cycle) {
     predicate,
     submitBlock,
     optimistic.blockHeight,
+    optimistic.blockHash,
   );
   const final = await finalize(provider, submitted.transaction_outcome.id, account.accountId);
   assertSuccessful(final, `${method} final`);
@@ -421,6 +486,7 @@ async function runOneModeB(provider, agentId, owner1, owner2, method, cycle) {
     predicate,
     addBlock,
     optimistic.blockHeight,
+    optimistic.blockHash,
   );
   const final = await finalize(provider, second.transaction_outcome.id, owner2.accountId);
   assertSuccessful(final, `${method} second confirm final`);
@@ -451,6 +517,36 @@ async function runOneModeB(provider, agentId, owner1, owner2, method, cycle) {
     gas_burnt: gasBurnt(final),
     tokens_burnt: tokensBurnt(final),
   };
+}
+
+/**
+ * Reconciles the agent state before a measured cycle, so a run that died
+ * between a freeze and its unfreeze (or vice versa) does not measure a
+ * refused call. The reconcile uses the same call path as the measurement but
+ * is not recorded as a sample.
+ */
+async function ensureDirectState(account, provider, agentId, wantFrozen) {
+  const observation = await queryState(provider, agentId, {
+    finality: "optimistic",
+  });
+  if (observation.state.paused === wantFrozen) return;
+  const method = wantFrozen ? "freeze" : "unfreeze";
+  console.log(
+    `[reconcile] mode a ${agentId} paused=${observation.state.paused} -> ${wantFrozen} via ${method}`,
+  );
+  await runOneDirect(account, provider, agentId, method, 0);
+}
+
+async function ensureModeBState(provider, agentId, owner1, owner2, wantFrozen) {
+  const observation = await queryState(provider, agentId, {
+    finality: "optimistic",
+  });
+  if (observation.state.paused === wantFrozen) return;
+  const method = wantFrozen ? "freeze" : "unfreeze";
+  console.log(
+    `[reconcile] mode b ${agentId} paused=${observation.state.paused} -> ${wantFrozen} via ${method}`,
+  );
+  await runOneModeB(provider, agentId, owner1, owner2, method, 0);
 }
 
 function loadEvidence() {
@@ -526,6 +622,7 @@ async function main() {
     let cycle = bucket.freeze_samples.length;
     while (cycle < SAMPLES) {
       cycle += 1;
+      await ensureDirectState(admin, provider, LATENCY_AGENT, false);
       const freeze = await runOneDirect(
         admin,
         provider,
@@ -533,6 +630,7 @@ async function main() {
         "freeze",
         cycle,
       );
+      await ensureDirectState(admin, provider, LATENCY_AGENT, true);
       const unfreeze = await runOneDirect(
         admin,
         provider,
@@ -557,6 +655,7 @@ async function main() {
     let cycle = bucket.freeze_samples.length;
     while (cycle < SAMPLES) {
       cycle += 1;
+      await ensureModeBState(provider, MODE_B_AGENT, owner1, owner2, false);
       const freeze = await runOneModeB(
         provider,
         MODE_B_AGENT,
@@ -565,6 +664,7 @@ async function main() {
         "freeze",
         cycle,
       );
+      await ensureModeBState(provider, MODE_B_AGENT, owner1, owner2, true);
       const unfreeze = await runOneModeB(
         provider,
         MODE_B_AGENT,

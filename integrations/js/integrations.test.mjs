@@ -52,16 +52,15 @@ async function setup() {
 
   // Operator keys are fresh key pairs, exactly like the testnet flow: the
   // managed account receives them as FunctionCall-only keys, so no operator
-  // account keeps a FullAccess key of its own on the agent.
+  // account keeps a FullAccess key of its own on the agent. The operators do
+  // not need their own sandbox accounts: a FunctionCall key on the agent is
+  // signed *as the agent* (native key scoping), which is what the contract
+  // checks.
   const operatorTags = ["ops-a", "ops-a", "ops-b", "ops-b"];
   const operators = [];
-  for (const [index, tag] of operatorTags.entries()) {
+  for (const tag of operatorTags) {
     const keyPair = KeyPair.fromRandom("ed25519");
-    const account = await root.createSubAccount(`op${index}`, {
-      initialBalance: OPERATOR_BALANCE,
-    });
     operators.push({
-      account,
       tag,
       keyPair,
       publicKey: keyPair.getPublicKey().toString(),
@@ -166,7 +165,7 @@ describe("fleet-controller integration (near-workspaces sandbox)", () => {
   });
 
   it("executes through the operator key and returns pong", async () => {
-    const result = await operators[0].account.callRaw(
+    const result = await agent.callRaw(
       agent,
       "execute",
       {
@@ -189,7 +188,7 @@ describe("fleet-controller integration (near-workspaces sandbox)", () => {
     let state = await agent.view("get_state");
     assert.equal(state.paused, true);
 
-    const frozen = await operators[0].account.callRaw(
+    const frozen = await agent.callRaw(
       agent,
       "execute",
       {
@@ -207,7 +206,7 @@ describe("fleet-controller integration (near-workspaces sandbox)", () => {
     state = await agent.view("get_state");
     assert.equal(state.paused, false);
 
-    const restored = await operators[0].account.callRaw(
+    const restored = await agent.callRaw(
       agent,
       "execute",
       {
