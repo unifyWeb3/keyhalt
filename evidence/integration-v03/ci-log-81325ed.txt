@@ -1,0 +1,78 @@
+# Subtest: fleet-controller integration (near-workspaces sandbox)
+    # Subtest: provisions a Mode B agent with four active FunctionCall operators
+    ok 1 - provisions a Mode B agent with four active FunctionCall operators
+      ---
+      duration_ms: 14.251058
+      type: 'test'
+      ...
+    # Subtest: holds no FullAccess key and no key outside the execute allowlist
+    ok 2 - holds no FullAccess key and no key outside the execute allowlist
+      ---
+      duration_ms: 5.201627
+      type: 'test'
+      ...
+    # Subtest: records a verifiable audit chain after init
+    ok 3 - records a verifiable audit chain after init
+      ---
+      duration_ms: 14.835749
+      type: 'test'
+      ...
+# Receipt: HBBWxqZ8mrPpQBhMpWRjL8DrcA4jjeEPpptyo5Gm9K3V
+# \\tLog [agent.test.near]: FLEET_REFUSAL:active admin required
+# \\tFailure [agent.test.near]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: active admin required"}}}}
+    # Subtest: refuses a freeze from a non-admin predecessor without changing state
+    ok 4 - refuses a freeze from a non-admin predecessor without changing state
+      ---
+      duration_ms: 3547.148799
+      type: 'test'
+      ...
+# Receipts: C4TSG9X4Cag6KNsm5ho5AzB97SuKcF892Lx8k74jU1JB, Dhg6YnhBf3RKrE71gTfq5jHcmrHEVkwHHpzAXcJmvgny
+# \\tLog [agent.test.near]: EVENT_JSON:{"data":{"action":"execute","actor_account":"agent.test.near","block_height":16,"block_timestamp":1793945444002427539,"entry_hash":"","signer_pk":"ed25519:Yy8wVgVNSsMD4R1DrbmR5xnLqLuc3YNRPJgj1uYaxtQ","subject":"agent.test.near.ping"},"event":"fleet_controller","standard":"nep297","version":"1.0.0"}
+# Receipt: 81rs46sXiWf5gq5mgvgVraPZedffU8aT4Vtr9ubXFXXp
+# \\tLog [agent.test.near]: EVENT_JSON:{"standard":"nep297","version":"1.0.0","event":"fleet_controller","data":{"action":"ping"}}
+    # Subtest: executes through the operator key and returns pong
+    ok 5 - executes through the operator key and returns pong
+      ---
+      duration_ms: 2028.527028
+      type: 'test'
+      ...
+# Receipt: BZxP26FtgLqMFzeBm1aUJsecjqwrYscbR27Pc9gqNuhe
+# \\tLog [agent.test.near]: EVENT_JSON:{"data":{"action":"freeze","actor_account":"test.near","block_height":20,"block_timestamp":1793945446428736205,"entry_hash":"d7e624f69fff823f38196f33293d5b36fd9286804ae94eb9469eb2f4e0304691","seq":1,"signer_pk":"ed25519:F3oeUzzRbeDQ1nVhWqZzUevUXxMdvnR7f1cV4so9RBgV","subject":"paused=true"},"event":"fleet_controller","standard":"nep297","version":"1.0.0"}
+# Contract logs from agent.test.near.freeze({}) call: [
+#   'EVENT_JSON:{"data":{"action":"freeze","actor_account":"test.near","block_height":20,"block_timestamp":1793945446428736205,"entry_hash":"d7e624f69fff823f38196f33293d5b36fd9286804ae94eb9469eb2f4e0304691","seq":1,"signer_pk":"ed25519:F3oeUzzRbeDQ1nVhWqZzUevUXxMdvnR7f1cV4so9RBgV","subject":"paused=true"},"event":"fleet_controller","standard":"nep297","version":"1.0.0"}'
+# ]
+# Receipt: ARUUzk7cZ78CpEStx5Skc7SEUJL2xvuQ3PArKeYSrHeq
+# \\tLog [agent.test.near]: FLEET_REFUSAL:controller is frozen
+# \\tFailure [agent.test.near]: Error: {"index":0,"kind":{"index":0,"kind":{"FunctionCallError":{"ExecutionError":"Smart contract panicked: controller is frozen"}}}}
+# Receipt: 8xyY5ncBGYJxBiWXv9ZVZvWbrWLQETCixybRnFRFTSTs
+# \\tLog [agent.test.near]: EVENT_JSON:{"data":{"action":"unfreeze","actor_account":"test.near","block_height":25,"block_timestamp":1793945449464178264,"entry_hash":"36014920ed8d4a3e48909e289271e406b74242a4624a45e28e47f5a3b594c661","seq":2,"signer_pk":"ed25519:F3oeUzzRbeDQ1nVhWqZzUevUXxMdvnR7f1cV4so9RBgV","subject":"paused=false"},"event":"fleet_controller","standard":"nep297","version":"1.0.0"}
+# Contract logs from agent.test.near.unfreeze({}) call: [
+#   'EVENT_JSON:{"data":{"action":"unfreeze","actor_account":"test.near","block_height":25,"block_timestamp":1793945449464178264,"entry_hash":"36014920ed8d4a3e48909e289271e406b74242a4624a45e28e47f5a3b594c661","seq":2,"signer_pk":"ed25519:F3oeUzzRbeDQ1nVhWqZzUevUXxMdvnR7f1cV4so9RBgV","subject":"paused=false"},"event":"fleet_controller","standard":"nep297","version":"1.0.0"}'
+# ]
+# Receipts: GAa27dHx8qKsoeDm3hGHyUQGRTdpLRYAQtxxGeF9JZrb, FKm8axS89tBEw6PMQLprTzz8dNiEVWdF7kvj2f3a9uNz
+# \\tLog [agent.test.near]: EVENT_JSON:{"data":{"action":"execute","actor_account":"agent.test.near","block_height":27,"block_timestamp":1793945450680922889,"entry_hash":"","signer_pk":"ed25519:Yy8wVgVNSsMD4R1DrbmR5xnLqLuc3YNRPJgj1uYaxtQ","subject":"agent.test.near.ping"},"event":"fleet_controller","standard":"nep297","version":"1.0.0"}
+# Receipt: A5p4MKZ92qeNWaEbF82e9PqGXwcToGU1MAYjdcduDdNk
+# \\tLog [agent.test.near]: EVENT_JSON:{"standard":"nep297","version":"1.0.0","event":"fleet_controller","data":{"action":"ping"}}
+    # Subtest: freezes, refuses execute, and unfreezes again
+    ok 6 - freezes, refuses execute, and unfreezes again
+      ---
+      duration_ms: 6576.592866
+      type: 'test'
+      ...
+    # Subtest: keeps the audit chain verifiable after freeze and unfreeze
+    ok 7 - keeps the audit chain verifiable after freeze and unfreeze
+      ---
+      duration_ms: 17.188379
+      type: 'test'
+      ...
+    1..7
+ok 1 - fleet-controller integration (near-workspaces sandbox)
+  ---
+  duration_ms: 18097.726194
+  type: 'suite'
+  ...
+1..1
+# tests 7
+# suites 1
+# pass 7
+# fail 0

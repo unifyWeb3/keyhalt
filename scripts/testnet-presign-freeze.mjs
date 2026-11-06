@@ -208,6 +208,13 @@ async function main() {
   ]);
   assert(submitted.ok === true, "submit-signed must succeed");
   assert(submitted.phase === "submitted", "submit-signed must report the submitted phase");
+  // The hash reported at pre-sign time must be the hash the network assigns
+  // to that exact signed payload. If the two differ, the payload signed in
+  // step 1 was not the payload broadcast in step 4.
+  assert(
+    submitted.txHash === preSigned.txHash,
+    `submitted tx ${submitted.txHash} does not match the pre-signed tx ${preSigned.txHash}`,
+  );
 
   // 5. The agent is frozen and the audit chain grew by one entry.
   const afterSubmit = await withRetry("get_state", () => client.getState());

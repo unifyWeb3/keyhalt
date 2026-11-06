@@ -1,0 +1,4 @@
+contracts/fleet-controller/src/model.rs:170:20: replace < with == in valid_account
+contracts/fleet-controller/src/model.rs:170:20: replace < with <= in valid_account
+contracts/fleet-controller/src/model.rs:183:40: replace > with == in valid_public_key
+contracts/fleet-controller/src/model.rs:183:40: replace > with >= in valid_public_key

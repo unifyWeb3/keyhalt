@@ -1,6 +1,6 @@
 # FLEET local verification log
 
-Date: 2026-11-03 UTC
+First recorded 2026-11-03 UTC; final v0.3 re-verification 2026-11-06 UTC.
 Host: Linux arm64, Node.js v22.22.1, rustc 1.93.0 (254b59607 2026-01-19),
 cargo 1.93.0 (083ac5135 2025-12-15).
 
@@ -163,3 +163,41 @@ Result: 3 provisioning rows and 29 operation groups written to
 `evidence/testnet-v03/gas-profile.md` and `.json`. Provisioning cost was
 43.04 Tgas per agent (36.65 create/deploy + 6.39 init/AddKey). A concurrent
 `execute` averaged 3.964 Tgas across 12 calls.
+
+## 2026-11-06 final re-verification
+
+The full local gate was re-run on the final v0.3 tree (commit `81325ed` plus
+the uncommitted documentation/evidence updates listed in the final commit).
+
+Command:
+
+```bash
+./scripts/verify.sh
+```
+
+Result: exit 0, `FLEET verification: PASS`. Selected output:
+
+```text
+== Rust format ==                       exit 0 (no diff)
+== Rust clippy ==                       exit 0 (warnings denied)
+test result: ok. 84 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 707.12s
+cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f  target/wasm32-unknown-unknown/release/fleet_controller.wasm
+# tests 38
+# pass 38
+# fail 0
+== Claims table ==                      CLAIMS 37/37 verified (37 rows)
+== Secret scan ==                       SECRET SCAN: OK (no credential file or private-key pattern found)
+== Web placeholder ==                   WEB CHECK: OK static placeholder, no script, no key field
+== Read-only testnet RPC ==             RPC CHECK: OK testnet latest_block_height=276454237 (attempt 1/3)
+FLEET verification: PASS
+CLAIMS 37/37 verified (37 rows)
+```
+
+The 84 Rust tests are 19 `model::tests`, 25 `tests`, and 40
+`mutation_tests`; the differential property test runs 3 seeds × 5,000 steps
+(15,000 comparisons). The 38 TypeScript tests are 18 SDK, 17 CLI, and 3 API.
+The release wasm is byte-identical to the deployed artifact (248,644 bytes,
+sha256 `cdb2b37c…`). Full log: `/tmp/opencode/verify-final.log` (session
+artifact; the committed evidence is this section plus
+`evidence/repro-build/`, `evidence/mutation-v03/`, and
+`evidence/integration-v03/`).

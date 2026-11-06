@@ -6,15 +6,21 @@ It is **testnet only** and **unaudited**. **Mode A is not non-custodial.**
 Mode B reduces admin-key trust with a 2-of-2 multisig but is not independently
 custodied in this evidence.
 
-**Status: v0.3 testnet prototype, 2026-11-04.** The controller, TypeScript SDK,
-and CLI are implemented and have run against NEAR testnet. Mode B (2-of-2
-multisig) is implemented and verified on testnet with a pinned, source-built
-`multisig2` contract. Both Mode B owner accounts are operated by the same test
-harness in this environment, so the evidence proves the 2-of-2 mechanism, not
-independent organizational custody. The read-only console is **drafted, not
-built**: design system `docs/DESIGN_SYSTEM.md` and screen draft
-`docs/CONSOLE_DRAFT.md` are waiting for human approval. Every capability below
-maps to a `VERIFIED` row in [`CLAIMS.md`](CLAIMS.md).
+**Status: v0.3 testnet prototype, final backend gates 2026-11-06.** The
+controller, TypeScript SDK, and CLI are implemented and have run against NEAR
+testnet. **The headline control is the Mode A freeze: one transaction from the
+admin key, no second confirmation.** A 20-run measurement on testnet put the
+Mode A single-transaction freeze at p50 5,567 ms / p95 13,227 ms submit-to-
+optimistic-state and p50 13,251 ms / p95 24,753 ms submit-to-final-state, with
+p50 1 / p95 1 block to optimistic effect (F-029). Mode B (2-of-2 multisig) is
+implemented and verified on testnet with a pinned, source-built `multisig2`
+contract; it takes three transactions per transition (add request plus two
+confirmations) and is not the fast path. Both Mode B owner accounts are
+operated by the same test harness in this environment, so the evidence proves
+the 2-of-2 mechanism, not independent organizational custody. The read-only
+console is **drafted, not built**: design system `docs/DESIGN_SYSTEM.md` and
+screen draft `docs/CONSOLE_DRAFT.md` are waiting for human approval. Every
+capability below maps to a `VERIFIED` row in [`CLAIMS.md`](CLAIMS.md).
 
 ## Problem
 
@@ -33,8 +39,10 @@ wallet, a TEE custodian, a spending-policy engine, or a key-storage service.
 
 | Capability | Evidence |
 | --- | --- |
+| **Mode A freeze in a single admin transaction** — p50 5,567 ms / p95 13,227 ms to optimistic state over 20 runs | F-029 |
 | Provision three native testnet sub-accounts with zero FullAccess keys; six FunctionCall keys and four active operators each | F-001, F-009 |
 | Twelve concurrent `execute` calls across three agents and four operator keys per agent (12/12 in 8,633 ms) | F-002 |
+| Twelve concurrent `execute` calls through the published SDK (12/12 in 6,486 ms, all first attempt) | F-033 |
 | Freeze/unfreeze with a recorded refusal reason (`controller is frozen`) | F-003, F-015 |
 | Refuse a non-pinned method, non-pinned receiver, and gas above the 100 Tgas policy cap | F-004 |
 | Grant, revoke, and tag revoke native operator keys; refuse duplicate roles | F-005 |
@@ -42,13 +50,16 @@ wallet, a TEE custodian, a spending-policy engine, or a key-storage service.
 | Lost-admin recovery through a separately scoped recovery key | F-007 |
 | SHA-256 audit chain, on-chain `verify_audit`, independent JS/SDK recomputation, tamper rejection | F-008, F-016, F-020 |
 | TypeScript SDK/CLI with `--json`, local signing, and testnet-only guards | F-014…F-016, F-020 |
-| 35 Rust tests, 21 TypeScript tests, 8/8 mutants killed | F-013, F-017, F-020 |
+| Pre-signed freeze: sign offline to a mode-600 file, broadcast later with `--submit-signed`, same tx hash on chain | F-034 |
+| 84 Rust tests, 38 TypeScript tests, 7/7 near-workspaces integration tests | F-013, F-020, F-035 |
+| Automated mutation score 248/252 viable mutants (98.41%); 4 equivalent survivors justified in writing | F-036 |
+| Clean-session fresh clone: no inherited secret, reproduces the deployed wasm hash | F-037 |
 | Measured gas profile and reproducible wasm build | F-012, F-018, F-019 |
 | Mode B `admin_account` provisioning with no admin/recovery key and four FunctionCall operators | F-021 |
 | Pinned source-built 2-of-2 multisig; zero access keys after bootstrap deletion | F-022, F-025 |
 | One confirmation is a no-op; the second freezes; a second 2-of-2 unfreezes | F-023 |
 | Direct member bypass and non-member request are refused; audit attributes actions to the multisig | F-024 |
-| Measured Mode A freeze/unfreeze wall time, audit storage growth, and derived allowance bound | F-026, F-027 |
+| Measured Mode B 2-of-2 freeze/unfreeze wall time, audit storage growth, and derived allowance bound | F-026, F-027 |
 | Cross-agent FunctionCall receiver-ACL isolation with positive controls | F-028 |
 
 The canonical Mode A run is `evidence/testnet-v03/run.json` (63 checks), with a
@@ -78,6 +89,24 @@ human-readable [`RUN.md`](evidence/modeb-v03/RUN.md). Key facts:
   `6sEkb5Ga2piDHHwXnNN1vszMBjn3o1RpcuDzm3xG5Efx`, bootstrap key delete
   `CoefaWo5T7Vqq1bWkVJ2rZNnW3LPVud453LUPz6NRPjp`
 
+## Measured latency (20 runs per path)
+
+`evidence/latency-v03/run.json`, 2026-11-05 UTC, dedicated agents
+`agent-lat.fleet-lat-1a1a7db6741.testnet` (Mode A) and
+`agent-b1.fleet-modeb-748d4372.testnet` (Mode B). Submit-to-optimistic-state
+and submit-to-final-state include transaction submission, finalization, and
+state polling. These are measurements, not an execution SLA.
+
+| Path | Transition | Transactions | Optimistic p50 / p95 | Final p50 / p95 | Blocks optimistic p50 / p95 | Blocks final p50 / p95 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| **Mode A (single admin tx)** | freeze | **1** | **5,567 / 13,227 ms** | **13,251 / 24,753 ms** | **1 / 1** | **15 / 33** |
+| Mode A (single admin tx) | unfreeze | 1 | 5,087 / 7,309 ms | 12,389 / 19,795 ms | 1 / 1 | 16 / 25 |
+| Mode B (2-of-2 multisig) | freeze | 3 | 10,038 / 17,105 ms | 13,682 / 32,946 ms | 13 / 19 | 18 / 47 |
+| Mode B (2-of-2 multisig) | unfreeze | 3 | 11,864 / 21,581 ms | 15,840 / 42,479 ms | 14 / 19 | 21 / 66 |
+
+The Mode B row is the same harness signing for both owners, so it measures the
+2-of-2 mechanism, not independent custody. Claims F-029…F-032.
+
 ## Do X, see Y
 
 Prerequisites: Node.js 22.x, Rust 1.93 with the `wasm32-unknown-unknown` target,
@@ -87,29 +116,33 @@ Prerequisites: Node.js 22.x, Rust 1.93 with the `wasm32-unknown-unknown` target,
 git clone <repository-url> fleet
 cd fleet
 make setup          # tools, JS dependencies, TypeScript build, Rust test build
-make verify         # fmt, clippy, 35 Rust tests, wasm, 21 TS tests, claims, secret scan, RPC
+make verify         # fmt, clippy, 84 Rust tests, wasm, 38 TS tests, claims, secret scan, RPC
 ```
 
 Expected end of `make verify`:
 
 ```text
 FLEET verification: PASS
-CLAIMS 28/28 verified (28 rows)
+CLAIMS 37/37 verified (37 rows)
 ```
 
-`make verify` takes a few minutes because it runs the full Rust and TypeScript
-suites and builds the release wasm. The read-only RPC check is best-effort by
-default; set `FLEET_REQUIRE_RPC=1` to make a testnet outage fail the gate.
+`make verify` takes several minutes because it runs the full Rust and
+TypeScript suites and builds the release wasm. The read-only RPC check is
+best-effort by default; set `FLEET_REQUIRE_RPC=1` to make a testnet outage
+fail the gate.
 
 **One-command test from a clean clone:**
 
 ```bash
-./scripts/fresh-clone-test.sh
+./scripts/fresh-clone-test.sh          # clone HEAD, setup, verify, negative controls
+./scripts/fresh-clone-clean-session.sh # same under env -i with an empty HOME
 ```
 
-It clones `HEAD`, runs `make setup` and `make verify`, checks that a malformed
-claim is rejected, checks that a mainnet RPC is refused, and asserts the clone
-contains no credential-like files.
+The clean-session variant starts with no `FLEET_*`/`NEAR_*` variable, no
+dotfile credential, and an empty `HOME`. It asserts that `make setup` and
+`make verify` pass without any inherited secret, that the clone reproduces the
+deployed wasm sha256, that a malformed claim is rejected, that a mainnet RPC
+is refused, and that the SDK refuses a mainnet client (F-037).
 
 ## CLI
 
@@ -129,7 +162,17 @@ node_modules/.bin/fleet freeze <account> --signer-key-file /secure/admin.json --
 node_modules/.bin/fleet execute <account> --method ping --args '{}' --gas 10 \
   --signer-key-file /secure/operator.json --json
 node_modules/.bin/fleet unfreeze <account> --signer-key-file /secure/admin.json --json
+
+# Pre-signed freeze: sign now, broadcast later (same tx hash on chain)
+node_modules/.bin/fleet freeze <account> --signer-key-file /secure/admin.json \
+  --pre-sign --out /tmp/freeze.json --json
+node_modules/.bin/fleet freeze <account> --submit-signed /tmp/freeze.json --json
 ```
+
+A `--pre-sign` file is mode 600 and holds a signature, not a secret key; it is
+a bearer artifact until it is broadcast or its nonce is consumed. The signed
+payload's `tx_hash` is the hash the network assigns when it is broadcast
+(F-034).
 
 Commands: `inventory`, `verify`, `audit export`, `audit verify`, `freeze`,
 `unfreeze`, `grant`, `rotate`, `revoke`, `revoke-tag`, `propose-admin`,
@@ -178,6 +221,19 @@ const writer = createFleetClient({
   signer: { secretKey: localSecret }, // never in a browser, log, or HTTP body
 });
 await writer.freeze();
+```
+
+The SDK also has a pre-signed path. `prepareFreeze()` reads the access-key
+nonce and latest block hash, signs locally, and returns a
+`fleet-signed-tx-v1` payload; it does not broadcast. `submitSigned(payload)`
+decodes and broadcasts exactly those bytes. The payload's `tx_hash` is
+base58(sha256(borsh(unsigned transaction))), the same identifier the network
+reports:
+
+```ts
+const payload = await writer.prepareFreeze();
+// ... later, possibly from another process ...
+await writer.submitSigned(payload);
 ```
 
 The SDK refuses a mainnet-looking RPC URL at construction and verifies the RPC
@@ -232,15 +288,25 @@ external notarization service.
 ## Reproduce the evidence
 
 ```bash
-make test            # 35 Rust tests + 21 TypeScript tests
+make test            # 84 Rust tests + 38 TypeScript tests
 make claims          # CLAIMS.md validator
-node scripts/mutation-test.mjs   # 8 targeted mutants, source restored
+node scripts/mutation-test.mjs   # 8 hand-written mutants, source restored
+node scripts/testnet-sdk-concurrency.mjs  # 12 concurrent SDK calls on testnet
+node scripts/testnet-presign-freeze.mjs   # pre-signed freeze on testnet
 node scripts/gas-profile.mjs     # reads the canonical run + testnet RPC
 ./scripts/repro-build.sh         # two isolated clean wasm builds
 FLEET_MODEB_FRESH=1 node scripts/testnet-modeb.mjs  # full Mode B testnet run
 node scripts/modeb-report.mjs    # render evidence/modeb-v03/RUN.md
 make fresh-clone                 # clone HEAD and run setup + verify
+./scripts/fresh-clone-clean-session.sh      # clean-session variant (env -i, empty HOME)
 ```
+
+The automated mutation score is produced on x64 CI, not locally (the local host
+is arm64): `gh workflow run mutation.yml --ref main`. Method, score definition,
+and the written justification of every surviving mutant are in
+[`docs/MUTATION.md`](docs/MUTATION.md). The integration suite runs on x64 CI
+only (near-sandbox cannot run on arm64); see
+[`evidence/integration-v03/`](evidence/integration-v03/).
 
 The Mode B harness needs the two owner key files under
 `/root/.near-fallback-keys/fleet-v03-faucet/`, a funded parent (or faucet
@@ -255,13 +321,19 @@ Evidence files:
 - `evidence/testnet-v03/RUN.md` — same run, human-readable
 - `evidence/testnet-v03/gas-profile.md` — per-operation gas table
 - `evidence/cli-v03/` — live CLI freeze/refusal/unfreeze and audit tamper test
+- `evidence/latency-v03/run.json` — 20-run Mode A and Mode B latency (F-029…F-032)
+- `evidence/sdk-v03/concurrency.json` — 12 concurrent SDK calls (F-033)
+- `evidence/sdk-v03/presign.json` — pre-signed freeze path (F-034)
+- `evidence/integration-v03/` — x64 near-workspaces CI log, 7/7 (F-035)
+- `evidence/mutation-v03/` — x64 cargo-mutants report and score (F-036)
 - `evidence/modeb-v03/run.json` — 52-check Mode B 2-of-2 testnet run
 - `evidence/modeb-v03/RUN.md` — same run, human-readable
 - `evidence/modeb-v03/multisig-repro-build.md` — two-build multisig wasm record
 - `evidence/verify-v03-modeb.log` — full local verification after Mode B
 - `evidence/fresh-clone-v03-modeb.log` — fresh-clone test on commit `eea0ccb`
 - `evidence/fresh-clone-v03-final.log` — fresh-clone test on commit `a88ef57`
-- `evidence/mutation/mutation-report.md` — mutation score and per-mutant result
+- `evidence/fresh-clone-v03-clean-session.log` — clean-session clone (F-037)
+- `evidence/mutation/mutation-report.md` — the 8 hand-written mutants (F-017)
 - `evidence/repro-build/report.md` — two-build wasm reproducibility
 - `evidence/local-tests.txt` — local fmt/clippy/test/npm/wasm log
 

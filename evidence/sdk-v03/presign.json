@@ -1,31 +1,31 @@
 {
-  "generated_at": "2026-11-05T18:15:56.417Z",
+  "generated_at": "2026-11-06T06:21:46.630Z",
   "network": "testnet",
   "rpc": "https://rpc.testnet.fastnear.com",
   "agent": "agent-lat.fleet-lat-1a1a7db6741.testnet",
   "path": "packages/cli fleet freeze --pre-sign / --submit-signed",
   "pre_signed": {
-    "tx_hash": "CXf127Ttcn2i55nksdhrsPA1ZbfmyoW8xnv8RX2TW4MJ",
+    "tx_hash": "DTjRvhMnkMnBTMBD1G7nYfkSqq8Fii9p9JkQTircthSP",
     "public_key": "ed25519:B4ESNfRM5xFZEArMSHE22MwnHfqG2sLzNr2ZhZd7iRUK",
-    "nonce": "276234548000043",
-    "created_at": "2026-11-05T18:15:42.314Z",
+    "nonce": "276234548000045",
+    "created_at": "2026-11-06T06:21:34.892Z",
     "file_mode": "600",
     "carries_key_material": false,
     "state_changed": false,
-    "audit_len_before": 43,
-    "audit_len_after_pre_sign": 43
+    "audit_len_before": 45,
+    "audit_len_after_pre_sign": 45
   },
   "submitted": {
-    "tx_hash": "ERo3CcSS5NcUVXsqcQS95j7RVe1uDxkKqD2TvhrTSMM9",
-    "block_height": 276376822,
-    "gas_burnt": "3769371147645",
+    "tx_hash": "DTjRvhMnkMnBTMBD1G7nYfkSqq8Fii9p9JkQTircthSP",
+    "block_height": 276450988,
+    "gas_burnt": "3837230787375",
     "refusal": null,
     "paused_after_submit": true,
-    "audit_len_after_submit": 44,
+    "audit_len_after_submit": 46,
     "audit_chain_verifiable": true
   },
   "restored": {
-    "tx_hash": "CSX1ovkcj9F7W6VmHDPcNT5w4yB2sbL42o7HqtnxJDKb",
+    "tx_hash": "CYTyZBVcT4WBLo7QVNyGdekBseExq2oAJ9NLUs8H6mGS",
     "paused": false
   }
 }

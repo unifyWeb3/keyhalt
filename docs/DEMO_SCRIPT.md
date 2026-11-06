@@ -1,11 +1,10 @@
 # FLEET 90-second demo script
 
 **Status:** v0.3 — **planned, not recorded**. The Mode A commands below work
-against the canonical testnet evidence, but no video exists and `T-E-07` is still
-planned. Mode B 2-of-2 was verified separately by `scripts/testnet-modeb.mjs`;
-it is not part of this 90-second Mode A walkthrough. Do not present this script
-as a recording.
-**Date:** 2026-11-04 UTC (canonical runs executed 2026-11-03 UTC).
+against the canonical testnet evidence, but no video exists and `T-E-07` is
+still planned. Do not present this script as a recording.
+**Date:** 2026-11-06 UTC (canonical runs executed 2026-11-03; latency runs
+2026-11-05).
 **Rule:** every step maps to a `VERIFIED` row in `CLAIMS.md`. If a step is not
 green during rehearsal, cut it rather than softening the claim.
 
@@ -15,6 +14,8 @@ green during rehearsal, cut it rather than softening the claim.
 
 - One continuous terminal recording, 1920×1080, 90 seconds, no cuts that hide a
   command result.
+- **The headline is the Mode A freeze: one transaction from the admin key.**
+  Say “one transaction” out loud; do not let the 2-of-2 path blur it.
 - Testnet only. Every transaction hash is visible.
 - No private key, seed phrase, credential file, or key-file path is shown. Use
   environment variables for key-file paths.
@@ -64,43 +65,51 @@ echo "testnet only | unaudited | Mode A is not non-custodial"
 
 Claim: none; framing only.
 
-### 0:08–0:22 — Inventory: scoped keys, no FullAccess
+### 0:08–0:18 — Before: one account, scoped keys, no FullAccess
 
 ```bash
 $FLEET inventory "$DEMO_ACCOUNT"
 ```
 
-Show:
-
-- `mode: A`
-- `operators: 4 (4 active)`
-- `native keys: 6 (0 FullAccess)`
-- audit length/head
+Show `mode: A`, `operators: 4 (4 active)`, `native keys: 6 (0 FullAccess)`,
+and `paused: false`.
 
 Claim: F-001, F-009. Test: `evidence/testnet-v03/run.json`.
 
-### 0:22–0:34 — Operator execution
-
-```bash
-$FLEET execute "$DEMO_ACCOUNT" --method ping --args '{}' --gas 10 \
-  --signer-key-file "$DEMO_OPERATOR" --json
-```
-
-Show `ok: true`, `txHash`, `blockHeight`. Open the tx on NearBlocks only if the
-recording includes the browser; otherwise leave the hash on screen.
-
-Claim: F-002, F-014. Test: canonical concurrency + SDK/CLI tests.
-
-### 0:34–0:50 — Freeze stops execution; unfreeze restores it
+### 0:18–0:32 — The headline: freeze in one transaction
 
 ```bash
 $FLEET freeze "$DEMO_ACCOUNT" --signer-key-file "$DEMO_ADMIN" --json
-$FLEET execute "$DEMO_ACCOUNT" --method ping --args '{}' --gas 10 \
-  --signer-key-file "$DEMO_OPERATOR" --json
-$FLEET unfreeze "$DEMO_ACCOUNT" --signer-key-file "$DEMO_ADMIN" --json
 ```
 
-Show the middle command failing with:
+Show `ok: true`, `txHash`, `blockHeight`. Say:
+
+> One transaction from the admin key. No second confirmation.
+
+Then, if the terminal is fast enough:
+
+```bash
+$FLEET inventory "$DEMO_ACCOUNT"
+```
+
+Show `paused: true`.
+
+Say: “In the 20-run measurement this path reached optimistic state at p50
+5,567 ms, p95 13,227 ms, and final state at p50 13,251 ms, p95 24,753 ms; the
+effect was visible in one block optimistically. That is a measurement from
+`evidence/latency-v03/run.json`, not a service-level promise.”
+
+Claim: F-029. Do not say “seconds”; give the measured numbers with their
+condition (submit-to-state, polling included).
+
+### 0:32–0:44 — Frozen means the operator cannot execute
+
+```bash
+$FLEET execute "$DEMO_ACCOUNT" --method ping --args '{}' --gas 10 \
+  --signer-key-file "$DEMO_OPERATOR" --json
+```
+
+Show the refusal:
 
 ```json
 "code": "FLEET_E_REJECTED",
@@ -108,12 +117,26 @@ Show the middle command failing with:
 "txHash": "..."
 ```
 
-Then show the unfreeze succeeding. Do not claim that freeze cancels an in-flight
-receipt.
+Do not claim that freeze cancels an in-flight receipt. It blocks new
+executions; it does not cancel receipts already in flight.
 
 Claim: F-003, F-015. Test: `evidence/cli-v03/refused-execute.json`.
 
-### 0:50–1:06 — Admin rotation: new key, old key loses access
+### 0:44–0:58 — Unfreeze in one transaction; execution returns
+
+```bash
+$FLEET unfreeze "$DEMO_ACCOUNT" --signer-key-file "$DEMO_ADMIN" --json
+$FLEET execute "$DEMO_ACCOUNT" --method ping --args '{}' --gas 10 \
+  --signer-key-file "$DEMO_OPERATOR" --json
+```
+
+Show the unfreeze `txHash`, then `ok: true` from the operator execute.
+
+Say: “Unfreeze is also one transaction. The measured unfreeze path reached
+optimistic state at p50 5,087 ms, p95 7,309 ms and final state at p50
+12,389 ms, p95 19,795 ms over 20 runs” (F-030).
+
+### 0:58–1:12 — Admin rotation: new key, old key loses access
 
 ```bash
 $FLEET propose-admin "$DEMO_ACCOUNT" --new-admin "<new-admin-public-key>" \
@@ -130,7 +153,7 @@ The new public key is public; it may be shown.
 
 Claim: F-006, F-010. Test: `run.json` admin rotation + old-admin rejection.
 
-### 1:06–1:20 — Audit export and tamper rejection
+### 1:12–1:24 — Audit export and tamper rejection
 
 ```bash
 $FLEET audit export "$DEMO_ACCOUNT" --out /tmp/fleet-demo-audit.json --json
@@ -152,13 +175,13 @@ verify failing with `entry_hash mismatch` and exit code 6.
 
 Claim: F-008, F-016. Test: `evidence/cli-v03/tamper-verify.json`.
 
-### 1:20–1:30 — Claims discipline and limits
+### 1:24–1:30 — Claims discipline and limits
 
 ```bash
 node scripts/check-claims.mjs
 ```
 
-Show `CLAIMS 28/28 verified`. End on the README status line or say:
+Show `CLAIMS 37/37 verified`. End on the README status line or say:
 
 > Testnet only. Unaudited. Mode A is not non-custodial. Mode B reduces
 > single-admin-key trust with a 2-of-2 multisig, but it is not independently
@@ -173,22 +196,30 @@ Do not show a console, wallet, hosted service, or a mainnet transaction.
 | Time | Step | Claims | Evidence |
 | --- | --- | --- | --- |
 | 0:08 | Inventory | F-001, F-009 | `evidence/testnet-v03/run.json` |
-| 0:22 | Execute | F-002, F-014 | `run.json`; `evidence/cli-v03/verify.json` |
-| 0:34 | Freeze refusal | F-003, F-015 | `evidence/cli-v03/refused-execute.json` |
-| 0:50 | Admin rotation | F-006, F-010 | `run.json` lifecycle |
-| 1:06 | Audit + tamper | F-008, F-016 | `evidence/cli-v03/*` |
-| 1:20 | Claims | F-013, F-017…F-020 | `evidence/local-tests.txt`, `CLAIMS.md` |
+| 0:18 | **Freeze, one tx** | **F-029** | `evidence/latency-v03/run.json` |
+| 0:32 | Frozen refusal | F-003, F-015 | `evidence/cli-v03/refused-execute.json` |
+| 0:44 | Unfreeze, one tx | F-030 | `evidence/latency-v03/run.json` |
+| 0:58 | Admin rotation | F-006, F-010 | `run.json` lifecycle |
+| 1:12 | Audit + tamper | F-008, F-016 | `evidence/cli-v03/*` |
+| 1:24 | Claims | F-013, F-017, F-020, F-035, F-036, F-037 | `evidence/local-tests.txt`, `CLAIMS.md` |
 
-Every step also depends on the testnet-only guard (F-014) and the 35-test /
-21-test suites (F-013, F-020).
+Every step also depends on the testnet-only guard (F-014) and the test suites
+(84 Rust tests, 38 TypeScript tests; F-013, F-020).
 
 Mode B is deliberately outside the 90-second Mode A take. If the submission
-needs it, point to `evidence/modeb-v03/RUN.md` and claims F-021…F-028 rather
-than adding unrecorded steps.
+needs it, point to `evidence/modeb-v03/RUN.md`, the latency table in the README,
+and claims F-021…F-028, F-031, F-032 rather than adding unrecorded steps. Mode B
+is three transactions per transition, and its numbers must not be described as
+“seconds”.
 
----
+## 5. Optional addendum (not part of the 90 seconds)
 
-## 5. Cut rules
+The pre-signed freeze path is filmed separately only if it adds value: sign
+offline, show that state did not change, then broadcast the same payload and
+show the same tx hash on chain (F-034,
+`evidence/sdk-v03/presign.json`).
+
+## 6. Cut rules
 
 - If the freeze refusal does not show `controller is frozen`, stop and re-record.
 - If the tampered audit does not exit 6, stop and re-record.
@@ -197,10 +228,12 @@ than adding unrecorded steps.
   key before the take.
 - If any step needs a console, cut it. The console is not part of v0.3.
 - Never add a claim to the narration that is not in `CLAIMS.md`.
+- Never call the measured wall times an SLO, and never say “seconds” for the
+  Mode B path.
 
 ---
 
-## 6. After recording
+## 7. After recording
 
 - Save the file outside the repository; do not commit a video.
 - Write the public tx hashes and the recording date into the submission notes.

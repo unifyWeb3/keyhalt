@@ -1,0 +1,248 @@
+contracts/fleet-controller/src/lib.rs:226:9: replace Controller::get_audit_entry -> Option<model::AuditEntry> with None
+contracts/fleet-controller/src/lib.rs:234:9: replace Controller::verify_audit -> bool with true
+contracts/fleet-controller/src/lib.rs:234:9: replace Controller::verify_audit -> bool with false
+contracts/fleet-controller/src/lib.rs:238:9: replace Controller::contract_version -> String with String::new()
+contracts/fleet-controller/src/lib.rs:238:9: replace Controller::contract_version -> String with "xyzzy".into()
+contracts/fleet-controller/src/lib.rs:259:33: replace != with == in Controller::execute
+contracts/fleet-controller/src/lib.rs:262:24: replace != with == in Controller::execute
+contracts/fleet-controller/src/lib.rs:265:16: replace > with == in Controller::execute
+contracts/fleet-controller/src/lib.rs:265:16: replace > with < in Controller::execute
+contracts/fleet-controller/src/lib.rs:265:16: replace > with >= in Controller::execute
+contracts/fleet-controller/src/lib.rs:268:23: replace > with == in Controller::execute
+contracts/fleet-controller/src/lib.rs:222:9: replace Controller::get_audit -> Vec<model::AuditEntry> with vec![]
+contracts/fleet-controller/src/lib.rs:268:23: replace > with < in Controller::execute
+contracts/fleet-controller/src/lib.rs:268:23: replace > with >= in Controller::execute
+contracts/fleet-controller/src/lib.rs:288:9: replace Controller::ping -> String with String::new()
+contracts/fleet-controller/src/lib.rs:288:9: replace Controller::ping -> String with "xyzzy".into()
+contracts/fleet-controller/src/lib.rs:297:9: replace Controller::freeze with ()
+contracts/fleet-controller/src/lib.rs:311:9: replace Controller::unfreeze with ()
+contracts/fleet-controller/src/lib.rs:371:9: replace Controller::revoke_operator with ()
+contracts/fleet-controller/src/lib.rs:389:9: replace Controller::revoke_tag -> Vec<String> with vec![]
+contracts/fleet-controller/src/lib.rs:389:9: replace Controller::revoke_tag -> Vec<String> with vec!["xyzzy".into()]
+contracts/fleet-controller/src/lib.rs:389:9: replace Controller::revoke_tag -> Vec<String> with vec![String::new()]
+contracts/fleet-controller/src/lib.rs:463:9: replace Controller::accept_admin with ()
+contracts/fleet-controller/src/lib.rs:475:12: delete ! in Controller::accept_admin
+contracts/fleet-controller/src/lib.rs:483:9: replace Controller::cancel_admin with ()
+contracts/fleet-controller/src/lib.rs:506:9: replace Controller::on_provisioned -> bool with true
+contracts/fleet-controller/src/lib.rs:506:9: replace Controller::on_provisioned -> bool with false
+contracts/fleet-controller/src/lib.rs:517:9: replace Controller::on_grant -> bool with true
+contracts/fleet-controller/src/lib.rs:517:9: replace Controller::on_grant -> bool with false
+contracts/fleet-controller/src/lib.rs:528:9: replace Controller::on_rotate -> bool with true
+contracts/fleet-controller/src/lib.rs:528:9: replace Controller::on_rotate -> bool with false
+contracts/fleet-controller/src/lib.rs:550:9: replace Controller::on_propose -> bool with true
+contracts/fleet-controller/src/lib.rs:550:9: replace Controller::on_propose -> bool with false
+contracts/fleet-controller/src/lib.rs:581:8: delete ! in assert_no_deposit
+contracts/fleet-controller/src/lib.rs:581:5: replace assert_no_deposit with ()
+contracts/fleet-controller/src/lib.rs:587:5: replace assert_private with ()
+contracts/fleet-controller/src/lib.rs:587:38: replace != with == in assert_private
+contracts/fleet-controller/src/lib.rs:597:5: replace parse_allowance -> u128 with 0
+contracts/fleet-controller/src/lib.rs:597:5: replace parse_allowance -> u128 with 1
+contracts/fleet-controller/src/lib.rs:609:5: replace config_allowance -> u128 with 0
+contracts/fleet-controller/src/lib.rs:609:5: replace config_allowance -> u128 with 1
+contracts/fleet-controller/src/lib.rs:636:5: replace promise_ok -> bool with false
+contracts/fleet-controller/src/lib.rs:636:5: replace promise_ok -> bool with true
+contracts/fleet-controller/src/lib.rs:636:37: replace == with != in promise_ok
+contracts/fleet-controller/src/lib.rs:643:5: replace origin_str -> String with String::new()
+contracts/fleet-controller/src/lib.rs:643:5: replace origin_str -> String with "xyzzy".into()
+contracts/fleet-controller/src/lib.rs:650:5: replace emit_last with ()
+contracts/fleet-controller/src/lib.rs:679:5: replace emit_event with ()
+contracts/fleet-controller/src/model.rs:135:9: replace Error::message -> &'static str with ""
+contracts/fleet-controller/src/model.rs:165:74: replace || with && in is_lower_hex_or_sep
+contracts/fleet-controller/src/model.rs:165:5: replace is_lower_hex_or_sep -> bool with false
+contracts/fleet-controller/src/model.rs:135:9: replace Error::message -> &'static str with "xyzzy"
+contracts/fleet-controller/src/model.rs:165:5: replace is_lower_hex_or_sep -> bool with true
+contracts/fleet-controller/src/model.rs:165:28: replace || with && in is_lower_hex_or_sep
+contracts/fleet-controller/src/model.rs:165:62: replace || with && in is_lower_hex_or_sep
+contracts/fleet-controller/src/model.rs:165:50: replace || with && in is_lower_hex_or_sep
+contracts/fleet-controller/src/model.rs:165:55: replace == with != in is_lower_hex_or_sep
+contracts/fleet-controller/src/model.rs:165:79: replace == with != in is_lower_hex_or_sep
+contracts/fleet-controller/src/model.rs:170:5: replace valid_account -> bool with false
+contracts/fleet-controller/src/model.rs:165:67: replace == with != in is_lower_hex_or_sep
+contracts/fleet-controller/src/model.rs:170:5: replace valid_account -> bool with true
+contracts/fleet-controller/src/model.rs:170:44: replace || with && in valid_account
+contracts/fleet-controller/src/model.rs:170:20: replace < with > in valid_account
+contracts/fleet-controller/src/model.rs:170:24: replace || with && in valid_account
+contracts/fleet-controller/src/model.rs:170:39: replace > with < in valid_account
+contracts/fleet-controller/src/model.rs:170:39: replace > with == in valid_account
+contracts/fleet-controller/src/model.rs:170:39: replace > with >= in valid_account
+contracts/fleet-controller/src/model.rs:170:47: delete ! in valid_account
+contracts/fleet-controller/src/model.rs:173:55: replace || with && in valid_account
+contracts/fleet-controller/src/model.rs:173:31: replace || with && in valid_account
+contracts/fleet-controller/src/model.rs:183:5: replace valid_public_key -> bool with true
+contracts/fleet-controller/src/model.rs:183:5: replace valid_public_key -> bool with false
+contracts/fleet-controller/src/model.rs:183:20: replace < with > in valid_public_key
+contracts/fleet-controller/src/model.rs:183:25: replace || with && in valid_public_key
+contracts/fleet-controller/src/model.rs:183:20: replace < with == in valid_public_key
+contracts/fleet-controller/src/model.rs:183:20: replace < with <= in valid_public_key
+contracts/fleet-controller/src/model.rs:183:40: replace > with < in valid_public_key
+contracts/fleet-controller/src/model.rs:189:8: delete ! in valid_public_key
+contracts/fleet-controller/src/model.rs:192:5: delete ! in valid_public_key
+contracts/fleet-controller/src/model.rs:194:9: replace && with || in valid_public_key
+contracts/fleet-controller/src/model.rs:193:23: replace <= with > in valid_public_key
+contracts/fleet-controller/src/model.rs:193:9: replace && with || in valid_public_key
+contracts/fleet-controller/src/model.rs:196:48: replace || with && in valid_public_key
+contracts/fleet-controller/src/model.rs:196:60: replace || with && in valid_public_key
+contracts/fleet-controller/src/model.rs:196:53: replace == with != in valid_public_key
+contracts/fleet-controller/src/model.rs:196:65: replace == with != in valid_public_key
+contracts/fleet-controller/src/model.rs:200:5: replace valid_tag -> bool with true
+contracts/fleet-controller/src/model.rs:200:5: replace valid_tag -> bool with false
+contracts/fleet-controller/src/model.rs:202:9: replace && with || in valid_tag
+contracts/fleet-controller/src/model.rs:201:9: replace && with || in valid_tag
+contracts/fleet-controller/src/model.rs:200:5: delete ! in valid_tag
+contracts/fleet-controller/src/model.rs:201:24: replace <= with > in valid_tag
+contracts/fleet-controller/src/model.rs:204:45: replace || with && in valid_tag
+contracts/fleet-controller/src/model.rs:204:79: replace || with && in valid_tag
+contracts/fleet-controller/src/model.rs:204:67: replace || with && in valid_tag
+contracts/fleet-controller/src/model.rs:204:72: replace == with != in valid_tag
+contracts/fleet-controller/src/model.rs:208:5: replace valid_method -> bool with false
+contracts/fleet-controller/src/model.rs:204:84: replace == with != in valid_tag
+contracts/fleet-controller/src/model.rs:208:5: replace valid_method -> bool with true
+contracts/fleet-controller/src/model.rs:210:9: replace && with || in valid_method
+contracts/fleet-controller/src/model.rs:208:5: delete ! in valid_method
+contracts/fleet-controller/src/model.rs:209:24: replace <= with > in valid_method
+contracts/fleet-controller/src/model.rs:209:9: replace && with || in valid_method
+contracts/fleet-controller/src/model.rs:212:60: replace || with && in valid_method
+contracts/fleet-controller/src/model.rs:212:48: replace || with && in valid_method
+contracts/fleet-controller/src/model.rs:212:53: replace == with != in valid_method
+contracts/fleet-controller/src/model.rs:212:65: replace == with != in valid_method
+contracts/fleet-controller/src/model.rs:216:5: replace hex_encode -> String with String::new()
+contracts/fleet-controller/src/model.rs:216:5: replace hex_encode -> String with "xyzzy".into()
+contracts/fleet-controller/src/model.rs:219:28: replace >> with << in hex_encode
+contracts/fleet-controller/src/model.rs:220:28: replace & with | in hex_encode
+contracts/fleet-controller/src/model.rs:220:28: replace & with ^ in hex_encode
+contracts/fleet-controller/src/model.rs:236:5: replace hash_message -> String with String::new()
+contracts/fleet-controller/src/model.rs:236:5: replace hash_message -> String with "xyzzy".into()
+contracts/fleet-controller/src/model.rs:253:12: delete ! in State::init
+contracts/fleet-controller/src/model.rs:253:38: replace || with && in State::init
+contracts/fleet-controller/src/model.rs:253:41: delete ! in State::init
+contracts/fleet-controller/src/model.rs:256:26: replace == with != in State::init
+contracts/fleet-controller/src/model.rs:256:31: replace || with && in State::init
+contracts/fleet-controller/src/model.rs:256:48: replace > with < in State::init
+contracts/fleet-controller/src/model.rs:256:48: replace > with == in State::init
+contracts/fleet-controller/src/model.rs:256:48: replace > with >= in State::init
+contracts/fleet-controller/src/model.rs:259:35: replace > with == in State::init
+contracts/fleet-controller/src/model.rs:259:35: replace > with >= in State::init
+contracts/fleet-controller/src/model.rs:264:42: replace || with && in State::init
+contracts/fleet-controller/src/model.rs:264:16: delete ! in State::init
+contracts/fleet-controller/src/model.rs:264:45: delete ! in State::init
+contracts/fleet-controller/src/model.rs:277:20: delete ! in State::init
+contracts/fleet-controller/src/model.rs:277:48: replace || with && in State::init
+contracts/fleet-controller/src/model.rs:277:51: delete ! in State::init
+contracts/fleet-controller/src/model.rs:280:29: replace == with != in State::init
+contracts/fleet-controller/src/model.rs:283:44: replace || with && in State::init
+contracts/fleet-controller/src/model.rs:288:20: delete ! in State::init
+contracts/fleet-controller/src/model.rs:317:9: replace State::admin_mode -> &'static str with "xyzzy"
+contracts/fleet-controller/src/model.rs:317:9: replace State::admin_mode -> &'static str with ""
+contracts/fleet-controller/src/model.rs:324:9: replace State::admin_pk -> Option<&str> with Some("")
+contracts/fleet-controller/src/model.rs:324:9: replace State::admin_pk -> Option<&str> with None
+contracts/fleet-controller/src/model.rs:324:9: replace State::admin_pk -> Option<&str> with Some("xyzzy")
+contracts/fleet-controller/src/model.rs:331:9: replace State::recovery_pk -> Option<&str> with None
+contracts/fleet-controller/src/model.rs:331:9: replace State::recovery_pk -> Option<&str> with Some("xyzzy")
+contracts/fleet-controller/src/model.rs:331:9: replace State::recovery_pk -> Option<&str> with Some("")
+contracts/fleet-controller/src/model.rs:338:9: replace State::admin_account -> Option<&str> with Some("")
+contracts/fleet-controller/src/model.rs:338:9: replace State::admin_account -> Option<&str> with None
+contracts/fleet-controller/src/model.rs:338:9: replace State::admin_account -> Option<&str> with Some("xyzzy")
+contracts/fleet-controller/src/model.rs:345:9: replace State::active_operators -> Vec<&Operator> with vec![]
+contracts/fleet-controller/src/model.rs:349:9: replace State::operator_for -> Option<&Operator> with None
+contracts/fleet-controller/src/model.rs:349:47: replace == with != in State::operator_for
+contracts/fleet-controller/src/model.rs:370:9: replace State::audit_page -> Vec<AuditEntry> with vec![]
+contracts/fleet-controller/src/model.rs:373:39: replace >= with < in State::audit_page
+contracts/fleet-controller/src/model.rs:380:9: replace State::audit_entry -> Option<AuditEntry> with None
+contracts/fleet-controller/src/model.rs:380:50: replace == with != in State::audit_entry
+contracts/fleet-controller/src/model.rs:392:9: replace State::record -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:392:30: replace || with && in State::record
+contracts/fleet-controller/src/model.rs:392:25: replace > with < in State::record
+contracts/fleet-controller/src/model.rs:392:25: replace > with == in State::record
+contracts/fleet-controller/src/model.rs:392:25: replace > with >= in State::record
+contracts/fleet-controller/src/model.rs:392:47: replace > with < in State::record
+contracts/fleet-controller/src/model.rs:392:47: replace > with == in State::record
+contracts/fleet-controller/src/model.rs:392:47: replace > with >= in State::record
+contracts/fleet-controller/src/model.rs:426:9: replace State::verify_audit -> bool with true
+contracts/fleet-controller/src/model.rs:426:9: replace State::verify_audit -> bool with false
+contracts/fleet-controller/src/model.rs:428:42: replace || with && in State::verify_audit
+contracts/fleet-controller/src/model.rs:428:26: replace != with == in State::verify_audit
+contracts/fleet-controller/src/model.rs:428:61: replace != with == in State::verify_audit
+contracts/fleet-controller/src/model.rs:441:33: replace != with == in State::verify_audit
+contracts/fleet-controller/src/model.rs:450:9: replace State::require_admin -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:452:45: replace || with && in State::require_admin
+contracts/fleet-controller/src/model.rs:452:34: replace != with == in State::require_admin
+contracts/fleet-controller/src/model.rs:452:65: replace != with == in State::require_admin
+contracts/fleet-controller/src/model.rs:457:35: replace != with == in State::require_admin
+contracts/fleet-controller/src/model.rs:466:9: replace State::require_recovery -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:468:34: replace != with == in State::require_recovery
+contracts/fleet-controller/src/model.rs:468:45: replace || with && in State::require_recovery
+contracts/fleet-controller/src/model.rs:468:65: replace != with == in State::require_recovery
+contracts/fleet-controller/src/model.rs:478:9: replace State::require_operator -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:478:26: replace != with == in State::require_operator
+contracts/fleet-controller/src/model.rs:487:12: delete ! in State::require_operator
+contracts/fleet-controller/src/model.rs:494:9: replace State::fresh_key -> bool with false
+contracts/fleet-controller/src/model.rs:494:9: replace State::fresh_key -> bool with true
+contracts/fleet-controller/src/model.rs:494:21: replace == with != in State::fresh_key
+contracts/fleet-controller/src/model.rs:494:40: replace || with && in State::fresh_key
+contracts/fleet-controller/src/model.rs:497:63: replace == with != in State::fresh_key
+contracts/fleet-controller/src/model.rs:494:52: replace == with != in State::fresh_key
+contracts/fleet-controller/src/model.rs:500:43: replace == with != in State::fresh_key
+contracts/fleet-controller/src/model.rs:504:13: replace && with || in State::fresh_key
+contracts/fleet-controller/src/model.rs:503:9: delete ! in State::fresh_key
+contracts/fleet-controller/src/model.rs:503:47: replace == with != in State::fresh_key
+contracts/fleet-controller/src/model.rs:504:16: delete ! in State::fresh_key
+contracts/fleet-controller/src/model.rs:504:62: replace == with != in State::fresh_key
+contracts/fleet-controller/src/model.rs:536:9: replace State::unfreeze -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:514:9: replace State::freeze -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:537:12: delete ! in State::unfreeze
+contracts/fleet-controller/src/model.rs:560:9: replace State::prepare_grant -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:561:12: delete ! in State::prepare_grant
+contracts/fleet-controller/src/model.rs:564:12: delete ! in State::prepare_grant
+contracts/fleet-controller/src/model.rs:567:12: delete ! in State::prepare_grant
+contracts/fleet-controller/src/model.rs:570:12: delete ! in State::prepare_grant
+contracts/fleet-controller/src/model.rs:598:9: replace State::confirm_grant -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:601:36: replace && with || in State::confirm_grant
+contracts/fleet-controller/src/model.rs:601:30: replace == with != in State::confirm_grant
+contracts/fleet-controller/src/model.rs:601:39: delete ! in State::confirm_grant
+contracts/fleet-controller/src/model.rs:609:46: replace != with == in State::confirm_grant
+contracts/fleet-controller/src/model.rs:622:9: replace State::revoke_operator -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:623:12: delete ! in State::revoke_operator
+contracts/fleet-controller/src/model.rs:623:50: replace == with != in State::revoke_operator
+contracts/fleet-controller/src/model.rs:626:42: replace != with == in State::revoke_operator
+contracts/fleet-controller/src/model.rs:645:9: replace State::revoke_tag -> Result<Vec<String>, Error> with Ok(vec![])
+contracts/fleet-controller/src/model.rs:645:9: replace State::revoke_tag -> Result<Vec<String>, Error> with Ok(vec![String::new()])
+contracts/fleet-controller/src/model.rs:645:9: replace State::revoke_tag -> Result<Vec<String>, Error> with Ok(vec!["xyzzy".into()])
+contracts/fleet-controller/src/model.rs:646:12: delete ! in State::revoke_tag
+contracts/fleet-controller/src/model.rs:652:33: replace == with != in State::revoke_tag
+contracts/fleet-controller/src/model.rs:658:43: replace != with == in State::revoke_tag
+contracts/fleet-controller/src/model.rs:681:9: replace State::prepare_rotate -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:682:38: replace || with && in State::prepare_rotate
+contracts/fleet-controller/src/model.rs:682:12: delete ! in State::prepare_rotate
+contracts/fleet-controller/src/model.rs:682:41: delete ! in State::prepare_rotate
+contracts/fleet-controller/src/model.rs:688:12: delete ! in State::prepare_rotate
+contracts/fleet-controller/src/model.rs:691:29: replace || with && in State::prepare_rotate
+contracts/fleet-controller/src/model.rs:691:19: replace == with != in State::prepare_rotate
+contracts/fleet-controller/src/model.rs:691:32: delete ! in State::prepare_rotate
+contracts/fleet-controller/src/model.rs:720:9: replace State::confirm_rotate -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:723:40: replace && with || in State::confirm_rotate
+contracts/fleet-controller/src/model.rs:723:30: replace == with != in State::confirm_rotate
+contracts/fleet-controller/src/model.rs:723:43: delete ! in State::confirm_rotate
+contracts/fleet-controller/src/model.rs:730:36: replace != with == in State::confirm_rotate
+contracts/fleet-controller/src/model.rs:730:46: replace || with && in State::confirm_rotate
+contracts/fleet-controller/src/model.rs:730:55: replace == with != in State::confirm_rotate
+contracts/fleet-controller/src/model.rs:733:46: replace != with == in State::confirm_rotate
+contracts/fleet-controller/src/model.rs:751:12: delete ! in State::prepare_propose
+contracts/fleet-controller/src/model.rs:747:9: replace State::prepare_propose -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:760:38: replace || with && in State::prepare_propose
+contracts/fleet-controller/src/model.rs:760:12: delete ! in State::prepare_propose
+contracts/fleet-controller/src/model.rs:760:41: delete ! in State::prepare_propose
+contracts/fleet-controller/src/model.rs:786:9: replace State::confirm_propose -> Result<(), Error> with Ok(())
+contracts/fleet-controller/src/model.rs:786:43: replace != with == in State::confirm_propose
+contracts/fleet-controller/src/model.rs:817:9: replace State::accept_admin -> Result<String, Error> with Ok(String::new())
+contracts/fleet-controller/src/model.rs:817:9: replace State::accept_admin -> Result<String, Error> with Ok("xyzzy".into())
+contracts/fleet-controller/src/model.rs:818:37: replace && with || in State::accept_admin
+contracts/fleet-controller/src/model.rs:818:26: replace != with == in State::accept_admin
+contracts/fleet-controller/src/model.rs:821:48: replace && with || in State::accept_admin
+contracts/fleet-controller/src/model.rs:821:67: replace != with == in State::accept_admin
+contracts/fleet-controller/src/model.rs:848:9: replace State::cancel_admin -> Result<Option<String>, Error> with Ok(None)
+contracts/fleet-controller/src/model.rs:848:9: replace State::cancel_admin -> Result<Option<String>, Error> with Ok(Some(String::new()))
+contracts/fleet-controller/src/model.rs:848:9: replace State::cancel_admin -> Result<Option<String>, Error> with Ok(Some("xyzzy".into()))
+contracts/fleet-controller/src/model.rs:849:13: replace || with && in State::cancel_admin
+contracts/fleet-controller/src/model.rs:850:12: delete ! in State::cancel_admin
+contracts/fleet-controller/src/model.rs:853:41: replace && with || in State::cancel_admin
+contracts/fleet-controller/src/model.rs:878:9: replace State::confirm_provision -> Result<(), Error> with Ok(())

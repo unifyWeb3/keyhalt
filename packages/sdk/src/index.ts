@@ -402,6 +402,22 @@ export function sha256Hex(bytes: Uint8Array | string): string {
     .digest("hex");
 }
 
+/**
+ * The NEAR transaction hash: base58 of the SHA-256 of the borsh-serialized
+ * **unsigned** `Transaction`.
+ *
+ * This is not the hash of the signed transaction. The signature is over this
+ * hash, and the RPC reports the same value as `transaction_outcome.id` when
+ * the signed payload is broadcast. Hashing the signed bytes instead would
+ * produce a different, unusable identifier for the same transaction.
+ */
+export function fleetTransactionHash(signed: SignedTransaction): string {
+  const digest = createHash("sha256")
+    .update(signed.transaction.encode())
+    .digest();
+  return baseEncode(digest);
+}
+
 export function verifyAuditChain(entries: AuditEntry[]): AuditVerification {
   let previous = "0".repeat(64);
   for (let index = 0; index < entries.length; index += 1) {
@@ -887,7 +903,6 @@ class FleetClientImpl implements FleetClient {
       throw wrapError(error, "FLEET_E_REJECTED");
     }
     const bytes = signed.encode();
-    const digest = createHash("sha256").update(bytes).digest();
     return {
       format: SIGNED_TX_FORMAT,
       network: "testnet",
@@ -898,9 +913,7 @@ class FleetClientImpl implements FleetClient {
       gas_tgas: gasTgas,
       public_key: signed.transaction.publicKey.toString(),
       nonce: signed.transaction.nonce.toString(),
-      // The NEAR transaction hash is the base58 SHA-256 of the serialized
-      // signed transaction.
-      tx_hash: baseEncode(digest),
+      tx_hash: fleetTransactionHash(signed),
       signed_transaction: Buffer.from(bytes).toString("base64"),
       created_at: new Date().toISOString(),
     };

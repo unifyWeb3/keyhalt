@@ -1,11 +1,22 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
+
+import {
+  KeyPair,
+  Signature,
+  SignedTransaction,
+  Transaction,
+  actions,
+  baseEncode,
+} from "near-api-js";
 
 import {
   createFleetClient,
   FLEET_SDK_VERSION,
   FleetError,
+  fleetTransactionHash,
   normalizeAuditEntry,
   parseBigJson,
   parseSignedTransaction,
@@ -214,6 +225,43 @@ test("SDK refuses to broadcast a pre-signed transaction for another account", as
       return true;
     },
   );
+});
+
+test("SDK transaction hash covers the unsigned transaction, not the signed bytes", () => {
+  const keyPair = KeyPair.fromRandom("ed25519");
+  const publicKey = keyPair.getPublicKey();
+  const transaction = new Transaction({
+    signerId: "agent.testnet",
+    publicKey,
+    nonce: 42n,
+    receiverId: "agent.testnet",
+    actions: [actions.functionCall("freeze", {}, 30_000_000_000_000n, 0n)],
+    blockHash: new Uint8Array(32).fill(7),
+  });
+  const signature = new Signature({
+    keyType: publicKey.keyType,
+    data: new Uint8Array(64).fill(3),
+  });
+  const signed = new SignedTransaction({ transaction, signature });
+
+  // A NEAR transaction hash is base58(sha256(borsh(unsigned Transaction))).
+  // The RPC reports exactly this value as transaction_outcome.id, which is why
+  // a pre-signed payload can carry a hash before it is broadcast.
+  const expected = baseEncode(
+    createHash("sha256").update(transaction.encode()).digest(),
+  );
+  assert.equal(fleetTransactionHash(signed), expected);
+
+  // Regression guard: hashing the signed transaction returns a different,
+  // unusable identifier for the same transaction.
+  assert.notDeepEqual(
+    Buffer.from(signed.encode()),
+    Buffer.from(transaction.encode()),
+  );
+  const wrong = baseEncode(
+    createHash("sha256").update(signed.encode()).digest(),
+  );
+  assert.notEqual(fleetTransactionHash(signed), wrong);
 });
 
 test("SDK verifies the canonical 19-entry testnet audit chain", () => {

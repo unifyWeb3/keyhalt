@@ -1,0 +1,23 @@
+contracts/fleet-controller/src/lib.rs:191:9: replace Controller::get_state -> StateView with Default::default()
+contracts/fleet-controller/src/lib.rs:226:9: replace Controller::get_audit_entry -> Option<model::AuditEntry> with Some(Default::default())
+contracts/fleet-controller/src/lib.rs:230:9: replace Controller::get_audit_head -> model::AuditHead with Default::default()
+contracts/fleet-controller/src/lib.rs:253:9: replace Controller::execute -> Promise with Default::default()
+contracts/fleet-controller/src/lib.rs:325:9: replace Controller::grant_operator -> Promise with Default::default()
+contracts/fleet-controller/src/lib.rs:349:9: replace Controller::rotate_operator -> Promise with Default::default()
+contracts/fleet-controller/src/lib.rs:411:9: replace Controller::propose_admin -> Promise with Default::default()
+contracts/fleet-controller/src/lib.rs:436:9: replace Controller::recover_admin -> Promise with Default::default()
+contracts/fleet-controller/src/lib.rs:222:9: replace Controller::get_audit -> Vec<model::AuditEntry> with vec![Default::default()]
+contracts/fleet-controller/src/lib.rs:218:9: replace Controller::get_inventory -> StateView with Default::default()
+contracts/fleet-controller/src/lib.rs:566:5: replace current_actor -> Actor with Default::default()
+contracts/fleet-controller/src/lib.rs:593:5: replace parse_key -> PublicKey with Default::default()
+contracts/fleet-controller/src/lib.rs:617:5: replace add_key_promise -> Promise with Default::default()
+contracts/fleet-controller/src/lib.rs:626:5: replace callback -> Promise with Default::default()
+contracts/fleet-controller/src/model.rs:253:9: replace State::init -> Result<Self, Error> with Ok(Default::default())
+contracts/fleet-controller/src/model.rs:259:35: replace > with < in State::init
+contracts/fleet-controller/src/model.rs:345:9: replace State::active_operators -> Vec<&Operator> with vec![Box::leak(Box::new(Default::default()))]
+contracts/fleet-controller/src/model.rs:349:9: replace State::operator_for -> Option<&Operator> with Some(Box::leak(Box::new(Default::default())))
+contracts/fleet-controller/src/model.rs:353:9: replace State::audit_head -> AuditHead with Default::default()
+contracts/fleet-controller/src/model.rs:370:9: replace State::audit_page -> Vec<AuditEntry> with vec![Default::default()]
+contracts/fleet-controller/src/model.rs:380:9: replace State::audit_entry -> Option<AuditEntry> with Some(Default::default())
+contracts/fleet-controller/src/model.rs:573:40: replace >= with < in State::prepare_grant
+contracts/fleet-controller/src/model.rs:694:40: replace >= with < in State::prepare_rotate
