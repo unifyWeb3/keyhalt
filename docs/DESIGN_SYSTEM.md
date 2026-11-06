@@ -4,7 +4,9 @@
 no Figma file, and no recording exist. Do not present this document as a
 finished UI. UI generation and recording happen only after written human
 approval of this draft.
-**Date:** 2026-11-04 UTC (amended after the 2026-11-04 design review).
+**Date:** 2026-11-04 UTC (amended after the 2026-11-04 design review; type,
+colour, layout and copy amended 2026-11-07 after the human approved the
+`unslop` direction — see `design/UNSLOP_AUDIT.md` §6).
 **Scope:** read-only console for NEAR **testnet** only. The console never signs,
 never stores a key, and never calls a write method. Every write stays in the
 SDK/CLI (local signing) per `docs/INTERFACES.md` §1.
@@ -41,13 +43,22 @@ says it should? Everything else is secondary.
 
 | Role | Face | Size / weight |
 | --- | --- | --- |
-| Display and headings | Inter, sentence case, 600 | 28 / 15 px |
-| Body | Inter, 400 | 14 px |
-| Identifiers (account IDs, keys, hashes, block heights) | JetBrains Mono, 400 | 13 px |
+| Wordmark | Inter, 600 | 18 px |
+| Screen and panel headings | Inter, sentence case, 500 | 14 px |
+| Agent ID (one screen title) | JetBrains Mono, 500 | 15 px |
+| Group headings | Inter, 500 | 13 px |
+| Column headers and meta | Inter, 400 | 12 px |
+| Body and table cells | Inter, 400 | 14 px |
+| Identifiers (account IDs, keys, hashes, block heights) | JetBrains Mono, 400, `tabular-nums` | 13 px |
+| Scope tag | JetBrains Mono, 400 | 11 px |
+
+Only weights 400, 500 and 600 are loaded. Hierarchy comes from size and colour,
+not weight. No uppercase tracked labels, no italic, no negative tracking.
 
 **License and hosting:** Inter is OFL 1.1 (SIL Open Font License), JetBrains
-Mono is OFL 1.1. Both are self-hosted as subset WOFF2 in `design/fonts/` with
-licenses included. No web-font CDN. No other face is loaded.
+Mono is OFL 1.1. Both are self-hosted as variable TrueType files in
+`design/fonts/` (`Inter.ttf`, `JetBrainsMono.ttf`) with their OFL texts. No
+web-font CDN. No other face is loaded.
 
 ---
 
@@ -55,27 +66,41 @@ licenses included. No web-font CDN. No other face is loaded.
 
 Dark-first. Contrast checked on every token below against its background.
 
-| Token | Hex | Contrast on `--bg` | Use |
+Ink ramp: the console is a security desk at night. Surfaces stay neutral
+blue-grey; colour carries meaning and the one signature. Contrast is measured
+against `--bg` and, for cells, `--panel`.
+
+| Token | Hex | Contrast on `--bg` / `--panel` | Use |
 | --- | --- | --- | --- |
-| `--bg` | `#0b0f14` | — | page background |
-| `--panel` | `#121a26` | — | card surface |
-| `--border` | `#2a3948` | — | hairlines, table rules |
-| `--text` | `#e6edf3` | 16.3 : 1 | primary text |
-| `--muted` | `#9aa9b8` | 8.0 : 1 | secondary text |
-| `--code` | `#a8d8ff` | 12.7 : 1 | identifiers at 13 px |
-| `--ok` | `#4cc38a` | 8.7 : 1 | verified true, executed |
-| `--warn` | `#e0a100` | 8.5 : 1 | pending, unverified |
-| `--danger` | `#ff7b72` | 7.6 : 1 | frozen, refused, tamper |
-| `--link` | `#79c0ff` | 9.9 : 1 | tx hash links |
+| `--bg` | `#0b0d14` | — | page background, sheet |
+| `--panel` | `#11141c` | — | card surface |
+| `--raised` | `#1a1e28` | — | active nav, row hover |
+| `--hairline` | `rgba(238,240,245,0.08)` | — | borders, table rules |
+| `--hairline-strong` | `rgba(238,240,245,0.16)` | — | control borders, chain spine |
+| `--text` | `#eef0f5` | 17.0 : 1 / 16.2 : 1 | primary text |
+| `--text-2` | `#a3a9b8` | 8.3 : 1 / 7.8 : 1 | secondary text |
+| `--text-3` | `#828a9e` | 5.6 : 1 / 5.3 : 1 | meta, column headers |
+| `--accent` | `#7cb7ff` | 9.3 : 1 / 8.8 : 1 | scope tag, block figure, focus |
+| `--ok` | `#4cc38a` | 8.8 : 1 / 8.3 : 1 | verified true, executed |
+| `--warn` | `#e0a100` | 8.6 : 1 / 8.1 : 1 | pending, unverified |
+| `--danger` | `#e85d61` | 5.7 : 1 / 5.4 : 1 | frozen, refused, tamper |
+
+Identifiers are distinguished by **mono and tabular figures, not a second
+hue**. Links are primary text with a hairline underline; they are not a fourth
+colour. The accent is used rarely: the scope tag, the chain-head node, the
+block figure in the header and the focus ring.
 
 Light mode is deferred.
 
 ### 3.1 Spacing and layout
 
-- Baseline grid: 8 px. Page max width 72 rem; reading column 52 rem.
-- Radius: 4 px panels, 2 px chips. Border 1 px `--border`.
-- Header (pinned): `FLEET` wordmark, one chip with network and latest block.
-  Nothing else.
+- Grid: 4 px. Page max width 90 rem (1440 px), fluid below that, page padding
+  32 px (24 px at the bottom edge, 16 px under 900 px wide).
+- Panels: 20 px padding, 14 px radius. Controls: 8 px radius. Chips: 4 px.
+  Borders are 1 px hairlines, never a solid mid-grey.
+- Top bar (56 px, pinned): `FLEET` wordmark with a key mark, the two routes
+  (`Fleet`, `Timeline`), and the testnet chip. Footer: 44 px.
+- The layout fills the viewport width. It is never a narrow centred column.
 
 ---
 
@@ -83,14 +108,20 @@ Light mode is deferred.
 
 ### 4.1 Header
 
-Wordmark and one chip: `testnet · block 276454237`. The block number ticks as
-new blocks arrive. No other header content.
+Wordmark with a key mark, the routes `Fleet` and `Timeline`, and the chip
+`testnet · block 276454237`. The block number ticks as new blocks arrive; in
+the static draft the counter is a labelled stand-in (footer note and `title`),
+and the real console reads it from the RPC. The active route is a small
+surface step with a hairline, not a coloured pill. No other header content.
 
 ### 4.2 Fleet
 
 One row per agent (three) and, on the Mode B demo fleet, the same row shape
 for its agent. Columns: name, state (`Active` or `Frozen`), full-access key
-count, and the last event with its time. Selecting a name opens the agent
+count, and the last event with its block. Each name carries a second quiet
+line with the key material that makes the fleet a fleet: `4 operator keys ·
+2 ops-a · 2 ops-b`. The panel header carries the real aggregate: `3 agents ·
+12 operator keys · 0 full-access keys`. Selecting a name opens the agent
 screen. Fleet membership comes from a config file or a URL hash
 (`#agent=agent-2.…`), never a text box.
 
@@ -98,17 +129,25 @@ screen. Fleet membership comes from a config file or a URL hash
 
 Close button to return to the fleet. Below it, three groups:
 
-- Operator keys and scopes (table: key, tag, active).
-- Admin. Mode A: admin key. Mode B, as data: **2 of 2 · 2 owners · demo: same
-  operator**. The threat prose stays in `docs/THREAT_MODEL.md`.
-- Audit tail: the last entries with the verified chip, and the export action.
-  Export is enabled only after verification passes.
+- Operator keys and scopes (table: key, scope tag, active). The scope tag is
+  the signature detail: a small mono chip, the one accent on the row.
+- Admin. Mode A: admin key. Mode B, as data: **2 of 2 confirmations · both
+  owners operated by one operator in this demo**. The threat prose stays in
+  `docs/THREAT_MODEL.md`.
+- Recent audit entries: the chain spine. Each entry hangs from the hash above
+  it on a continuous rail: sequence, action, block, entry hash, `prev` hash,
+  and the verified mark. The head node carries the accent. The export action
+  is `Export audit chain`, enabled only after verification passes.
 
 ### 4.4 Timeline
 
 One row per lifecycle event, including refusals. A refused call is a row with
-its refusal text in plain language and its tx hash. Confirmation rows for
-Mode B mark the count (`0 of 2`, `1 of 2`, `2 of 2`).
+its refusal text in plain language and its tx hash. Freeze and unfreeze rows
+carry a closed or open lock so the state transition is visible as a shape, not
+only as a word; the frozen refusal carries the closed lock in the danger
+colour. Confirmation rows for Mode B mark the count (`0 of 2`, `1 of 2`,
+`2 of 2`). The panel header carries the real counts: `8 events · 3 refused ·
+160 blocks`.
 
 ### 4.5 Command sheet (the only action surface)
 
@@ -124,8 +163,10 @@ See `design/DEVIATIONS.md`.
 
 ### 4.6 Footer
 
-One line: `Verified 37/37` linking to `CLAIMS.md`. Individual facts carry a
-✓ mark that links to their transaction.
+One line: `Verified 37/37` linking to `CLAIMS.md`, and `Threat model`.
+Individual facts carry a check mark that links to their transaction. A quiet
+right-hand note states that the draft renders captured testnet evidence and
+that the block counter is a stand-in.
 
 ### 4.7 Errors (plain language in the UI)
 
@@ -159,8 +200,11 @@ Fleet → Agent → Timeline
 
 ## 6. Motion and interaction
 
-- No animation beyond a 120 ms opacity change on panel fill.
-- Focus ring: 2 px `--link` outline on every interactive element.
+- One easing curve, `cubic-bezier(0.22, 1, 0.36, 1)`. Hover is a 140 ms
+  colour or surface change; the command sheet fades and rises 4 px in 180 ms.
+  No looping animation except the block tick, no `transition-all`.
+- Focus ring: 2 px `--accent` outline on every interactive element.
+- `prefers-reduced-motion` turns transitions off.
 - Refresh is the block tick itself; there is no manual refresh control.
 
 ---
@@ -169,7 +213,8 @@ Fleet → Agent → Timeline
 
 - Status is conveyed by text, never color alone.
 - Tables are semantic tables; tx hashes are real links to NearBlocks.
-- Header + fleet visible without scroll at 1920×1080.
+- Header + fleet visible without scroll at 1920×1080. The agent screen and its
+  open command sheet also fit 1080 px without scrolling (verified 2026-11-07).
 - No private key, seed phrase, signer path, or wallet UI appears, even as a mock.
 - `web/` carries `<meta name="robots" content="noindex">` until the human
   approves a public URL.

@@ -9,27 +9,33 @@
 @font-face {
   font-family: "Inter";
   src: url("fonts/Inter.ttf") format("truetype");
-  font-weight: 400 700;
+  font-weight: 400 600;
   font-display: swap;
 }
 @font-face {
   font-family: "JetBrains Mono";
   src: url("fonts/JetBrainsMono.ttf") format("truetype");
-  font-weight: 400 700;
+  font-weight: 400 500;
   font-display: swap;
 }
 :root {
   color-scheme: dark;
-  --bg: #0b0f14;
-  --panel: #121a26;
-  --border: #2a3948;
-  --text: #e6edf3;
-  --muted: #9aa9b8;
-  --code: #a8d8ff;
+  /* Ink neutral ramp: a security desk at night. Surfaces stay grey-blue;
+     colour is reserved for meaning and for the one scope-tag signature. */
+  --bg: #0b0d14;
+  --panel: #11141c;
+  --raised: #1a1e28;
+  --raised-hover: #202531;
+  --text: #eef0f5;
+  --text-2: #a3a9b8;
+  --text-3: #828a9e;
+  --hairline: rgba(238, 240, 245, 0.08);
+  --hairline-strong: rgba(238, 240, 245, 0.16);
+  --accent: #7cb7ff;
   --ok: #4cc38a;
   --warn: #e0a100;
-  --danger: #ff7b72;
-  --link: #79c0ff;
+  --danger: #e85d61;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -39,220 +45,594 @@ body {
   font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 14px;
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
-a { color: var(--link); text-decoration: none; }
-a:hover { text-decoration: underline; }
-a:focus-visible, button:focus-visible {
-  outline: 2px solid var(--link);
-  outline-offset: 2px;
+a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--hairline-strong);
+  text-underline-offset: 3px;
 }
-header {
+a:hover { text-decoration-color: var(--text-2); }
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.mono {
+  font-family: "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+.dim { color: var(--text-3); }
+.ic {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  vertical-align: -2px;
+}
+
+/* --- Top bar: brand, the two routes, and the testnet discipline chip --- */
+.topbar {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  padding: 16px 24px;
+  height: 56px;
   display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 0 32px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--hairline);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text);
+}
+.brand svg { color: var(--text-2); }
+.wordmark { font-size: 18px; font-weight: 600; }
+.nav { display: flex; gap: 4px; }
+.nav a {
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color 140ms var(--ease), background-color 140ms var(--ease);
+}
+.nav a:hover { color: var(--text); background: var(--raised); }
+.nav a[aria-current="page"] {
+  color: var(--text);
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+.net {
+  margin-left: auto;
+  display: inline-flex;
   align-items: baseline;
-  gap: 16px;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-3);
 }
-header .wordmark { font-size: 20px; font-weight: 600; letter-spacing: 0.02em; }
-header .chip {
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 2px 8px;
-  font-size: 13px;
-  color: var(--muted);
+.net .tick { font-size: 12px; color: var(--accent); }
+
+/* --- App shell: fluid content, never a narrow centred column --- */
+main {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 32px 32px 24px;
+  flex: 1;
 }
-header .chip b { color: var(--text); font-weight: 600; }
-header .tick { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--code); }
-main { max-width: 72rem; margin: 0 auto; padding: 24px; width: 100%; }
-body > main { margin-top: 0; margin-bottom: 0; }
 .panel {
   background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
   padding: 20px;
-  margin-bottom: 16px;
 }
-.panel h2 { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
-.panel h2.id { font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 600; color: var(--code); }
-table { border-collapse: collapse; width: 100%; }
-th, td {
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-  padding: 10px 8px;
-  vertical-align: top;
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 8px;
 }
-th { color: var(--muted); font-weight: 500; }
-td.id, td.hash, td.block, td.key {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 13px;
-  color: var(--code);
-}
-td .tx { font-family: "JetBrains Mono", monospace; font-size: 13px; }
-td .tx a { color: var(--link); }
-.state { font-weight: 600; }
-.state.active { color: var(--ok); }
-.state.frozen { color: var(--danger); }
-.result { color: var(--muted); }
-.result.refused { color: var(--danger); }
-.result.ok { color: var(--ok); }
-.check { color: var(--ok); }
-footer {
-  border-top: 1px solid var(--border);
-  padding: 16px 24px;
-  color: var(--muted);
-  font-size: 13px;
-}
-footer a { color: var(--link); }
-button {
-  background: var(--bg);
+.panel-head h1 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 8px 16px;
-  font: inherit;
-  cursor: pointer;
 }
-button:hover { border-color: var(--link); }
-button:disabled { opacity: 0.45; cursor: not-allowed; }
-.sheet {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 16px;
-  margin-top: 12px;
+.panel-head .meta {
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
 }
-.sheet code {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 13px;
-  color: var(--code);
+.panel-head .agent-id {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+.back { margin: 0 0 12px; font-size: 13px; }
+.back a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  text-decoration: none;
+}
+.back a:hover { color: var(--text); }
+
+/* --- Tables: one row height, one hairline, numbers in one column --- */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+th, td { text-align: left; padding: 12px 16px; vertical-align: middle; }
+thead th {
+  padding: 0 16px 10px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+tbody td { border-top: 1px solid var(--hairline); }
+tbody tr { transition: background-color 140ms var(--ease); }
+tbody tr:hover { background: var(--raised); }
+.num { text-align: right; }
+.id, .key, .block { font-size: 13px; }
+.id a { display: block; color: var(--text); }
+.key-meta {
   display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* --- State: text carries the meaning; the dot is a quiet echo --- */
+.state { white-space: nowrap; }
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 7px;
+  vertical-align: 1px;
+  background: var(--ok);
+}
+.state.active { color: var(--text); }
+.last { font-size: 13px; color: var(--text-2); }
+.check {
+  display: inline-flex;
+  align-items: center;
+  color: var(--ok);
+  text-decoration: none;
+  vertical-align: -3px;
+}
+.check:hover { text-decoration: none; color: var(--text); }
+
+/* --- Scope tag: the signature detail. The only accent on a row. --- */
+.tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid rgba(124, 183, 255, 0.28);
+  border-radius: 4px;
+  background: rgba(124, 183, 255, 0.08);
+  color: var(--accent);
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.02em;
+}
+
+/* --- Agent groups: space inside a group is smaller than between groups --- */
+.panel-head + .group { margin-top: 20px; }
+.group + .group { margin-top: 24px; }
+.group h3 {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+.admin { margin: 0; font-size: 14px; }
+.admin .dim { font-size: 13px; }
+
+/* --- Chain spine: each entry hangs from the hash above it --- */
+.chain-meta { margin: 0 0 16px; font-size: 12px; color: var(--text-3); }
+.chain { list-style: none; margin: 0; padding: 0; }
+.chain-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  column-gap: 12px;
+  padding-bottom: 20px;
+}
+.chain-entry:last-child { padding-bottom: 0; }
+.chain-rail { position: relative; }
+.chain-rail::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 15px;
+  bottom: -24px;
+  width: 1px;
+  background: var(--hairline-strong);
+  transform: translateX(-50%);
+}
+.chain-entry:last-child .chain-rail::after { display: none; }
+.chain-node {
+  position: absolute;
+  left: 50%;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-3);
+  background: var(--panel);
+  transform: translateX(-50%);
+}
+.chain-entry:first-child .chain-node { border-color: var(--accent); background: var(--accent); }
+.chain-line {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.chain-line .seq { font-size: 12px; color: var(--text-3); }
+.chain-line .action { color: var(--text); }
+.chain-line .block { font-size: 12px; color: var(--text-3); }
+.chain-hash { margin: 2px 0 0; font-size: 13px; line-height: 18px; }
+.chain-prev { margin: 1px 0 0; font-size: 12px; line-height: 16px; color: var(--text-3); }
+.verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: var(--ok);
+}
+
+/* --- Actions: one primary, one secondary --- */
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+.btn {
+  font: inherit;
+  font-size: 13px;
+  line-height: 1;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--raised);
+  color: var(--text);
+  border: 1px solid var(--hairline-strong);
+  cursor: pointer;
+  transition: background-color 140ms var(--ease), border-color 140ms var(--ease);
+}
+.btn:hover { background: var(--raised-hover); }
+.btn-primary {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+.btn-primary:hover { background: #ffffff; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.sheet {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--hairline);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 180ms var(--ease), transform 180ms var(--ease);
+}
+.sheet.open { opacity: 1; transform: none; }
+.sheet code {
+  display: block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12.5px;
+  color: var(--text);
   white-space: pre-wrap;
   word-break: break-all;
 }
-.sheet .copied { color: var(--ok); font-size: 13px; }
-.back { display: inline-block; margin-bottom: 12px; }
-.admin-row { font-size: 14px; margin: 8px 0; }
-.muted { color: var(--muted); }
-.notice {
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--warn);
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  color: var(--text);
+.sheet .row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
 }
-.notice.danger { border-left-color: var(--danger); }
+.copied { font-size: 12px; color: var(--ok); }
+
+/* --- Result marks: colour is never the only carrier --- */
+.result { font-size: 13px; color: var(--text-2); }
+.result.refused { color: var(--danger); }
+.result.ok { color: var(--ok); }
+.event { white-space: nowrap; }
+.event .ic { margin-right: 8px; color: var(--text-3); }
+.result.refused .ic { margin-right: 6px; color: var(--danger); }
+.tx-line { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.tx a {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.tx .ic { color: var(--ok); }
+.more { margin: 16px 0 0; font-size: 13px; }
+.more a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  text-decoration: none;
+}
+.more a:hover { color: var(--text); }
+
+footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 32px;
+  height: 44px;
+  border-top: 1px solid var(--hairline);
+  font-size: 12px;
+  color: var(--text-3);
+}
+footer a { color: var(--text-2); }
+.foot-note { margin-left: auto; }
+
 @media (max-width: 900px) {
-  td.hash { display: none; }
+  .topbar { padding: 0 16px; gap: 16px; }
+  main { padding: 24px 16px; }
+  .panel { padding: 16px; }
+  th, td { padding-left: 10px; padding-right: 10px; }
+  thead th { padding-left: 10px; padding-right: 10px; }
+  .panel-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+  table { min-width: 620px; }
+  footer { padding: 0 16px; }
+  .foot-note { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
 }
 </style>
 </head>
 <body>
-<header>
-  <span class="wordmark">FLEET</span>
-  <span class="chip"><b>testnet</b> · block <span class="tick" id="block">276454237</span></span>
+<header class="topbar">
+  <a class="brand" href="#">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+    <span class="wordmark">FLEET</span>
+  </a>
+  <nav class="nav" aria-label="Screens">
+    <a href="#" data-nav="fleet">Fleet</a>
+    <a href="#timeline" data-nav="timeline">Timeline</a>
+  </nav>
+  <span class="net">
+    <span class="label">testnet · block</span>
+    <span class="tick mono" id="block" title="Captured testnet block; in this static draft the counter is a stand-in for the live RPC subscription">276454237</span>
+  </span>
 </header>
+
 <main id="fleet">
   <section class="panel" aria-labelledby="fleet-heading">
-    <h2 id="fleet-heading">Agents</h2>
-    <table>
-      <thead>
-        <tr><th scope="col">Name</th><th scope="col">State</th><th scope="col">Full-access keys</th><th scope="col">Last event</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="id"><a href="#agent=agent-1b.fleet-v03-5cff9e99.testnet">agent-1b.fleet-v03-5cff9e99.testnet</a></td>
-          <td class="state active">Active</td>
-          <td>0</td>
-          <td><span class="muted">Unfreeze · block</span> <span class="block">276090540</span> <span class="result ok">· ok</span> <a href="https://testnet.nearblocks.io/txns/4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n" class="check" aria-label="transaction">✓</a></td>
-        </tr>
-        <tr>
-          <td class="id"><a href="#agent=agent-2.fleet-v03-5cff9e99.testnet">agent-2.fleet-v03-5cff9e99.testnet</a></td>
-          <td class="state active">Active</td>
-          <td>0</td>
-          <td><span class="muted">Operator execute · block</span> <span class="block">276090372</span> <span class="result ok">· pong</span> <a href="https://testnet.nearblocks.io/txns/J3Ky41AwidajJM3MzCKH6wJeYD8Z29o7CDds2oc2gMhQ" class="check" aria-label="transaction">✓</a></td>
-        </tr>
-        <tr>
-          <td class="id"><a href="#agent=agent-3.fleet-v03-5cff9e99.testnet">agent-3.fleet-v03-5cff9e99.testnet</a></td>
-          <td class="state active">Active</td>
-          <td>0</td>
-          <td><span class="muted">Operator execute · block</span> <span class="block">276090373</span> <span class="result ok">· pong</span> <a href="https://testnet.nearblocks.io/txns/AuY3EmVKqxsSeYh4VMHBaMf3DZbgFR5W36siWUMGHNMM" class="check" aria-label="transaction">✓</a></td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="panel-head">
+      <h1 id="fleet-heading">Fleet</h1>
+      <span class="meta mono">3 agents · 12 operator keys · 0 full-access keys</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <colgroup><col style="width:46%" /><col style="width:12%" /><col style="width:14%" /><col style="width:28%" /></colgroup>
+        <thead>
+          <tr><th scope="col">Name</th><th scope="col">State</th><th scope="col" class="num">Full-access keys</th><th scope="col">Last event</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="id"><a href="#agent=agent-1b.fleet-v03-5cff9e99.testnet">agent-1b.fleet-v03-5cff9e99.testnet</a><span class="key-meta mono">4 operator keys · 2 ops-a · 2 ops-b</span></td>
+            <td class="state active"><span class="dot"></span>Active</td>
+            <td class="num">0</td>
+            <td class="last"><span class="dim">Unfreeze · block</span> <span class="mono block">276090540</span> <span class="dim">· ok</span>&nbsp;<a class="check" href="https://testnet.nearblocks.io/txns/4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n" aria-label="Transaction 4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></a></td>
+          </tr>
+          <tr>
+            <td class="id"><a href="#agent=agent-2.fleet-v03-5cff9e99.testnet">agent-2.fleet-v03-5cff9e99.testnet</a><span class="key-meta mono">4 operator keys · 2 ops-a · 2 ops-b</span></td>
+            <td class="state active"><span class="dot"></span>Active</td>
+            <td class="num">0</td>
+            <td class="last"><span class="dim">Operator execute · block</span> <span class="mono block">276090372</span> <span class="dim">· pong</span>&nbsp;<a class="check" href="https://testnet.nearblocks.io/txns/J3Ky41AwidajJM3MzCKH6wJeYD8Z29o7CDds2oc2gMhQ" aria-label="Transaction J3Ky41AwidajJM3MzCKH6wJeYD8Z29o7CDds2oc2gMhQ"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></a></td>
+          </tr>
+          <tr>
+            <td class="id"><a href="#agent=agent-3.fleet-v03-5cff9e99.testnet">agent-3.fleet-v03-5cff9e99.testnet</a><span class="key-meta mono">4 operator keys · 2 ops-a · 2 ops-b</span></td>
+            <td class="state active"><span class="dot"></span>Active</td>
+            <td class="num">0</td>
+            <td class="last"><span class="dim">Operator execute · block</span> <span class="mono block">276090373</span> <span class="dim">· pong</span>&nbsp;<a class="check" href="https://testnet.nearblocks.io/txns/AuY3EmVKqxsSeYh4VMHBaMf3DZbgFR5W36siWUMGHNMM" aria-label="Transaction AuY3EmVKqxsSeYh4VMHBaMf3DZbgFR5W36siWUMGHNMM"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
-  <p><a href="#timeline">Timeline →</a></p>
+  <p class="more"><a href="#timeline">Timeline <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></a></p>
 </main>
+
 <main id="agent" hidden>
-  <p class="back"><a href="#">← Fleet</a></p>
+  <p class="back"><a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Fleet</a></p>
   <section class="panel">
-    <h2 class="id">agent-b1.fleet-modeb-748d4372.testnet</h2>
-    <h2>Operator keys</h2>
-    <table>
-      <thead><tr><th scope="col">Key</th><th scope="col">Scope</th><th scope="col">Active</th></tr></thead>
-      <tbody>
-        <tr><td class="key">ed25519:kB5fcDtfZA6Au6xmd8U2coeBiRg4dHpShADXCAybB2L</td><td>ops-a</td><td>Yes</td></tr>
-        <tr><td class="key">ed25519:4mvncf9kmFT4imDDqAC6CRxXTTfTnK4QjSHem2iHiRrV</td><td>ops-a</td><td>Yes</td></tr>
-        <tr><td class="key">ed25519:DjNFGrMdsB5UWcGiqXcERshD7JyyrX1kQTes5mSzv3dL</td><td>ops-b</td><td>Yes</td></tr>
-        <tr><td class="key">ed25519:HxuTueeDDxxoW5X4f53PEDYD9iGzfEDsnMine7YqyTcZ</td><td>ops-b</td><td>Yes</td></tr>
-      </tbody>
-    </table>
-    <h2>Admin</h2>
-    <p class="admin-row">2 of 2 · 2 owners · demo: same operator</p>
-    <h2>Audit tail</h2>
-    <table>
-      <thead><tr><th scope="col">Seq</th><th scope="col">Action</th><th scope="col">Block</th><th scope="col">History</th></tr></thead>
-      <tbody>
-        <tr><td>2</td><td>unfreeze</td><td class="block">276110652</td><td class="check">✓ verified</td></tr>
-        <tr><td>1</td><td>freeze</td><td class="block">276110500</td><td class="check">✓ verified</td></tr>
-        <tr><td>0</td><td>init</td><td class="block">276109053</td><td class="check">✓ verified</td></tr>
-      </tbody>
-    </table>
-    <p><button id="export" type="button">Export verified export</button></p>
-    <p><button type="button" id="freeze-btn">Freeze</button></p>
+    <div class="panel-head">
+      <h1 class="agent-id mono">agent-b1.fleet-modeb-748d4372.testnet</h1>
+      <span class="meta mono">Mode B · 2-of-2 admin · 3 audit entries</span>
+    </div>
+
+    <div class="group">
+      <h3>Operator keys</h3>
+      <div class="table-wrap">
+        <table>
+          <colgroup><col style="width:60%" /><col style="width:20%" /><col style="width:20%" /></colgroup>
+          <thead><tr><th scope="col">Key</th><th scope="col">Scope</th><th scope="col">Active</th></tr></thead>
+          <tbody>
+            <tr><td class="key mono">ed25519:kB5fcDtfZA6Au6xmd8U2coeBiRg4dHpShADXCAybB2L</td><td><span class="tag mono">ops-a</span></td><td>Yes</td></tr>
+            <tr><td class="key mono">ed25519:4mvncf9kmFT4imDDqAC6CRxXTTfTnK4QjSHem2iHiRrV</td><td><span class="tag mono">ops-a</span></td><td>Yes</td></tr>
+            <tr><td class="key mono">ed25519:DjNFGrMdsB5UWcGiqXcERshD7JyyrX1kQTes5mSzv3dL</td><td><span class="tag mono">ops-b</span></td><td>Yes</td></tr>
+            <tr><td class="key mono">ed25519:HxuTueeDDxxoW5X4f53PEDYD9iGzfEDsnMine7YqyTcZ</td><td><span class="tag mono">ops-b</span></td><td>Yes</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Admin</h3>
+      <p class="admin">2 of 2 confirmations <span class="dim">· both owners operated by one operator in this demo</span></p>
+    </div>
+
+    <div class="group">
+      <h3>Recent audit entries</h3>
+      <p class="chain-meta mono">head 82d6e41d…d39b · prev-hash linked · verified on chain and in the SDK</p>
+      <ol class="chain">
+        <li class="chain-entry">
+          <span class="chain-rail" aria-hidden="true"><span class="chain-node"></span></span>
+          <div>
+            <p class="chain-line"><span class="seq mono">seq 2</span><span class="action">unfreeze</span><span class="block mono">· block 276110652</span></p>
+            <p class="chain-hash mono">82d6e41d73db…96d39b <span class="verified"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>verified</span></p>
+            <p class="chain-prev mono">prev 39b615220a16…93e57a</p>
+          </div>
+        </li>
+        <li class="chain-entry">
+          <span class="chain-rail" aria-hidden="true"><span class="chain-node"></span></span>
+          <div>
+            <p class="chain-line"><span class="seq mono">seq 1</span><span class="action">freeze</span><span class="block mono">· block 276110500</span></p>
+            <p class="chain-hash mono">39b615220a16…93e57a <span class="verified"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>verified</span></p>
+            <p class="chain-prev mono">prev 445c311a628d…8d2777</p>
+          </div>
+        </li>
+        <li class="chain-entry">
+          <span class="chain-rail" aria-hidden="true"><span class="chain-node"></span></span>
+          <div>
+            <p class="chain-line"><span class="seq mono">seq 0</span><span class="action">init</span><span class="block mono">· block 276109053</span></p>
+            <p class="chain-hash mono">445c311a628d…8d2777 <span class="verified"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>verified</span></p>
+            <p class="chain-prev mono">prev 000000000000…000000</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="export" type="button">Export audit chain</button>
+      <button class="btn" type="button" id="freeze-btn">Freeze</button>
+    </div>
     <div class="sheet" id="sheet" hidden>
       <code id="cmd">fleet freeze agent-b1.fleet-modeb-748d4372.testnet --signer-key-file &lt;key-file&gt; --json</code>
-      <p><button type="button" id="copy">Copy</button> <span class="copied" id="copied" hidden>Copied</span></p>
+      <div class="row"><button class="btn" type="button" id="copy">Copy</button><span class="copied" id="copied" hidden>Copied</span></div>
     </div>
   </section>
 </main>
+
 <main id="timeline" hidden>
-  <p class="back"><a href="#">← Fleet</a></p>
+  <p class="back"><a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Fleet</a></p>
   <section class="panel">
-    <h2>Timeline</h2>
-    <table>
-      <thead><tr><th scope="col">Block</th><th scope="col">Event</th><th scope="col">Result</th><th scope="col">Tx</th></tr></thead>
-      <tbody>
-        <tr><td class="block">276090380</td><td>freeze</td><td class="result ok">ok</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/7tqiVYBosLgGE37C58xEoFCXypw5GFvYcQoowG2JGMeP">7tqiVYBosLgGE37C58xEoFCXypw5GFvYcQoowG2JGMeP</a> <span class="check">✓</span></td></tr>
-        <tr><td class="block">276090389</td><td>execute while frozen</td><td class="result refused">refused · controller is frozen</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/FnEEzuhSRTKSMPR6ox1MuLJiJqEj1qpsZBNufZzVvyhF">FnEEzuhSRTKSMPR6ox1MuLJiJqEj1qpsZBNufZzVvyhF</a> <span class="check">✓</span></td></tr>
-        <tr><td class="block">276090396</td><td>unfreeze</td><td class="result ok">ok</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/5LuCwM3Nv3WX2awA6jV4U5AKY29GVcVKMXj6hBxkQc2m">5LuCwM3Nv3WX2awA6jV4U5AKY29GVcVKMXj6hBxkQc2m</a> <span class="check">✓</span></td></tr>
-        <tr><td class="block">276090405</td><td>operator execute</td><td class="result ok">pong</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/5piMKPcwkEokqNiX6CqdQibjchSdD3wzHczKqseh8iN">5piMKPcwkEokqNiX6CqdQibjchSdD3wzHczKqseh8iN</a> <span class="check">✓</span></td></tr>
-        <tr><td class="block">276090413</td><td>execute, wrong method</td><td class="result refused">refused · method not allowed</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/283uKM9bcWhGNVe4tg9NUSXXbjtNjQFGBpF5pARfWiGc">283uKM9bcWhGNVe4tg9NUSXXbjtNjQFGBpF5pARfWiGc</a> <span class="check">✓</span></td></tr>
-        <tr><td class="block">276090418</td><td>execute, wrong receiver</td><td class="result refused">refused · receiver not allowed</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/4pCwwpqDRWzd9SQmeJHdu3EHNriaZWn8gv3CPKGtREdg">4pCwwpqDRWzd9SQmeJHdu3EHNriaZWn8gv3CPKGtREdg</a> <span class="check">✓</span></td></tr>
-        <tr><td class="block">276090533</td><td>freeze</td><td class="result ok">ok</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/C17ztrDHerug5ysYKvFWAFuz15davmD5XX59bRkxo9ci">C17ztrDHerug5ysYKvFWAFuz15davmD5XX59bRkxo9ci</a> <span class="check">✓</span></td></tr>
-        <tr><td class="block">276090540</td><td>unfreeze</td><td class="result ok">ok</td><td class="tx"><a href="https://testnet.nearblocks.io/txns/4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n">4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n</a> <span class="check">✓</span></td></tr>
-      </tbody>
-    </table>
+    <div class="panel-head">
+      <h1>Timeline</h1>
+      <span class="meta mono">8 events · 3 refused · 160 blocks</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <colgroup><col style="width:13%" /><col style="width:21%" /><col style="width:26%" /><col style="width:40%" /></colgroup>
+        <thead>
+          <tr><th scope="col">Block</th><th scope="col">Event</th><th scope="col">Result</th><th scope="col">Tx</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="block mono">276090380</td>
+            <td class="event"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>freeze</td>
+            <td class="result ok">ok</td>
+            <td class="tx"><div class="tx-line"><a href="https://testnet.nearblocks.io/txns/7tqiVYBosLgGE37C58xEoFCXypw5GFvYcQoowG2JGMeP" title="7tqiVYBosLgGE37C58xEoFCXypw5GFvYcQoowG2JGMeP">7tqiVYBosLgGE37C58xEoFCXypw5GFvYcQoowG2JGMeP</a><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div></td>
+          </tr>
+          <tr>
+            <td class="block mono">276090389</td>
+            <td class="event">execute while frozen</td>
+            <td class="result refused"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>refused · controller is frozen</td>
+            <td class="tx"><div class="tx-line"><a href="https://testnet.nearblocks.io/txns/FnEEzuhSRTKSMPR6ox1MuLJiJqEj1qpsZBNufZzVvyhF" title="FnEEzuhSRTKSMPR6ox1MuLJiJqEj1qpsZBNufZzVvyhF">FnEEzuhSRTKSMPR6ox1MuLJiJqEj1qpsZBNufZzVvyhF</a><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div></td>
+          </tr>
+          <tr>
+            <td class="block mono">276090396</td>
+            <td class="event"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>unfreeze</td>
+            <td class="result ok">ok</td>
+            <td class="tx"><div class="tx-line"><a href="https://testnet.nearblocks.io/txns/5LuCwM3Nv3WX2awA6jV4U5AKY29GVcVKMXj6hBxkQc2m" title="5LuCwM3Nv3WX2awA6jV4U5AKY29GVcVKMXj6hBxkQc2m">5LuCwM3Nv3WX2awA6jV4U5AKY29GVcVKMXj6hBxkQc2m</a><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div></td>
+          </tr>
+          <tr>
+            <td class="block mono">276090405</td>
+            <td class="event">operator execute</td>
+            <td class="result ok">pong</td>
+            <td class="tx"><div class="tx-line"><a href="https://testnet.nearblocks.io/txns/5piMKPcwkEokqNiX6CqdQibjchSdD3wzHczKqseh8iN" title="5piMKPcwkEokqNiX6CqdQibjchSdD3wzHczKqseh8iN">5piMKPcwkEokqNiX6CqdQibjchSdD3wzHczKqseh8iN</a><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div></td>
+          </tr>
+          <tr>
+            <td class="block mono">276090413</td>
+            <td class="event">execute, wrong method</td>
+            <td class="result refused">refused · method not allowed</td>
+            <td class="tx"><div class="tx-line"><a href="https://testnet.nearblocks.io/txns/283uKM9bcWhGNVe4tg9NUSXXbjtNjQFGBpF5pARfWiGc" title="283uKM9bcWhGNVe4tg9NUSXXbjtNjQFGBpF5pARfWiGc">283uKM9bcWhGNVe4tg9NUSXXbjtNjQFGBpF5pARfWiGc</a><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div></td>
+          </tr>
+          <tr>
+            <td class="block mono">276090418</td>
+            <td class="event">execute, wrong receiver</td>
+            <td class="result refused">refused · receiver not allowed</td>
+            <td class="tx"><div class="tx-line"><a href="https://testnet.nearblocks.io/txns/4pCwwpqDRWzd9SQmeJHdu3EHNriaZWn8gv3CPKGtREdg" title="4pCwwpqDRWzd9SQmeJHdu3EHNriaZWn8gv3CPKGtREdg">4pCwwpqDRWzd9SQmeJHdu3EHNriaZWn8gv3CPKGtREdg</a><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div></td>
+          </tr>
+          <tr>
+            <td class="block mono">276090533</td>
+            <td class="event"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>freeze</td>
+            <td class="result ok">ok</td>
+            <td class="tx"><div class="tx-line"><a href="https://testnet.nearblocks.io/txns/C17ztrDHerug5ysYKvFWAFuz15davmD5XX59bRkxo9ci" title="C17ztrDHerug5ysYKvFWAFuz15davmD5XX59bRkxo9ci">C17ztrDHerug5ysYKvFWAFuz15davmD5XX59bRkxo9ci</a><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div></td>
+          </tr>
+          <tr>
+            <td class="block mono">276090540</td>
+            <td class="event"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>unfreeze</td>
+            <td class="result ok">ok</td>
+            <td class="tx"><div class="tx-line"><a href="https://testnet.nearblocks.io/txns/4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n" title="4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n">4ho3w5H3MQqb1T6xE2jyYatmPBWYBR1vr74gYF9Lfa1n</a><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 </main>
+
 <footer>
-  Verified <a href="../CLAIMS.md">37/37</a> · <a href="../docs/THREAT_MODEL.md">Threat model</a>
+  <span>Verified <a href="../CLAIMS.md">37/37</a></span>
+  <span aria-hidden="true">·</span>
+  <a href="../docs/THREAT_MODEL.md">Threat model</a>
+  <span class="foot-note">Pixel draft · captured testnet evidence · the block counter is a stand-in</span>
 </footer>
+
 <script>
 (function () {
   var blockEl = document.getElementById("block");
   var height = 276454237;
   function tick() { height += 1; blockEl.textContent = String(height); }
   setInterval(tick, 1200);
-  var mains = { fleet: document.getElementById("fleet"), agent: document.getElementById("agent"), timeline: document.getElementById("timeline") };
+
+  var mains = {
+    fleet: document.getElementById("fleet"),
+    agent: document.getElementById("agent"),
+    timeline: document.getElementById("timeline")
+  };
+  var navLinks = document.querySelectorAll(".nav a[data-nav]");
+
   function show(name) {
     for (var k in mains) mains[k].hidden = (k !== name);
+    for (var i = 0; i < navLinks.length; i++) {
+      var link = navLinks[i];
+      var active = link.getAttribute("data-nav") === (name === "agent" ? "fleet" : name);
+      if (active) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
   }
   function route() {
     var h = location.hash;
@@ -262,9 +642,21 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   }
   window.addEventListener("hashchange", route);
   route();
+
   var freezeBtn = document.getElementById("freeze-btn");
   var sheet = document.getElementById("sheet");
-  if (freezeBtn) freezeBtn.addEventListener("click", function () { sheet.hidden = !sheet.hidden; });
+  if (freezeBtn && sheet) {
+    freezeBtn.addEventListener("click", function () {
+      if (sheet.hidden) {
+        sheet.hidden = false;
+        // The class lands on the next frame so the fade and rise can run.
+        requestAnimationFrame(function () { sheet.classList.add("open"); });
+      } else {
+        sheet.classList.remove("open");
+        setTimeout(function () { sheet.hidden = true; }, 180);
+      }
+    });
+  }
   var copyBtn = document.getElementById("copy");
   if (copyBtn) copyBtn.addEventListener("click", function () {
     var text = document.getElementById("cmd").textContent;

@@ -1,7 +1,8 @@
 # Unslop audit — FLEET console pixel draft
 
-**Status: review only. Nothing was changed.**
-The `unslop` skill (Damir Sokolovsky, `@heydamir`, CC BY 4.0 —
+**Status: audit of the draft as it stood on 2026-11-06.** Sections 2–5 describe
+that before-state and the direction; section 6 records the approved build that
+followed. The `unslop` skill (Damir Sokolovsky, `@heydamir`, CC BY 4.0 —
 `https://github.com/heydamir/unslop`, pinned at commit
 `a6f121eee5f29c2f74976b75456feae8b66afb3a`) was reviewed and applied as an
 **audit** to `design/index.html`. The skill's own step 4 says to show the audit
@@ -191,5 +192,39 @@ that time. But **A** is defensible if the human would rather keep the current
 shape, and **C** is correct if the human wants to review the draft as it
 stands before any of it changes.
 
-Nothing has been edited. The four screenshots in `design/screenshots/` are
-unchanged and still show the current draft.
+**Decision (2026-11-07): the human approved scope B — polish plus the
+direction.** Section 6 records what was applied.
+
+---
+
+## 6. Applied — 2026-11-07
+
+Scope B was applied to `design/index.html` in the skill's nine passes, in
+order. The four screenshots were recaptured at 1920×1080 from the same real
+evidence. No number, hash, key, block height, screen or route changed.
+
+| Pass | What changed |
+| --- | --- |
+| 1 Spacing | 4 px rhythm throughout: page padding 32/24, panel padding 20, table cell 12×16, group gaps 24–32, one row height per table. `10px 8px` is gone. |
+| 2 Color | Surfaces moved to the ink ramp (`#0b0d14`, `#11141c`, `#1a1e28`). Border is a real 8% hairline. Two identifier blues collapsed into three text roles plus one mono treatment. The accent (`#7cb7ff`) is rationed to the scope tag, the chain-head node, the header block figure and the focus ring. Danger was lightened to `#e85d61` so a refused row keeps 4.5:1 on hover. |
+| 3 Icons | The `✓` and `←`/`→` text glyphs became one inline lucide-style set at 16 px / 1.5 stroke: check, arrow-left, arrow-right, lock, lock-open, and a key mark for the wordmark. No emoji, no external icon request. |
+| 4 Copy | "Agents" → "Fleet". "Export verified export" → "Export audit chain". "Audit tail" → "Recent audit entries". The admin row reads "2 of 2 confirmations · both owners operated by one operator in this demo". |
+| 5 Type | Only 400/500/600 Inter and 400/500 JetBrains Mono are declared. Hierarchy from size and colour. `tabular-nums` on every figure. Mono identifiers, not a fourth hue. |
+| 6 Layout | The 72 rem centred column became a 1440 px fluid shell with a 56 px top bar (brand, routes, network chip) and a 44 px footer. The Fleet table carries a second quiet key line per agent; the header carries the real aggregate. |
+| 7 Details | Radius by size: panels 14, controls 8, chips 4. Quiet mono meta instead of boxes. One primary action (off-white) and one secondary. |
+| 8 Visuals | The two moments from the direction, built in code from recorded data: the **chain spine** on the Agent screen (entry hash, `prev` hash, verified mark, head node in accent) and the **hold** on the Timeline (closed lock on freeze and on the frozen refusal, open lock on unfreeze). The **scope tag** is the signature. |
+| 9 Motion | 140 ms hover, 180 ms sheet fade and 4 px rise, one easing curve, no `transition-all`. The block ticker now carries a `title` and a footer note saying it is a stand-in for the live RPC. `prefers-reduced-motion` disables transitions. |
+
+**Verified after the passes:** the four screens were re-rendered and compared
+with this audit; no sign from §2 remains. All three screens fit 1920×1080, and
+the Agent screen with the command sheet open fits as well (1081 px before the
+final 8 px trim, 1073 px after). No external request was added; fonts and SVGs
+stay local.
+
+**Still not done, by decision:** the skill's story video (§4.8) was not built.
+It needs Playwright and ffmpeg and is a separate deliverable.
+
+**Attribution.** The design follows `unslop` by Damir Sokolovsky
+([@heydamir](https://x.com/heydamir)), CC BY 4.0,
+`https://github.com/heydamir/unslop`, pinned at
+`a6f121eee5f29c2f74976b75456feae8b66afb3a`.
