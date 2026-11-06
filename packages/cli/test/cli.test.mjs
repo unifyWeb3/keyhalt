@@ -109,3 +109,113 @@ test("CLI rejects a tampered audit file with exit code 6", async () => {
   assert.equal(value.verified, false);
   assert.match(value.error, /entry_hash mismatch/);
 });
+
+// ---------------------------------------------------------------------------
+// Pre-signed freeze path
+// ---------------------------------------------------------------------------
+
+const SIGNED_TX_FORMAT = "fleet-signed-tx-v1";
+
+function signedFixture(overrides = {}) {
+  return {
+    format: SIGNED_TX_FORMAT,
+    network: "testnet",
+    account_id: "agent.testnet",
+    receiver_id: "agent.testnet",
+    method: "freeze",
+    args: {},
+    gas_tgas: 30,
+    public_key: "ed25519:2dckMmmyFQdr4J78vGfqm7XaK4ck2HgCvN8gSDfiQyx2",
+    nonce: "12345678901234567890",
+    tx_hash: "3ZfQ8mLpYqX2v7Ck9WnT4bRs6Hdj5GfUa1E0pQo2YtNx",
+    signed_transaction: "AGFzbQEAAAA=",
+    created_at: "2026-11-05T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+function writeSigned(directory, name, payload) {
+  const path = join(directory, name);
+  writeFileSync(path, `${JSON.stringify(payload, null, 2)}\n`, { mode: 0o600 });
+  return path;
+}
+
+test("CLI help documents the pre-signed freeze path", async () => {
+  const { stdout } = await run(process.execPath, [cli, "--help"]);
+  assert.match(stdout, /--pre-sign/);
+  assert.match(stdout, /--submit-signed/);
+});
+
+test("CLI freeze --pre-sign without --out fails with exit code 2", async () => {
+  const value = await runJsonFailure(
+    ["freeze", "agent.testnet", "--pre-sign", "--json"],
+    2,
+  );
+  assert.equal(value.ok, false);
+  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.match(value.error.message, /--out/);
+});
+
+test("CLI refuses a signed file without the FLEET format marker", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const path = writeSigned(directory, "signed.json", signedFixture({ format: "other" }));
+  const value = await runJsonFailure(
+    ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
+    2,
+  );
+  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.match(value.error.message, /format must be/);
+});
+
+test("CLI refuses a signed file whose method does not match the command", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const path = writeSigned(directory, "signed.json", signedFixture({ method: "unfreeze" }));
+  const value = await runJsonFailure(
+    ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
+    2,
+  );
+  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.match(value.error.message, /unfreeze/);
+});
+
+test("CLI refuses a signed file for another account", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const path = writeSigned(
+    directory,
+    "signed.json",
+    signedFixture({ account_id: "other.testnet" }),
+  );
+  const value = await runJsonFailure(
+    ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
+    2,
+  );
+  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.match(value.error.message, /other\.testnet/);
+});
+
+test("CLI refuses a signed file that carries key material", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const path = writeSigned(
+    directory,
+    "signed.json",
+    signedFixture({ secret_key: "ed25519:11111111111111111111111111111111" }),
+  );
+  const value = await runJsonFailure(
+    ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
+    2,
+  );
+  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.match(value.error.message, /key material/);
+});
+
+test("CLI refuses an unreadable signed file with exit code 2", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const path = join(directory, "signed.json");
+  writeFileSync(path, "not json", { mode: 0o600 });
+  const value = await runJsonFailure(
+    ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
+    2,
+  );
+  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.match(value.error.message, /cannot read signed transaction file/);
+});

@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-11-05T18:15:56.417Z",
+  "network": "testnet",
+  "rpc": "https://rpc.testnet.fastnear.com",
+  "agent": "agent-lat.fleet-lat-1a1a7db6741.testnet",
+  "path": "packages/cli fleet freeze --pre-sign / --submit-signed",
+  "pre_signed": {
+    "tx_hash": "CXf127Ttcn2i55nksdhrsPA1ZbfmyoW8xnv8RX2TW4MJ",
+    "public_key": "ed25519:B4ESNfRM5xFZEArMSHE22MwnHfqG2sLzNr2ZhZd7iRUK",
+    "nonce": "276234548000043",
+    "created_at": "2026-11-05T18:15:42.314Z",
+    "file_mode": "600",
+    "carries_key_material": false,
+    "state_changed": false,
+    "audit_len_before": 43,
+    "audit_len_after_pre_sign": 43
+  },
+  "submitted": {
+    "tx_hash": "ERo3CcSS5NcUVXsqcQS95j7RVe1uDxkKqD2TvhrTSMM9",
+    "block_height": 276376822,
+    "gas_burnt": "3769371147645",
+    "refusal": null,
+    "paused_after_submit": true,
+    "audit_len_after_submit": 44,
+    "audit_chain_verifiable": true
+  },
+  "restored": {
+    "tx_hash": "CSX1ovkcj9F7W6VmHDPcNT5w4yB2sbL42o7HqtnxJDKb",
+    "paused": false
+  }
+}

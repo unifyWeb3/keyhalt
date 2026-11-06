@@ -700,7 +700,7 @@ mod tests {
     use super::*;
     use near_sdk::mock::MockAction as VmAction;
     use near_sdk::test_utils::{
-        get_created_receipts, testing_env_with_promise_results, VMContextBuilder,
+        get_created_receipts, get_logs, testing_env_with_promise_results, VMContextBuilder,
     };
     use near_sdk::testing_env;
     use near_sdk::PromiseResult;
@@ -1189,6 +1189,29 @@ mod tests {
             .get_audit(0, 100)
             .iter()
             .any(|entry| entry.action == "grant_failed"));
+    }
+
+    /// The private-callback guard must refuse a foreign predecessor *by
+    /// name*. The `#[private]` attribute on the exported callback already
+    /// traps, so asserting only "it panicked" cannot tell the two guards
+    /// apart; this test pins the refusal reason the contract emits.
+    #[test]
+    fn private_callback_refusal_is_logged_with_its_reason() {
+        let mut contract = provisioned();
+        testing_env!(context(ADMIN_ACCOUNT, ADMIN));
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            contract.on_grant(OP2.to_string())
+        }));
+        assert!(
+            result.is_err(),
+            "a foreign predecessor must not reach a private callback"
+        );
+        let logs = get_logs();
+        assert!(
+            logs.iter()
+                .any(|line| line == "FLEET_REFUSAL:private callback"),
+            "expected the private-callback refusal log, got: {logs:?}"
+        );
     }
 }
 

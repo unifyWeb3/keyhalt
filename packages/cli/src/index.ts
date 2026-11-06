@@ -16,9 +16,11 @@ import {
   buildAuditExport,
   createFleetClient,
   fleetExitCode,
+  parseSignedTransaction,
   verifyAuditChain,
   verifyAuditExport,
   type FleetInventory,
+  type FleetSignedTransaction,
   type FleetTxResult,
 } from "@fleet/sdk";
 
@@ -37,9 +39,10 @@ const VALUE_FLAGS = new Set([
   "args",
   "gas",
   "receiver",
+  "submit-signed",
 ]);
 
-const BOOLEAN_FLAGS = new Set(["json", "help"]);
+const BOOLEAN_FLAGS = new Set(["json", "help", "pre-sign"]);
 
 const HELP = `fleet ${VERSION}
 
@@ -64,6 +67,16 @@ Usage:
   fleet cancel-admin <account> --signer-key-file <path> [--json]
   fleet recover <account> --new-admin <public-key> --signer-key-file <path> [--json]
   fleet execute <account> --method <name> [--args '<json>'] [--gas <tgas>] [--receiver <account>] --signer-key-file <path> [--json]
+
+Pre-signed freeze:
+  fleet freeze <account> --signer-key-file <path> --pre-sign --out <file> [--json]
+  fleet unfreeze <account> --signer-key-file <path> --pre-sign --out <file> [--json]
+  fleet freeze <account> --submit-signed <file> [--json]
+  fleet unfreeze <account> --submit-signed <file> [--json]
+
+  --pre-sign signs the call locally and writes it to a file without sending
+  it. --submit-signed broadcasts a file written by --pre-sign. A signed file
+  holds a signature, not a secret key; treat it as a bearer artifact.
 
 Signer key files must live outside a git repository and be mode 600.
 Default RPC: ${DEFAULT_TESTNET_RPC}
@@ -441,10 +454,102 @@ async function commandWrite(
   }
 }
 
+function readSignedFile(path: string): FleetSignedTransaction {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(readFileSync(resolve(path), "utf8"));
+  } catch (error) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      `cannot read signed transaction file: ${String((error as Error).message ?? error)}`,
+    );
+  }
+  return parseSignedTransaction(raw);
+}
+
+/**
+ * Sign a freeze or unfreeze locally and write it out without broadcasting.
+ */
+async function commandPreSign(
+  args: ParsedArgs,
+  accountId: string,
+  method: "freeze" | "unfreeze",
+): Promise<void> {
+  currentAccount = accountId;
+  const out = requireFlag(args, "out");
+  const client = clientFor(args, accountId, true);
+  const signed =
+    method === "freeze"
+      ? await client.prepareFreeze()
+      : await client.prepareUnfreeze();
+  const absolute = resolve(out);
+  mkdirSync(dirname(absolute), { recursive: true, mode: 0o700 });
+  writeFileSync(absolute, `${JSON.stringify(signed, jsonReplacer, 2)}\n`, {
+    mode: 0o600,
+  });
+  if (jsonMode) {
+    emitJson({
+      ok: true,
+      command: currentCommand,
+      phase: "pre-signed",
+      accountId,
+      method,
+      out: absolute,
+      txHash: signed.tx_hash,
+      publicKey: signed.public_key,
+      nonce: signed.nonce,
+      createdAt: signed.created_at,
+    });
+  } else {
+    human(
+      `${currentCommand}: pre-signed tx=${signed.tx_hash} out=${absolute} (not sent)`,
+    );
+  }
+}
+
+/**
+ * Broadcast a transaction that was signed earlier.
+ */
+async function commandSubmitSigned(
+  args: ParsedArgs,
+  accountId: string,
+  method: "freeze" | "unfreeze",
+): Promise<void> {
+  currentAccount = accountId;
+  const file = requireFlag(args, "submit-signed");
+  const signed = readSignedFile(file);
+  if (signed.method !== method) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      `signed transaction is for ${signed.method}, not ${method}`,
+    );
+  }
+  const client = clientFor(args, accountId, false);
+  const result = await client.submitSigned(signed);
+  if (jsonMode) {
+    emitJson({
+      ok: true,
+      command: currentCommand,
+      phase: "submitted",
+      accountId,
+      txHash: result.txHash,
+      blockHeight: result.blockHeight,
+      gasBurnt: result.gasBurnt,
+      refusal: result.refusal,
+      signedFile: resolve(file),
+    });
+  } else {
+    printTx(currentCommand, result);
+  }
+}
+
 async function main(): Promise<void> {
   const raw = process.argv.slice(2);
+  // Detect --json before parsing so that argument errors are reported as JSON
+  // too.
+  jsonMode = raw.includes("--json");
   if (raw.includes("--version")) {
-    const asJson = raw.includes("--json");
+    const asJson = jsonMode;
     if (asJson) emitJson({ ok: true, command: "version", version: VERSION });
     else process.stdout.write(`fleet ${VERSION}\n`);
     return;
@@ -500,6 +605,14 @@ async function main(): Promise<void> {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
         throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+      }
+      const method = first === "freeze" ? "freeze" : "unfreeze";
+      const submitSigned = flagString(args, "submit-signed");
+      if (submitSigned !== undefined) {
+        return commandSubmitSigned(args, accountId, method);
+      }
+      if (args.flags.get("pre-sign") === true) {
+        return commandPreSign(args, accountId, method);
       }
       return commandWrite(args, accountId, (client) =>
         first === "freeze" ? client.freeze() : client.unfreeze(),

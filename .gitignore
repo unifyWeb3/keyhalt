@@ -13,4 +13,9 @@ near-credentials/
 .near-credentials/
 coverage/
 tmp/
+mutants.out/
+mutants.out.*/
+mutants.snapshot.*/
+mutants.stdout.txt
+mutants.snapshot.*.stdout.txt
 .DS_Store

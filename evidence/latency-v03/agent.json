@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-11-04T18:53:56.467Z",
+  "network": "testnet",
+  "rpc": "https://rpc.testnet.fastnear.com",
+  "parent": {
+    "account_id": "fleet-lat-1a1a7db6741.testnet",
+    "public_key": "ed25519:3L3ezs7m7vKGEWDjMPbRuJha6wS8SR5fmLRztAXGPrQr",
+    "faucet_tx": null,
+    "created_by_faucet": false
+  },
+  "agent": {
+    "account_id": "agent-lat.fleet-lat-1a1a7db6741.testnet",
+    "mode": "A",
+    "create_tx": "EnjqptC6idDRsBcH3gVdQumUcEoBMVotw8RA6pGEZB1g",
+    "init_tx": "FXXDggm35Q6BrapxXoGAVox2H7ofXytQVUyW3qDTR2FV",
+    "admin_public_key": "ed25519:B4ESNfRM5xFZEArMSHE22MwnHfqG2sLzNr2ZhZd7iRUK",
+    "recovery_public_key": "ed25519:4wq2qzdrZLzohHtDQFcdL4hExvBnDZZzhQvCfaCtcXW3",
+    "operator_public_keys": [
+      "ed25519:72jY7mi2VWC55EsQo6HPYiQiAMNe7oRozonbaJLTd1xo",
+      "ed25519:HjRwDTNtGYNdBaJSmwaqeWydDCPVSiqbcxvZmcdW2VwA",
+      "ed25519:EK2pcGMFb2vGY9cQ8kqfZbc6J34LBqRAsjp8bgcTBgAD",
+      "ed25519:BFfbFqpkB8bLDwtF6bK7wAipBmiFTVQt89Z2yBsA4fHa"
+    ],
+    "admin_allowance_yocto": "1000000000000000000000000",
+    "admin_allowance_on_chain": "1000000000000000000000000",
+    "operator_tags": [
+      "ops-a",
+      "ops-a",
+      "ops-b",
+      "ops-b"
+    ],
+    "receiver": "agent-lat.fleet-lat-1a1a7db6741.testnet",
+    "method": "ping",
+    "provisioned": true,
+    "audit_len": 1
+  },
+  "key_check": {
+    "total_keys": 6,
+    "full_access_keys": 0,
+    "function_call_keys": 6
+  }
+}

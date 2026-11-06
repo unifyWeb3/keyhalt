@@ -13,7 +13,9 @@ import { setDefaultResultOrder } from "node:dns";
 import {
   Account,
   JsonRpcProvider,
+  SignedTransaction,
   actions,
+  baseEncode,
   teraToGas,
 } from "near-api-js";
 import type { KeyPairString } from "near-api-js";
@@ -29,6 +31,7 @@ try {
 export const FLEET_SDK_VERSION = "0.3.0";
 export const DEFAULT_TESTNET_RPC = "https://rpc.testnet.fastnear.com";
 export const AUDIT_EXPORT_FORMAT = "fleet-audit-v1";
+export const SIGNED_TX_FORMAT = "fleet-signed-tx-v1";
 
 export type FleetMode = "A" | "B";
 export type FleetErrorCode =
@@ -152,6 +155,27 @@ export interface FleetTxResult {
   refusal: string | null;
 }
 
+/**
+ * A freeze or unfreeze that has been signed locally but not broadcast.
+ *
+ * The payload carries the signed transaction bytes and the signature. It never
+ * carries a secret key: the signer stays in the signing process.
+ */
+export interface FleetSignedTransaction {
+  format: typeof SIGNED_TX_FORMAT;
+  network: "testnet";
+  account_id: string;
+  receiver_id: string;
+  method: string;
+  args: Record<string, unknown>;
+  gas_tgas: number;
+  public_key: string;
+  nonce: string;
+  tx_hash: string;
+  signed_transaction: string;
+  created_at: string;
+}
+
 export interface AuditVerification {
   ok: boolean;
   error: string | null;
@@ -192,6 +216,21 @@ export interface FleetClient {
 
   freeze(): Promise<FleetTxResult>;
   unfreeze(): Promise<FleetTxResult>;
+  /**
+   * Sign a freeze locally without broadcasting it. The RPC is only read
+   * (account nonce, latest block hash); no transaction is sent.
+   */
+  prepareFreeze(): Promise<FleetSignedTransaction>;
+  /**
+   * Sign an unfreeze locally without broadcasting it. The RPC is only read
+   * (account nonce, latest block hash); no transaction is sent.
+   */
+  prepareUnfreeze(): Promise<FleetSignedTransaction>;
+  /**
+   * Broadcast a transaction that was signed earlier by `prepareFreeze` or
+   * `prepareUnfreeze`.
+   */
+  submitSigned(signed: FleetSignedTransaction): Promise<FleetTxResult>;
   grantOperator(publicKey: string, tag: string): Promise<FleetTxResult>;
   rotateOperator(
     oldPublicKey: string,
@@ -287,6 +326,74 @@ export function parseBigJson(text: string): unknown {
     '$1"$2"',
   );
   return JSON.parse(guarded);
+}
+
+/**
+ * Validate a signed-transaction payload. The payload must carry the FLEET
+ * format marker, must target testnet, and must never contain key material.
+ */
+export function parseSignedTransaction(value: unknown): FleetSignedTransaction {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "signed transaction must be a JSON object",
+    );
+  }
+  const raw = value as Record<string, unknown>;
+  if (raw.format !== SIGNED_TX_FORMAT) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      `signed transaction format must be ${SIGNED_TX_FORMAT}`,
+    );
+  }
+  if (raw.network !== "testnet") {
+    throw new FleetError(
+      "FLEET_E_MAINNET",
+      "signed transaction network must be testnet",
+    );
+  }
+  const required = [
+    "account_id",
+    "receiver_id",
+    "method",
+    "public_key",
+    "nonce",
+    "tx_hash",
+    "signed_transaction",
+    "created_at",
+  ];
+  for (const key of required) {
+    const field = raw[key];
+    if (typeof field !== "string" || field.length === 0) {
+      throw new FleetError(
+        "FLEET_E_BAD_ARGS",
+        `signed transaction is missing ${key}`,
+      );
+    }
+  }
+  if (
+    typeof raw.args !== "object" ||
+    raw.args === null ||
+    Array.isArray(raw.args)
+  ) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "signed transaction args must be a JSON object",
+    );
+  }
+  if (!/^(ed25519|secp256k1):/.test(raw.public_key as string)) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "signed transaction public_key is not a NEAR public key",
+    );
+  }
+  if (/"(secret_key|private_key|seed_phrase|mnemonic)"\s*:/i.test(JSON.stringify(raw))) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "signed transaction must not contain key material",
+    );
+  }
+  return raw as unknown as FleetSignedTransaction;
 }
 
 export function sha256Hex(bytes: Uint8Array | string): string {
@@ -744,6 +851,89 @@ class FleetClientImpl implements FleetClient {
 
   unfreeze(): Promise<FleetTxResult> {
     return this.write("unfreeze", {}, 30);
+  }
+
+  /**
+   * Sign a call locally and return it without broadcasting. The signing
+   * process reads the account nonce and the latest block hash from the RPC,
+   * but no transaction is sent.
+   */
+  private async prepare(
+    method: string,
+    args: Record<string, unknown>,
+    gasTgas: number,
+  ): Promise<FleetSignedTransaction> {
+    if (this.account === null) {
+      throw new FleetError(
+        "FLEET_E_NO_SIGNER",
+        `fleet ${method} requires a local signer key file`,
+      );
+    }
+    const signer = this.account.getSigner();
+    if (signer === undefined) {
+      throw new FleetError(
+        "FLEET_E_NO_SIGNER",
+        `fleet ${method} requires a local signer key file`,
+      );
+    }
+    let signed: SignedTransaction;
+    try {
+      signed = await this.account.createSignedTransaction({
+        receiverId: this.accountId,
+        actions: [actions.functionCall(method, args, teraToGas(gasTgas), 0n)],
+        signer,
+      });
+    } catch (error) {
+      throw wrapError(error, "FLEET_E_REJECTED");
+    }
+    const bytes = signed.encode();
+    const digest = createHash("sha256").update(bytes).digest();
+    return {
+      format: SIGNED_TX_FORMAT,
+      network: "testnet",
+      account_id: this.accountId,
+      receiver_id: this.accountId,
+      method,
+      args,
+      gas_tgas: gasTgas,
+      public_key: signed.transaction.publicKey.toString(),
+      nonce: signed.transaction.nonce.toString(),
+      // The NEAR transaction hash is the base58 SHA-256 of the serialized
+      // signed transaction.
+      tx_hash: baseEncode(digest),
+      signed_transaction: Buffer.from(bytes).toString("base64"),
+      created_at: new Date().toISOString(),
+    };
+  }
+
+  prepareFreeze(): Promise<FleetSignedTransaction> {
+    return this.prepare("freeze", {}, 30);
+  }
+
+  prepareUnfreeze(): Promise<FleetSignedTransaction> {
+    return this.prepare("unfreeze", {}, 30);
+  }
+
+  async submitSigned(signed: FleetSignedTransaction): Promise<FleetTxResult> {
+    const payload = parseSignedTransaction(signed);
+    if (payload.account_id !== this.accountId) {
+      throw new FleetError(
+        "FLEET_E_BAD_ARGS",
+        `signed transaction is for ${payload.account_id}, not ${this.accountId}`,
+      );
+    }
+    await this.ensureTestnet();
+    let outcome: unknown;
+    try {
+      const bytes = new Uint8Array(
+        Buffer.from(payload.signed_transaction, "base64"),
+      );
+      const decoded = SignedTransaction.decode(bytes);
+      outcome = await this.provider.sendTransactionUntil(decoded, "FINAL");
+    } catch (error) {
+      throw wrapError(error, "FLEET_E_REJECTED");
+    }
+    return this.toTxResult(outcome as RawOutcome, payload.method);
   }
 
   grantOperator(publicKey: string, tag: string): Promise<FleetTxResult> {

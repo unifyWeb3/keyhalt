@@ -8,6 +8,8 @@ import {
   FleetError,
   normalizeAuditEntry,
   parseBigJson,
+  parseSignedTransaction,
+  SIGNED_TX_FORMAT,
   verifyAuditChain,
   verifyAuditExport,
 } from "../dist/index.js";
@@ -57,6 +59,161 @@ test("SDK write path refuses a missing signer before any network call", async ()
 test("parseBigJson preserves u64 audit timestamps as strings", () => {
   const value = parseBigJson('{"block_timestamp":1793723581078050800,"seq":0}');
   assert.deepEqual(value, { block_timestamp: "1793723581078050800", seq: 0 });
+});
+
+// ---------------------------------------------------------------------------
+// Pre-signed freeze path
+// ---------------------------------------------------------------------------
+
+function signedFixture(overrides = {}) {
+  return {
+    format: SIGNED_TX_FORMAT,
+    network: "testnet",
+    account_id: "agent.testnet",
+    receiver_id: "agent.testnet",
+    method: "freeze",
+    args: {},
+    gas_tgas: 30,
+    public_key: "ed25519:2dckMmmyFQdr4J78vGfqm7XaK4ck2HgCvN8gSDfiQyx2",
+    nonce: "12345678901234567890",
+    tx_hash: "3ZfQ8mLpYqX2v7Ck9WnT4bRs6Hdj5GfUa1E0pQo2YtNx",
+    signed_transaction: "AGFzbQEAAAA=",
+    created_at: "2026-11-05T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+test("SDK accepts a well-formed pre-signed transaction", () => {
+  const value = parseSignedTransaction(signedFixture());
+  assert.equal(value.format, SIGNED_TX_FORMAT);
+  assert.equal(value.method, "freeze");
+});
+
+test("SDK rejects a pre-signed transaction without the FLEET format marker", () => {
+  assert.throws(
+    () => parseSignedTransaction(signedFixture({ format: "something-else" })),
+    (error) => {
+      assert.ok(error instanceof FleetError);
+      assert.equal(error.code, "FLEET_E_BAD_ARGS");
+      assert.match(error.message, /format must be/);
+      return true;
+    },
+  );
+});
+
+test("SDK rejects a pre-signed transaction that targets mainnet", () => {
+  assert.throws(
+    () => parseSignedTransaction(signedFixture({ network: "mainnet" })),
+    (error) => {
+      assert.ok(error instanceof FleetError);
+      assert.equal(error.code, "FLEET_E_MAINNET");
+      return true;
+    },
+  );
+});
+
+test("SDK rejects a pre-signed transaction that is missing a field", () => {
+  for (const field of [
+    "account_id",
+    "receiver_id",
+    "method",
+    "public_key",
+    "nonce",
+    "tx_hash",
+    "signed_transaction",
+    "created_at",
+  ]) {
+    const payload = signedFixture();
+    delete payload[field];
+    assert.throws(
+      () => parseSignedTransaction(payload),
+      (error) => {
+        assert.ok(error instanceof FleetError);
+        assert.equal(error.code, "FLEET_E_BAD_ARGS");
+        assert.match(error.message, new RegExp(field));
+        return true;
+      },
+      `missing ${field} must be refused`,
+    );
+  }
+});
+
+test("SDK rejects a pre-signed transaction that carries key material", () => {
+  assert.throws(
+    () =>
+      parseSignedTransaction(
+        signedFixture({ secret_key: "ed25519:11111111111111111111111111111111" }),
+      ),
+    (error) => {
+      assert.ok(error instanceof FleetError);
+      assert.equal(error.code, "FLEET_E_BAD_ARGS");
+      assert.match(error.message, /must not contain key material/);
+      return true;
+    },
+  );
+});
+
+test("SDK rejects a pre-signed transaction with a malformed public key", () => {
+  assert.throws(
+    () => parseSignedTransaction(signedFixture({ public_key: "not-a-key" })),
+    (error) => {
+      assert.ok(error instanceof FleetError);
+      assert.equal(error.code, "FLEET_E_BAD_ARGS");
+      return true;
+    },
+  );
+});
+
+test("SDK rejects a pre-signed transaction that is not an object", () => {
+  for (const value of [null, 7, "freeze", []]) {
+    assert.throws(
+      () => parseSignedTransaction(value),
+      (error) => {
+        assert.ok(error instanceof FleetError);
+        assert.equal(error.code, "FLEET_E_BAD_ARGS");
+        return true;
+      },
+    );
+  }
+});
+
+test("SDK pre-sign path refuses a missing signer before any network call", async () => {
+  const client = createFleetClient({
+    rpcUrl: "https://rpc.testnet.fastnear.com",
+    accountId: "agent.testnet",
+  });
+  await assert.rejects(
+    () => client.prepareFreeze(),
+    (error) => {
+      assert.ok(error instanceof FleetError);
+      assert.equal(error.code, "FLEET_E_NO_SIGNER");
+      return true;
+    },
+  );
+  await assert.rejects(
+    () => client.prepareUnfreeze(),
+    (error) => {
+      assert.ok(error instanceof FleetError);
+      assert.equal(error.code, "FLEET_E_NO_SIGNER");
+      return true;
+    },
+  );
+});
+
+test("SDK refuses to broadcast a pre-signed transaction for another account", async () => {
+  const client = createFleetClient({
+    rpcUrl: "https://rpc.testnet.fastnear.com",
+    accountId: "agent.testnet",
+  });
+  await assert.rejects(
+    () => client.submitSigned(signedFixture({ account_id: "other.testnet" })),
+    (error) => {
+      assert.ok(error instanceof FleetError);
+      assert.equal(error.code, "FLEET_E_BAD_ARGS");
+      assert.match(error.message, /other\.testnet/);
+      return true;
+    },
+  );
 });
 
 test("SDK verifies the canonical 19-entry testnet audit chain", () => {
