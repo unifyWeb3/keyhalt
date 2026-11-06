@@ -1,13 +1,18 @@
-# FLEET test plan (v0.3)
+# FLEET test plan (v0.3 final)
 
 **Status:** v0.3 controller, SDK, CLI, canonical Mode A testnet run, Mode B
-2-of-2 testnet run, mutation test, gas profile, and reproducibility builds are
-complete. Tests below are marked with the result that actually ran. `PARTIAL`
-means a narrower test exists but the full property is not covered. `PLANNED` and
+2-of-2 testnet run, automated mutation score, integration suite, latency,
+SDK concurrency, pre-signed freeze, and clean-session clone are complete.
+Tests below are marked with the result that actually ran. `PARTIAL` means a
+narrower test exists but the full property is not covered. `PLANNED` and
 `NOT IMPLEMENTED` are not evidence.
-**Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC).
+**Date:** 2026-11-06 UTC (canonical runs executed 2026-11-03; latency run
+2026-11-05; mutation/integration CI 2026-11-06).
 **Rule:** a `VERIFIED` row in `CLAIMS.md` must name a test that ran or a public
 testnet transaction hash. A flaky, skipped, or unrun test is not evidence.
+**Canonical invariant map:** `docs/INVARIANTS.md` maps I-01…I-14 to the exact
+proving test. This document is the test-plan overview; where the two overlap,
+`docs/INVARIANTS.md` wins.
 
 ---
 
@@ -15,46 +20,48 @@ testnet transaction hash. A flaky, skipped, or unrun test is not evidence.
 
 | Layer | Tool | What it proves | Result |
 | --- | --- | --- | --- |
-| Unit | `cargo test --workspace` | state machine, permission checks, audit hashing, callbacks | **35/35 pass** (170.98 s) |
-| Property-style | deterministic xorshift sequences | 5,000-step state/reference equivalence + audit verification | **pass** (`random_sequences_preserve_reference_and_audit`) |
-| Differential | `Reference` model | state matches an independent simple model after each step | **pass** (short + 5,000-step) |
-| Mutation | `scripts/mutation-test.mjs` | targeted tests constrain eight critical branches | **8/8 killed** |
+| Unit | `cargo test --workspace` | state machine, permission checks, audit hashing, callbacks | **84/84 pass** (707.12 s local) |
+| Property/differential | deterministic xorshift sequences vs `reference_model.rs` | state/reference equivalence after every step + audit verification | **pass** — 3 seeds × 5,000 steps = 15,000 comparisons |
+| Mutation (automated) | `cargo-mutants` on x64 CI | every proposed mutation is killed or provably equivalent | **248/252 viable = 98.41%**; 0 timeouts; F-036 |
+| Mutation (hand-written) | `scripts/mutation-test.mjs` | targeted regression set for eight critical branches | **8/8 killed**; F-017 |
 | Testnet E2E (Mode A) | `scripts/testnet-e2e.mjs` | deployed wasm, real keys, receipts, gas, callbacks | **63/63 checks**, 2026-11-03 |
-| Testnet E2E (Mode B) | `scripts/testnet-modeb.mjs` | pinned multisig, 2-of-2 confirmation, refusals, audit, latency, storage, isolation | **52/52 checks**, 2026-11-03 |
-| SDK/CLI | `npm test` | read paths, audit verify/tamper, exit codes, signer rules | **21/21 pass** |
+| Testnet E2E (Mode B) | `scripts/testnet-modeb.mjs` | pinned multisig, 2-of-2 confirmation, refusals, audit, storage, isolation | **52/52 checks**, 2026-11-03 |
+| Integration | `near-workspaces` on x64 CI | sandbox provisioning, no FullAccess key, execute, freeze/unfreeze, audit | **7/7 pass**; F-035 |
+| SDK/CLI | `npm test` | read paths, audit verify/tamper, exit codes, signer rules, pre-signed format | **38/38 pass** |
+| Latency | `scripts/testnet-latency-agent.mjs` | p50/p95 submit-to-optimistic/final + blocks, 20 runs per transition | **Mode A and Mode B complete**; F-029…F-032 |
+| SDK concurrency | `scripts/testnet-sdk-concurrency.mjs` | 12 concurrent SDK `execute` calls | **12/12 first attempt**, 6,486 ms; F-033 |
+| Pre-signed freeze | `scripts/testnet-presign-freeze.mjs` | sign without broadcast; same hash on submit | **pass**; F-034 |
 | Gas | `scripts/gas-profile.mjs` | per-operation cost from canonical evidence | **29 groups**, 3 provision rows |
 | Repro | `scripts/repro-build.sh` + multisig source build | two clean `--locked` builds per wasm | **byte-identical** |
-| Fresh clone | `scripts/fresh-clone-test.sh` | clean clone can reproduce | **PASS** 2026-11-03 (`evidence/fresh-clone-v03.log`) |
-| Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **28/28 verified** |
+| Fresh clone | `scripts/fresh-clone-test.sh`, `scripts/fresh-clone-clean-session.sh` | a clean clone can reproduce the deployed artifact with no inherited secret | **PASS** 2026-11-06; F-037 |
+| Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **37/37 verified** |
 
-**Sandbox gap:** `near-workspaces` is not installed on this Linux arm64 host.
-`near-workspaces@4.0.0` selects `near-sandbox@0.1.1`, which reports
-`Unsupported platform: Linux arm64`; `near-sandbox@0.3.4` requires Node
-≥22.22.2 while the host has 22.22.1. Testnet E2E is the integration path here;
-sandbox tests remain a CI x64 item.
+**Sandbox note:** `near-workspaces` cannot run on the arm64 development host
+(`Unsupported platform: Linux arm64`; the newer sandbox needs Node ≥22.22.2
+while the host has 22.22.1), so the integration suite runs in the GitHub
+Actions `integration` workflow on x64. near-workspaces pins a nearcore that
+predates the near-sdk 5.29 host imports, so the suite builds the same source
+against near-sdk 5.16 in a temporary tree and lowers bulk-memory with binaryen;
+the release artifact is untouched (see `evidence/integration-v03/README.md`
+and `docs/INVARIANTS.md` "Build and test deviations").
 
 ---
 
 ## 2. Invariants and status
 
-| ID | Invariant | Primary tests | Status |
-| --- | --- | --- | --- |
-| I-01 | `admin_pk` and `admin_account` are never both set; exactly one mode is active after init. | `init_rejects_both_or_neither_mode`, `init_rejects_both_modes`, `init_is_mode_exclusive_and_schedules_no_full_access_key` | **VERIFIED** |
-| I-02 | No lifecycle method calls `AddKey` for a key that may already exist; activation performs no `AddKey`. | `admin_rotation_has_no_add_key_on_accept`, `pending_admin_cannot_freeze_and_accept_performs_no_add`, `grant_and_propose_reject_keys_that_already_have_a_role` | **VERIFIED** |
-| I-03 | No method adds `FullAccess`; every added key is `FunctionCall` with `receiver = current account` and an allowlisted method set. | `init_is_mode_exclusive_and_schedules_no_full_access_key`, `grant_schedules_function_call_key_and_callback_confirms`; testnet key list | **VERIFIED** for scheduled paths |
-| I-04 | `paused = true` blocks every `execute`; `unfreeze` restores the positive control. | `freeze_blocks_operator_and_unfreeze_restores_positive_control`, `execute_requires_active_operator_freeze_and_allowlist`, testnet F-003 | **VERIFIED** |
-| I-05 | Only the active admin (Mode A) or `admin_account` (Mode B) can freeze/unfreeze or change lifecycle state; the pending key can only accept. | `operator_cannot_freeze_but_admin_can`, `freeze_and_unfreeze_are_admin_only`, `operator_cannot_call_admin_methods`, `pending_admin_cannot_freeze_and_accept_performs_no_add`, `mode_b_admin_is_predecessor_only`; Mode B testnet direct-member and non-member refusals | **VERIFIED** for Mode A and Mode B |
-| I-06 | A recovery key can propose a fresh admin, but cannot freeze, grant, revoke, or execute; the pending key must accept. | `recovery_cannot_freeze_or_grant`, `recovery_proposes_but_cannot_accept_itself`, `recovery_proposes_and_pending_key_accepts`, testnet F-007 | **VERIFIED** |
-| I-07 | `revoke_tag(tag)` removes exactly the operators with that tag; other tags remain and can execute after. | `revoke_tag_is_an_exact_partition`, `revoke_and_tag_revoke_are_exact`, testnet F-005 | **VERIFIED** (deterministic set) |
-| I-08 | An unauthorized or malformed call reverts; no state, audit entry, or native key changes. | `invalid_inputs_revert_before_state_change`, `missing_tag_reverts_without_audit`, `grant_failure_removes_pending_operator`, testnet refusals | **VERIFIED** for covered paths |
-| I-09 | Audit `seq` is monotonic and gapless; every mutation appends one entry with block height/time and a valid `prev_hash` chain. | `audit_chain_verifies_and_tamper_fails`, `audit_entry_lookup_and_pagination_are_exact`, `random_sequences_preserve_reference_and_audit`, testnet F-008 | **VERIFIED** |
-| I-10 | An audit export verifies only if every hash and the head match; any edit is detected. | `audit_chain_verifies_and_tamper_fails`, SDK/CLI tamper tests, `evidence/cli-v03/tamper-verify.json` | **VERIFIED** |
-| I-11 | The controller never deploys code, transfers balance, accepts a deposit, or grants full access. | `execute_rejects_wrong_receiver_and_deposit`, `init_is_mode_exclusive_and_schedules_no_full_access_key`; testnet deposit rejection | **VERIFIED** for exposed paths; no deploy/transfer method exists |
-| I-12 | A failed add/delete receipt is never counted as success; the controller reports failure or leaves a verifiable pending state. | `failed_grant_is_not_active_and_is_removed`, `audit_chain_survives_failed_callbacks`, `grant_failure_removes_pending_operator` | **VERIFIED** |
+The canonical invariant table is `docs/INVARIANTS.md`: **I-01…I-14, no `OPEN`
+rows**. Each row names the exact test (Rust unit test, property test,
+integration test, or testnet transaction) that proves it. The backend gates
+(differential model, mutation score, integration, latency, SDK concurrency,
+pre-signed freeze, claims discipline, clean-session clone) are listed there
+too, each with its exact run or artifact.
 
 ---
 
-## 3. Rust unit tests (35)
+## 3. Rust tests (84)
+
+Run log: `evidence/local-tests.txt` (2026-11-06 re-verification section).
+`cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` are clean.
 
 ### 3.1 Pure state machine (`model.rs`, 19 tests)
 
@@ -77,10 +84,10 @@ sandbox tests remain a CI x64 item.
 | `mode_b_admin_is_predecessor_only` | Mode B predecessor check (not a multisig implementation) |
 | `invalid_inputs_revert_before_state_change` | malformed input leaves state intact |
 | `audit_entry_lookup_and_pagination_are_exact` | seq lookup and page bounds |
-| `reference_model_matches_a_short_sequence` | differential model |
-| `random_sequences_preserve_reference_and_audit` | 5,000 deterministic steps vs reference; audit verified every step |
+| `reference_model_matches_a_short_sequence` | differential model, short sequence |
+| `random_sequences_preserve_reference_and_audit` | 3 seeds × 5,000 steps vs `reference_model.rs`; audit verified every step |
 
-### 3.2 near-sdk wrapper (`lib.rs`, 16 tests)
+### 3.2 near-sdk wrapper (`lib.rs`, 25 tests)
 
 | Test | What it pins |
 | --- | --- |
@@ -92,17 +99,31 @@ sandbox tests remain a CI x64 item.
 | `operator_cannot_call_admin_methods` | operator scope |
 | `grant_schedules_function_call_key_and_callback_confirms` | AddKey ACL + callback |
 | `failed_grant_is_not_active_and_is_removed` | failed AddKey rollback |
+| `failed_rotate_add_receipt_is_removed_and_old_key_stays_active` | failed rotate add receipt |
+| `failed_rotate_receipt_keeps_audit_and_active_set_consistent` | audit/active-set consistency |
+| `failed_rotation_self_callback_clears_inflight_and_allows_retry` | rotation retry after failure |
+| `failed_recovery_callback_leaves_no_inflight_and_allows_retry` | recovery retry after failure |
 | `public_callback_is_private` | callback can only be called by self |
+| `private_callback_refusal_is_logged_with_its_reason` | body-level `assert_private` logs `FLEET_REFUSAL` |
 | `execute_requires_active_operator_freeze_and_allowlist` | policy checks |
 | `execute_rejects_wrong_receiver_and_deposit` | receiver + deposit |
 | `revoke_and_tag_revoke_are_exact` | DeleteKey receipt shape |
 | `admin_rotation_has_no_add_key_on_accept` | no AddKey on accept |
+| `rotation_never_leaves_zero_active_admins` | rotation safety |
 | `recovery_proposes_and_pending_key_accepts` | recovery flow |
 | `mode_b_uses_predecessor_account` | Mode B actor derivation |
 | `audit_chain_survives_failed_callbacks` | audit integrity after failure |
+| `unauthorized_admin_call_does_not_change_state` | unauthorized no-op |
+| `grant_and_rotate_add_only_function_call_keys` | every added key is FunctionCall |
+| `no_lifecycle_receipt_contains_deploy_transfer_stake_delete_account_or_full_access` | no privileged receipt actions |
 
-Run log: `evidence/local-tests.txt`. Clippy `--all-targets -D warnings` and
-`cargo fmt --check` are clean.
+### 3.3 Targeted mutation regression (`lib.rs` `mutation_tests`, 40 tests)
+
+Forty `mt_*` tests constrain the exact branches that cargo-mutants exercises
+(account/key/tag/method boundaries, promise truth table, audit views and
+pagination, callback paths, error messages, allowance parsing, event/log
+shape). They are the reason the automated score below is 98.41%; the
+hand-written 8-mutant set (F-017) is a separate, smaller regression set.
 
 ---
 
@@ -110,15 +131,19 @@ Run log: `evidence/local-tests.txt`. Clippy `--all-targets -D warnings` and
 
 | ID | Property | Status | Note |
 | --- | --- | --- | --- |
-| T-P-01 | Legal transition sequences preserve mode/admin/recovery/operator invariants | **PARTIAL** | 5,000-step sequence covers freeze/unfreeze, grant success/failure, revoke, missing tag; not rotate/admin/recovery |
+| T-P-01 | Legal transition sequences preserve mode/admin/recovery/operator invariants | **PARTIAL** | the random sequence covers freeze/unfreeze, grant success/failure, revoke, missing tag, and is compared to `reference_model.rs` every step; it does not generate rotate/admin/recovery |
 | T-P-02 | Audit chain verifies after arbitrary successful mutations; fails after any single-cell edit | **VERIFIED** | verify after every random step; field/height/prev-hash tamper tests |
 | T-P-03 | Tag revocation is a partition for random key/tag sets | **PARTIAL** | deterministic partition test only |
 | T-P-04 | Key uniqueness across active/pending/recovery/admin for random sets | **PARTIAL** | deterministic collision test only |
 | T-P-05 | No generated action adds FullAccess or a non-allowlisted receiver | **PARTIAL** | structural (no FullAccess field) + wrapper tests; not a random generator |
+| T-P-06 | The differential reference model matches the implementation on shared random sequences | **VERIFIED** | 3 seeds × 5,000 steps = 15,000 comparisons; reference written from `docs/SPEC_v0.3.md` alone |
 
 No external `proptest`/`cargo-fuzz` dependency was added. The generator is a
 fixed-seed xorshift; a failure would print the step and audit heads. This is
-weaker than a shrinking property framework and is disclosed.
+weaker than a shrinking property framework and is disclosed. The default is
+`FLEET_PROPERTY_SEEDS=3` × `FLEET_PROPERTY_STEPS=5000`; the mutation workflow
+runs the same test at 1 × 20 per mutant (documented deviation in
+`docs/MUTATION.md`).
 
 ---
 
@@ -131,7 +156,7 @@ Evidence: `evidence/testnet-v03/run.json` (63 checks), `RUN.md`,
 | --- | --- | --- |
 | T-E-01 | Provision 3 agents, each with 6 FunctionCall keys, 0 FullAccess, 4 operators | **PASS** |
 | T-E-02 | 12 concurrent executes (3 agents × 4 operator keys) | **PASS** 12/12 in 8,633 ms |
-| T-E-03 | Freeze blocks the next execute; unfreeze restores it | **PASS**; no latency claim |
+| T-E-03 | Freeze blocks the next execute; unfreeze restores it | **PASS**; latency claim in F-029/F-030 |
 | T-E-04 | Admin recovery through the recovery key | **PASS** |
 | T-E-05 | Admin rotation: propose, accept, old admin rejected | **PASS** |
 | T-E-06 | Audit export + independent JS recompute + tamper rejection | **PASS** |
@@ -177,7 +202,7 @@ independent custody.
 | T-R-06 | Unauthorized account proposes admin | Active admin proposes | **PARTIAL** (Mode B non-member request refusal only) |
 | T-R-07 | One Mode B confirmation | Second confirmation executes | **PASS**; freeze/unfreeze both confirmed by two account members |
 | T-R-08 | Mainnet RPC configured | Testnet RPC succeeds | **PASS** (CLI/SDK/RPC script) |
-| T-R-09 | Expired pre-signed freeze | Fresh freeze lands | **PLANNED**; no pre-signed path |
+| T-R-09 | Stale or replayed pre-signed freeze | Fresh pre-signed freeze lands | **PARTIAL** — the fresh pre-signed path, mode-600 file, format/method/account/key-material refusals, and hash equality are tested (F-034); a consumed-nonce replay is not recorded |
 | T-R-10 | Grant a key that already has a role | Grant a fresh key | **PASS** (unit + testnet) |
 
 Testnet refusal reasons are captured from `FLEET_REFUSAL:` receipt logs:
@@ -218,40 +243,57 @@ exhaustion test.
 
 ## 8. Latency and limits
 
+20 runs per transition, dedicated agents, 2026-11-05. Source:
+`evidence/latency-v03/run.json`. Percentiles are submit-to-state and include
+transaction submission, finalization, and state polling. They are
+measurements, not an SLA.
+
+| Path | Transition | Txs | Optimistic p50 / p95 | Final p50 / p95 | Blocks opt. p50 / p95 | Blocks final p50 / p95 | Claim |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Mode A | freeze | 1 | 5,567 / 13,227 ms | 13,251 / 24,753 ms | 1 / 1 | 15 / 33 | F-029 |
+| Mode A | unfreeze | 1 | 5,087 / 7,309 ms | 12,389 / 19,795 ms | 1 / 1 | 16 / 25 | F-030 |
+| Mode B | freeze | 3 | 10,038 / 17,105 ms | 13,682 / 32,946 ms | 13 / 19 | 18 / 47 | F-031 |
+| Mode B | unfreeze | 3 | 11,864 / 21,581 ms | 15,840 / 42,479 ms | 14 / 19 | 21 / 66 | F-032 |
+
 | ID | Test | Status |
 | --- | --- | --- |
-| T-L-01 | 20 independent pre-signed Mode A freezes; p95 wall/block | **PLANNED** |
+| T-L-01 | 20 independent Mode A freezes (and 20 unfreezes); p50/p95 wall/block | **PASS** — F-029, F-030 |
 | T-L-02 | Freeze during an in-flight execute | **PARTIAL** — no cancellation is claimed |
-| T-L-03 | Nonce-lane reservation / stale-hash refresh | **PLANNED**; per-operator keys used for concurrency |
-| T-L-04 | Three Mode A freeze and three unfreeze cycles; submit → observed state | **PASS** — mean 22,716 ms / 21,997 ms on `rpc.testnet.near.org`; includes finalization and polling |
-| T-L-05 | Mode B 2-of-2 freeze and unfreeze wall time | **PASS** — 20,884 ms and 27,064 ms submit → observed state |
+| T-L-03 | Nonce-lane reservation / stale-hash refresh | **PARTIAL** — per-operator keys used for concurrency; the pre-sign path tests one signed payload, not a refresh race |
+| T-L-04 | Three historical Mode A cycles; submit → observed state | **PASS** (historical) — mean 22,716 ms / 21,997 ms on `rpc.testnet.near.org`; superseded by T-L-01 |
+| T-L-05 | Mode B 2-of-2 freeze/unfreeze wall time | **PASS** (historical) — 20,884 ms / 27,064 ms; superseded by F-031/F-032 |
+| T-L-06 | 12 concurrent SDK `execute` calls | **PASS** — 12/12 first attempt, 6,486 ms; F-033 |
+| T-L-07 | Pre-signed freeze hash equals the submitted/on-chain hash | **PASS** — F-034 |
 
-The 12-way concurrency result is a throughput observation (8,633 ms for 12
-submitted calls), not a latency percentile. The latency numbers above are
-single-host observations that include RPC finality and state polling; they are
-not a contract-execution SLA and no target is claimed.
+The 12-way concurrency result is a throughput observation, not a latency
+percentile. Mode B is three transactions per transition and both owners were
+operated by the same harness; its numbers describe the mechanism, not
+independent custody.
 
 ---
 
-## 9. SDK/CLI tests (21)
+## 9. SDK/CLI tests (38)
 
-`npm test` builds all packages and runs:
+`npm test` builds all packages and runs 38 tests: **18 SDK + 17 CLI + 3 API**.
 
 | Area | Tests |
 | --- | --- |
 | SDK version and mainnet refusal | 2 |
-| SDK missing-signer refusal | 1 |
+| SDK missing-signer refusal (write and pre-sign paths) | 2 |
 | big-u64 JSON preservation | 1 |
-| 19-entry canonical audit verification | 1 |
-| tampered entry + broken prev-hash rejection | 2 |
-| raw and `fleet-audit-v1` export verification | 1 |
-| CLI version/help | 3 |
-| CLI unknown command, mainnet, no signer, bad key mode | 4 |
+| Pre-signed transaction format: accept, six payload refusals, foreign-account refusal | 8 |
+| SDK transaction hash covers the unsigned transaction | 1 |
+| Audit: canonical verify, tamper, broken link, export forms | 4 |
+| CLI version/help/pre-signed help | 4 |
+| CLI refusals: unknown command, mainnet, no signer, key mode | 4 |
 | CLI canonical audit verify, alias, tamper exit 6 | 3 |
+| CLI pre-signed file refusals: no `--out`, format, method, account, key material, unreadable | 6 |
 | API scaffold tests | 3 |
+| **Total** | **38** (18 SDK + 17 CLI + 3 API) |
 
 Live CLI evidence: `evidence/cli-v03/` (freeze, refusal, unfreeze, inventory,
-verify, export, tamper).
+verify, export, tamper). Live SDK evidence: `evidence/sdk-v03/concurrency.json`
+and `evidence/sdk-v03/presign.json`.
 
 ---
 
@@ -259,13 +301,38 @@ verify, export, tamper).
 
 | ID | Test | Status |
 | --- | --- | --- |
-| T-M-01 | 8 semantic mutants each killed by a targeted test | **PASS** 8/8; `evidence/mutation/mutation-report.md` |
-| T-SC-01 | Fresh clone + `make setup` + `make verify` | **PASS** v0.3 2026-11-04 on commit `a88ef57`; `evidence/fresh-clone-v03-final.log` (earlier runs: `evidence/fresh-clone-v03-modeb.log`, `evidence/fresh-clone-v03.log`) |
-| T-SC-02 | Claims checker rejects malformed/unsupported rows | **PASS** (fresh-clone negative control) |
-| T-SC-03 | README “do X, see Y” matches reality | **PASS** in the fresh-clone run |
+| T-M-01 | 8 hand-written mutants each killed by a targeted test | **PASS** 8/8; `evidence/mutation/mutation-report.md` |
+| T-M-02 | Automated cargo-mutants score on x64 CI | **PASS** 248/252 = 98.41%; 4 provably equivalent survivors justified in `docs/MUTATION.md`; F-036 |
+| T-SC-01 | Fresh clone + `make setup` + `make verify` | **PASS** 2026-11-06 on the final tree; `evidence/fresh-clone-v03-clean-session.log` (earlier runs: `evidence/fresh-clone-v03-final.log`, `evidence/fresh-clone-v03-modeb.log`) |
+| T-SC-02 | Claims checker rejects malformed/unsupported rows | **PASS** (clean-session negative control) |
+| T-SC-03 | README "do X, see Y" matches reality | **PASS** in the fresh-clone run |
 | T-SC-04 | No key/credential in clone or history | **PASS** working tree + history scan |
-| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL** — 28 rows, tx hashes public; not one re-run script |
+| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL** — 37 rows, tx hashes public; not one re-run script |
 | T-S-001…T-S-007 | Setup, verify, claims, secret scan, mainnet refusal, static web check | **PASS** (v0.3 verify + fresh clone) |
+
+### 10.1 Automated mutation survivors (4 of 252) and their disposition
+
+Run `42172689910` (x64 CI, commit `81325ed`) generated 275 mutants; 248 were
+caught, 23 did not compile, and **4 survived**. All four are **provably
+equivalent**: for every possible input the mutated function returns exactly
+the same value as the original, so no test can distinguish them. They cannot
+be killed without editing production code, and production code is frozen
+because the deployed wasm embeds panic-location line numbers — any edit
+changes the deployed bytes and invalidates the artifact-hash evidence
+(F-012/F-019). The disposition is therefore a written justification, per
+`docs/MUTATION.md`.
+
+| # | Mutant | Mutation | Why no test can kill it |
+| --- | --- | --- | --- |
+| 1 | `contracts/fleet-controller/src/model.rs:170:20` in `valid_account` | replace `<` with `==` | The original rejects `len < 2`. The mutant's condition is `len == 2 \|\| len > 64 \|\| !contains('.')`. For lengths 0 and 1, `contains('.')` is false, so the mutant also rejects. For lengths ≥ 3 both forms are false at that clause and fall through to the identical checks. For length 2 both forms reject (mutant at the first clause; original at the next one, since every length-2 string containing `'.'` is `"a."`, `".a"`, or `".."`). Identical for every input. |
+| 2 | `contracts/fleet-controller/src/model.rs:170:20` in `valid_account` | replace `<` with `<=` | Differs from the original only at length 2, where the mutant rejects at the first clause. The original also rejects at length 2 whenever the string contains `'.'` (the only way to pass `!contains('.')`), by the starts-with/ends-with/`..` check. At every other length the terms are identical. Identical for every input. |
+| 3 | `contracts/fleet-controller/src/model.rs:183:40` in `valid_public_key` | replace `>` with `==` | The mutant differs only at length 80, where it rejects at `len == 80`. The original accepts the first length check at 80 but the final check requires `rest.len() <= 64`; with `curve` `ed25519` (7) or `secp256k1` (9), a length-80 key has `rest.len()` 72 or 70, so the original also rejects. Lengths > 80 are rejected by both. Identical for every input. |
+| 4 | `contracts/fleet-controller/src/model.rs:183:40` in `valid_public_key` | replace `>` with `>=` | Differs from the original only at length 80, where the first clause rejects. The original also rejects at length 80 through the `rest.len() <= 64` check (see #3). Identical for every input. |
+
+The redundant comparisons are a defence-in-depth style choice in a validator
+already double-guarded by other conditions. Removing them to make the mutants
+non-equivalent would change the deployed artifact; that trade is not
+acceptable, so the mutants stand as justified equivalents.
 
 ---
 
@@ -294,6 +361,12 @@ verify, export, tamper).
 | F-025 | `evidence/modeb-v03/multisig-repro-build.md/json`; `run.json` |
 | F-026, F-027 | `evidence/modeb-v03/run.json` latency |
 | F-028 | `evidence/modeb-v03/run.json` isolation |
+| F-029…F-032 | `evidence/latency-v03/run.json`, `agent.json` |
+| F-033 | `evidence/sdk-v03/concurrency.json` |
+| F-034 | `evidence/sdk-v03/presign.json` |
+| F-035 | `evidence/integration-v03/` (x64 CI, 7/7) |
+| F-036 | `evidence/mutation-v03/`, `docs/MUTATION.md` (x64 CI, 98.41%) |
+| F-037 | `evidence/fresh-clone-v03-clean-session.log` |
 
 ---
 
@@ -306,20 +379,23 @@ Open gaps, in priority order:
    organizational custody is not.
 2. The multisig contract is third-party and unaudited; its upstream README
    disclaims guarantees.
-3. Console design and build are approval-gated; `web/` is a placeholder.
+3. Console design and build are approval-gated; the pixel draft awaits the
+   human's approval and `web/` is a placeholder.
 4. No demo recording or replay (`T-E-07`).
-5. No pre-signed 20-freeze latency percentile; the three-cycle measurement is an
-   observation, not an SLA.
-6. Allowance budget is derived, not exhausted (`T-G-02`).
-7. Property tests are deterministic and cover a subset of transitions.
-8. No near-workspaces sandbox run on this arm64 host.
-9. Docs/evidence changed after the fresh-clone commit; re-run the clone test before the submission tag.
+5. Allowance budget is derived, not exhausted (`T-G-02`).
+6. Property tests are deterministic and cover a subset of transitions.
+7. The integration suite runs the same contract source, not the exact deployed
+   bytes, because the sandbox's nearcore predates the deployed near-sdk host
+   imports (documented deviation).
+8. Docs/evidence changed after the clean-session commit; re-run the clone test
+   before the submission tag if the functional tree changes.
 
 | Checkpoint | Criteria | Status |
 | --- | --- | --- |
 | Core contract | invariant/unit/property green; no AddKey on existing keys; audit verifies | **MET 2026-11-03** |
 | SDK/CLI/E2E | 3-agent E2E; SDK/CLI tests; every claim has evidence | **MET 2026-11-03** including fresh clone |
-| Feature freeze (Nov 10) | no new features; gas/latency tables complete | Gas and measurement tables done; no latency target |
+| Backend hardening | mutation ≥85%; differential model; invariant map; integration in CI; 20-run latency; pre-sign path; clean session | **MET 2026-11-06** — 98.41%, 3×5,000, I-01…I-14, 7/7, F-029…F-034, F-037 |
+| Feature freeze (Nov 10) | no new features; gas/latency tables complete | Gas and latency tables done; no new features planned |
 | Demo (Nov 12) | every step replayed; no untested claim | **PENDING** |
 | README final (Nov 13) | fresh clone green; claims checker green; diff link | **PENDING** |
 | Submission (Nov 14 12:00 UTC) | human review; repo public; license; X post; JSON; tag | **PENDING HUMAN** |

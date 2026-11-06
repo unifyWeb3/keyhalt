@@ -1,0 +1,899 @@
+== Clone into /tmp/fleet-clean-session.8Ey4Yo/fleet (outside the repository) ==
+== The clone starts clean ==
+== The session inherits no FLEET_*, NEAR_* or credential variable ==
+OK: no credential-like variable is set
+== No inherited secret is needed: make setup ==
+./scripts/setup.sh
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: 'near-api-js@7.4.0',
+npm WARN EBADENGINE   required: { node: '>=22.22.2', pnpm: '>=10.4.1' },
+npm WARN EBADENGINE   current: { node: 'v22.22.1', npm: '9.2.0' }
+npm WARN EBADENGINE }
+
+added 75 packages in 42s
+
+> fleet@0.3.0 build
+> tsc -p packages/sdk/tsconfig.json && tsc -p packages/cli/tsconfig.json && tsc -p packages/api/tsconfig.json
+
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /tmp/fleet-clean-session.8Ey4Yo/fleet/contracts/fleet-controller/Cargo.toml
+workspace: /tmp/fleet-clean-session.8Ey4Yo/fleet/Cargo.toml
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling libc v0.2.191
+   Compiling typenum v1.20.1
+   Compiling cfg-if v1.0.5
+   Compiling version_check v0.9.5
+   Compiling subtle v2.6.1
+   Compiling const-oid v0.9.6
+   Compiling serde_core v1.0.229
+   Compiling find-msvc-tools v0.1.15
+   Compiling shlex v2.0.1
+   Compiling generic-array v0.14.7
+   Compiling serde v1.0.229
+   Compiling equivalent v1.0.3
+   Compiling hashbrown v0.17.1
+   Compiling autocfg v1.5.1
+   Compiling strsim v0.11.1
+   Compiling indexmap v2.14.2
+   Compiling ident_case v1.0.1
+   Compiling once_cell v1.21.4
+   Compiling winnow v1.0.4
+   Compiling toml_datetime v1.1.2+spec-1.1.0
+   Compiling cfg_aliases v0.2.2
+   Compiling num-traits v0.2.19
+   Compiling borsh v1.8.1
+   Compiling zmij v1.0.23
+   Compiling syn v2.0.119
+   Compiling syn v3.0.9
+   Compiling jobserver v0.1.35
+   Compiling getrandom v0.2.17
+   Compiling toml_parser v1.1.5+spec-1.1.0
+   Compiling cc v1.11.0
+   Compiling rand_core v0.6.4
+   Compiling cpufeatures v0.2.17
+   Compiling itoa v1.0.18
+   Compiling toml_edit v0.25.17+spec-1.1.0
+   Compiling foldhash v0.2.0
+   Compiling memchr v2.8.3
+   Compiling unicode-segmentation v1.13.3
+   Compiling thiserror v2.0.21
+   Compiling proc-macro-crate v3.5.0
+   Compiling serde_json v1.0.154
+   Compiling convert_case v0.10.0
+   Compiling darling_core v0.24.1
+   Compiling num-bigint v0.3.3
+   Compiling unicode-xid v0.2.6
+   Compiling rustversion v1.0.23
+   Compiling num-integer v0.1.47
+   Compiling cmake v0.1.58
+   Compiling num-rational v0.3.2
+   Compiling hybrid-array v0.4.15
+   Compiling semver v1.0.28
+   Compiling fs_extra v1.3.0
+   Compiling near-schema-checker-macro v0.37.4
+   Compiling crunchy v0.2.4
+   Compiling dunce v1.0.5
+   Compiling near-schema-checker-core v0.37.4
+   Compiling serde_derive v1.0.229
+   Compiling zeroize_derive v1.5.0
+   Compiling borsh-derive v1.8.1
+   Compiling thiserror-impl v2.0.21
+   Compiling derive_more-impl v2.1.1
+   Compiling near-schema-checker-lib v0.37.4
+   Compiling aws-lc-sys v0.39.1
+   Compiling enum-map-derive v0.17.0
+   Compiling darling_macro v0.24.1
+   Compiling zeroize v1.9.1
+   Compiling derive_arbitrary v1.5.0
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling darling v0.24.1
+   Compiling serde_with_macros v3.24.0
+   Compiling rustc_version v0.4.1
+   Compiling sha2 v0.10.9
+   Compiling signature v2.2.0
+   Compiling base64 v0.23.1
+   Compiling bs58 v0.4.0
+   Compiling fnv v1.0.7
+   Compiling hex v0.4.3
+   Compiling near-account-id v2.6.0
+   Compiling crossbeam-utils v0.8.23
+   Compiling syn v1.0.109
+   Compiling bs58 v0.5.1
+   Compiling darling_core v0.20.11
+   Compiling near-gas v0.3.7
+   Compiling derive_more v2.1.1
+   Compiling near-token v0.3.6
+   Compiling arbitrary v1.5.0
+   Compiling curve25519-dalek v4.1.3
+   Compiling enum-map v2.7.3
+   Compiling serde_with v3.24.0
+   Compiling der v0.7.10
+   Compiling serde_repr v0.1.21
+   Compiling crypto-common v0.2.2
+   Compiling block-buffer v0.12.1
+   Compiling secp256k1-sys v0.8.2
+   Compiling pkg-config v0.3.34
+   Compiling byteorder v1.5.0
+   Compiling base64 v0.21.7
+   Compiling zerocopy v0.8.63
+   Compiling static_assertions v1.1.0
+   Compiling const-oid v0.10.2
+   Compiling anyhow v1.0.104
+   Compiling parking_lot_core v0.9.12
+   Compiling near-primitives-core v0.37.4
+   Compiling digest v0.11.3
+   Compiling darling_macro v0.20.11
+   Compiling zstd-sys v2.1.2+zstd.1.5.7
+   Compiling tracing-attributes v0.1.31
+   Compiling ff v0.13.1
+   Compiling cpufeatures v0.3.1
+   Compiling tracing-core v0.1.36
+   Compiling scopeguard v1.2.0
+   Compiling crossbeam-epoch v0.9.21
+   Compiling heck v0.4.1
+   Compiling smallvec v1.16.4
+   Compiling pin-project-lite v0.2.17
+   Compiling base16ct v0.2.0
+   Compiling aws-lc-rs v1.16.2
+   Compiling sec1 v0.7.3
+   Compiling lock_api v0.4.14
+   Compiling darling v0.20.11
+   Compiling group v0.13.0
+   Compiling tracing v0.1.44
+   Compiling strum_macros v0.24.3
+   Compiling fixed-hash v0.7.0
+   Compiling uint v0.9.5
+   Compiling ed25519 v2.2.3
+   Compiling crypto-bigint v0.5.5
+   Compiling keccak v0.1.6
+   Compiling ryu v1.0.23
+   Compiling crossbeam-deque v0.8.8
+   Compiling unsafe-libyaml v0.2.11
+   Compiling untrusted v0.7.1
+   Compiling json_comments v0.2.2
+   Compiling ppv-lite86 v0.2.21
+   Compiling near-config-utils v0.37.4
+   Compiling secp256k1 v0.27.0
+   Compiling strum v0.24.1
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling elliptic-curve v0.13.8
+   Compiling sha3 v0.10.9
+   Compiling ed25519-dalek v2.2.0
+   Compiling primitive-types v0.10.1
+   Compiling keccak v0.2.2
+   Compiling hmac v0.12.1
+   Compiling blake2 v0.10.6
+   Compiling ripemd v0.1.3
+   Compiling either v1.19.0
+   Compiling radium v0.7.0
+   Compiling getrandom v0.4.3
+   Compiling near-stdx v0.37.4
+   Compiling rayon-core v1.13.0
+   Compiling rustix v1.1.6
+   Compiling zstd-safe v7.3.0
+   Compiling rfc6979 v0.4.0
+   Compiling near-parameters v0.37.4
+   Compiling sha3 v0.11.0
+   Compiling rand_chacha v0.3.1
+   Compiling derive_builder_core v0.20.2
+   Compiling parking_lot v0.12.5
+   Compiling sha2 v0.11.1
+   Compiling spki v0.7.3
+   Compiling blst v0.3.17
+   Compiling deranged v0.5.9
+   Compiling num_cpus v1.17.0
+   Compiling allocator-api2 v0.2.21
+   Compiling linux-raw-sys v0.12.1
+   Compiling num-conv v0.2.2
+   Compiling bitflags v2.13.2
+   Compiling powerfmt v0.2.1
+   Compiling time-core v0.1.9
+   Compiling tap v1.0.1
+   Compiling spin v0.9.9
+   Compiling near-sys v0.2.14
+   Compiling wyz v0.5.1
+   Compiling lazy_static v1.5.1
+   Compiling near-sdk-env v0.1.6
+   Compiling time v0.3.55
+   Compiling hashbrown v0.16.1
+   Compiling threadpool v1.8.1
+   Compiling derive_builder_macro v0.20.2
+   Compiling ecdsa v0.16.9
+   Compiling rand v0.8.8
+   Compiling primeorder v0.13.6
+   Compiling bytesize v1.3.3
+   Compiling heck v0.5.0
+   Compiling iana-time-zone v0.1.65
+   Compiling rustc-hex v2.1.0
+   Compiling fastrand v2.5.0
+   Compiling funty v2.0.0
+   Compiling near-sdk-macros v5.29.1
+   Compiling hashbrown v0.14.5
+   Compiling near-crypto-hash v0.2.0
+   Compiling bitvec v1.1.1
+   Compiling tempfile v3.27.0
+   Compiling dashmap v6.2.1
+   Compiling zeropool-bn v0.5.11
+   Compiling chrono v0.4.45
+   Compiling strum_macros v0.26.4
+   Compiling p256 v0.13.2
+   Compiling derive_builder v0.20.2
+   Compiling rayon v1.12.0
+   Compiling near-time v0.37.4
+   Compiling lru v0.16.4
+   Compiling itertools v0.14.0
+   Compiling near-fmt v0.37.4
+   Compiling digest-io v0.1.0
+   Compiling ordered-float v4.6.0
+   Compiling cfg_eval v0.1.2
+   Compiling smart-default v0.7.1
+   Compiling Inflector v0.11.4
+   Compiling strum v0.26.3
+   Compiling bytes v1.12.1
+   Compiling easy-ext v0.2.9
+   Compiling base64 v0.22.1
+   Compiling near-global-contracts v0.2.6
+   Compiling zstd v0.13.3
+   Compiling near-crypto v0.37.4
+   Compiling near-primitives v0.37.4
+   Compiling near-sdk-core v4.2.3
+   Compiling near-vm-runner v0.37.4
+   Compiling near-sdk v5.29.1
+   Compiling fleet-controller v0.3.0 (/tmp/fleet-clean-session.8Ey4Yo/fleet/contracts/fleet-controller)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5m 13s
+  Executable unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)
+SETUP: OK
+  node    v22.22.1
+  npm     9.2.0
+  rustc   rustc 1.93.0 (254b59607 2026-01-19)
+  cargo   cargo 1.93.0 (083ac5135 2025-12-15)
+  cargo-near not installed (not required for v0.3)
+== No inherited secret is needed: make verify ==
+./scripts/verify.sh
+== Rust format ==
+== Rust clippy ==
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /tmp/fleet-clean-session.8Ey4Yo/fleet/contracts/fleet-controller/Cargo.toml
+workspace: /tmp/fleet-clean-session.8Ey4Yo/fleet/Cargo.toml
+    Checking typenum v1.20.1
+    Checking cfg-if v1.0.5
+    Checking subtle v2.6.1
+    Checking libc v0.2.191
+    Checking const-oid v0.9.6
+    Checking serde_core v1.0.229
+    Checking zeroize v1.9.1
+   Compiling equivalent v1.0.3
+   Compiling hashbrown v0.17.1
+   Compiling once_cell v1.21.4
+    Checking num-traits v0.2.19
+    Checking foldhash v0.2.0
+    Checking generic-array v0.14.7
+   Compiling unicode-segmentation v1.13.3
+   Compiling indexmap v2.14.2
+    Checking itoa v1.0.18
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+   Compiling jobserver v0.1.35
+   Compiling convert_case v0.10.0
+    Checking digest v0.10.7
+    Checking serde v1.0.229
+    Checking zmij v1.0.23
+   Compiling cc v1.11.0
+   Compiling toml_edit v0.25.17+spec-1.1.0
+    Checking memchr v2.8.3
+   Compiling derive_more-impl v2.1.1
+    Checking thiserror v2.0.21
+    Checking num-integer v0.1.47
+    Checking hybrid-array v0.4.15
+    Checking getrandom v0.2.17
+    Checking cpufeatures v0.2.17
+    Checking hex v0.4.3
+    Checking sha2 v0.10.9
+    Checking rand_core v0.6.4
+    Checking serde_json v1.0.154
+   Compiling proc-macro-crate v3.5.0
+    Checking near-schema-checker-core v0.37.4
+    Checking signature v2.2.0
+   Compiling cmake v0.1.58
+    Checking near-schema-checker-lib v0.37.4
+    Checking num-bigint v0.3.3
+    Checking bs58 v0.5.1
+   Compiling borsh-derive v1.8.1
+    Checking base64 v0.23.1
+    Checking bs58 v0.4.0
+    Checking enum-map v2.7.3
+    Checking arbitrary v1.5.0
+    Checking serde_with v3.24.0
+    Checking crunchy v0.2.4
+    Checking block-buffer v0.12.1
+    Checking crypto-common v0.2.2
+    Checking num-rational v0.3.2
+    Checking der v0.7.10
+   Compiling aws-lc-sys v0.39.1
+   Compiling secp256k1-sys v0.8.2
+    Checking byteorder v1.5.0
+    Checking base64 v0.21.7
+    Checking static_assertions v1.1.0
+    Checking const-oid v0.10.2
+   Compiling zstd-sys v2.1.2+zstd.1.5.7
+    Checking digest v0.11.3
+    Checking crossbeam-utils v0.8.23
+    Checking tracing-core v0.1.36
+    Checking ff v0.13.1
+    Checking cpufeatures v0.3.1
+    Checking pin-project-lite v0.2.17
+    Checking base16ct v0.2.0
+    Checking scopeguard v1.2.0
+    Checking smallvec v1.16.4
+    Checking sec1 v0.7.3
+    Checking derive_more v2.1.1
+    Checking lock_api v0.4.14
+    Checking tracing v0.1.44
+    Checking group v0.13.0
+    Checking parking_lot_core v0.9.12
+    Checking curve25519-dalek v4.1.3
+    Checking zerocopy v0.8.63
+    Checking borsh v1.8.1
+    Checking anyhow v1.0.104
+    Checking uint v0.9.5
+    Checking fixed-hash v0.7.0
+    Checking ed25519 v2.2.3
+    Checking crypto-bigint v0.5.5
+    Checking near-account-id v2.6.0
+    Checking near-gas v0.3.7
+    Checking near-token v0.3.6
+    Checking keccak v0.1.6
+    Checking ryu v1.0.23
+    Checking json_comments v0.2.2
+    Checking near-primitives-core v0.37.4
+    Checking unsafe-libyaml v0.2.11
+    Checking untrusted v0.7.1
+    Checking near-config-utils v0.37.4
+    Checking sha3 v0.10.9
+    Checking serde_yaml v0.9.34+deprecated
+    Checking elliptic-curve v0.13.8
+    Checking ed25519-dalek v2.2.0
+    Checking primitive-types v0.10.1
+    Checking ppv-lite86 v0.2.21
+    Checking strum v0.24.1
+    Checking crossbeam-epoch v0.9.21
+    Checking keccak v0.2.2
+    Checking hmac v0.12.1
+    Checking blake2 v0.10.6
+    Checking ripemd v0.1.3
+    Checking near-stdx v0.37.4
+    Checking either v1.19.0
+    Checking near-parameters v0.37.4
+    Checking crossbeam-deque v0.8.8
+    Checking rfc6979 v0.4.0
+    Checking sha3 v0.11.0
+    Checking rand_chacha v0.3.1
+    Checking parking_lot v0.12.5
+    Checking sha2 v0.11.1
+    Checking spki v0.7.3
+   Compiling blst v0.3.17
+    Checking num_cpus v1.17.0
+    Checking deranged v0.5.9
+    Checking num-conv v0.2.2
+    Checking secp256k1 v0.27.0
+    Checking powerfmt v0.2.1
+    Checking spin v0.9.9
+    Checking bitflags v2.13.2
+    Checking linux-raw-sys v0.12.1
+    Checking near-sys v0.2.14
+    Checking allocator-api2 v0.2.21
+    Checking tap v1.0.1
+    Checking time-core v0.1.9
+    Checking near-sdk-env v0.1.6
+    Checking wyz v0.5.1
+    Checking lazy_static v1.5.1
+    Checking rustix v1.1.6
+    Checking time v0.3.55
+    Checking hashbrown v0.16.1
+    Checking threadpool v1.8.1
+    Checking ecdsa v0.16.9
+    Checking rand v0.8.8
+    Checking rayon-core v1.13.0
+    Checking getrandom v0.4.3
+    Checking radium v0.7.0
+    Checking primeorder v0.13.6
+    Checking bytesize v1.3.3
+    Checking near-crypto-hash v0.2.0
+    Checking iana-time-zone v0.1.65
+    Checking rustc-hex v2.1.0
+    Checking hashbrown v0.14.5
+    Checking fastrand v2.5.0
+    Checking funty v2.0.0
+    Checking chrono v0.4.45
+    Checking tempfile v3.27.0
+    Checking near-time v0.37.4
+    Checking dashmap v6.2.1
+    Checking bitvec v1.1.1
+    Checking zeropool-bn v0.5.11
+    Checking p256 v0.13.2
+    Checking rayon v1.12.0
+    Checking lru v0.16.4
+    Checking derive_builder v0.20.2
+    Checking itertools v0.14.0
+    Checking near-fmt v0.37.4
+    Checking ordered-float v4.6.0
+    Checking digest-io v0.1.0
+    Checking bytes v1.12.1
+    Checking base64 v0.22.1
+    Checking near-global-contracts v0.2.6
+   Compiling near-sdk-macros v5.29.1
+   Compiling zstd-safe v7.3.0
+    Checking zstd v0.13.3
+   Compiling aws-lc-rs v1.16.2
+    Checking near-crypto v0.37.4
+    Checking near-sdk-core v4.2.3
+    Checking near-primitives v0.37.4
+    Checking near-vm-runner v0.37.4
+    Checking near-sdk v5.29.1
+    Checking fleet-controller v0.3.0 (/tmp/fleet-clean-session.8Ey4Yo/fleet/contracts/fleet-controller)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 39s
+== Rust tests ==
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /tmp/fleet-clean-session.8Ey4Yo/fleet/contracts/fleet-controller/Cargo.toml
+workspace: /tmp/fleet-clean-session.8Ey4Yo/fleet/Cargo.toml
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.29s
+     Running unittests src/lib.rs (target/debug/deps/fleet_controller-f603c6b0d7360d63)
+
+running 84 tests
+test model::tests::init_rejects_duplicate_and_colliding_keys ... ok
+test model::tests::init_rejects_both_or_neither_mode ... ok
+test model::tests::grant_and_propose_reject_keys_that_already_have_a_role ... ok
+test model::tests::freeze_blocks_operator_and_unfreeze_restores_positive_control ... ok
+test model::tests::audit_entry_lookup_and_pagination_are_exact ... ok
+test model::tests::grant_failure_removes_pending_operator ... ok
+test model::tests::cancel_admin_is_allowed_for_admin_or_recovery_and_clears_pending ... ok
+test model::tests::missing_tag_reverts_without_audit ... ok
+test model::tests::audit_chain_verifies_and_tamper_fails ... ok
+test model::tests::invalid_inputs_revert_before_state_change ... ok
+test model::tests::mode_b_admin_is_predecessor_only ... ok
+test model::tests::operator_cannot_freeze_but_admin_can ... ok
+test model::tests::pending_admin_cannot_freeze_and_accept_performs_no_add ... ok
+test model::tests::recovery_cannot_freeze_or_grant ... ok
+test model::tests::recovery_proposes_but_cannot_accept_itself ... ok
+test model::tests::reference_model_matches_a_short_sequence ... ok
+test model::tests::rotate_is_fresh_key_first_and_keeps_old_until_confirmed ... ok
+test mutation_tests::mt_accept_admin_moves_the_admin_key ... ok
+test mutation_tests::mt_audit_head_and_entry_exact ... ok
+test model::tests::revoke_tag_is_an_exact_partition ... ok
+test mutation_tests::mt_audit_page_is_capped ... ok
+test mutation_tests::mt_config_allowance_is_the_documented_default ... ok
+test mutation_tests::mt_cancel_admin_paths_and_return_value ... ok
+test mutation_tests::mt_confirm_provision_paths ... ok
+test mutation_tests::mt_error_messages_are_exact ... ok
+test mutation_tests::mt_confirm_grant_requires_pending_inactive_operator ... ok
+test mutation_tests::mt_audit_views_match_state ... ok
+test mutation_tests::mt_emit_last_logs_the_audit_entry ... ok
+test mutation_tests::mt_freeze_unfreeze_state_machine ... ok
+test mutation_tests::mt_execute_emits_event ... ok
+test mutation_tests::mt_mode_views_are_exact ... ok
+test mutation_tests::mt_hex_encode_nibbles ... ok
+test mutation_tests::mt_operator_lookup_and_active_partition ... ok
+test mutation_tests::mt_origin_str_is_exact ... ok
+test mutation_tests::mt_parse_allowance_defaults_and_caps ... ok
+test mutation_tests::mt_contract_version_is_exact ... ok
+test mutation_tests::mt_prepare_grant_checks ... ok
+test mutation_tests::mt_ping_returns_pong_and_logs ... ok
+test mutation_tests::mt_nonzero_deposit_is_refused ... ok
+test mutation_tests::mt_propose_paths_and_boundaries ... ok
+test mutation_tests::mt_record_length_boundaries ... ok
+test mutation_tests::mt_revoke_paths_and_exact_returns ... ok
+test mutation_tests::mt_role_gates_positive_and_negative ... ok
+test mutation_tests::mt_rotate_paths_and_boundaries ... ok
+test mutation_tests::mt_state_init_boundaries ... ok
+test mutation_tests::mt_valid_account_boundaries ... ok
+test mutation_tests::mt_admin_transitions_schedule_key_cleanup ... ok
+test mutation_tests::mt_valid_method_boundaries ... ok
+test mutation_tests::mt_valid_public_key_boundaries ... ok
+test mutation_tests::mt_valid_tag_boundaries ... ok
+test mutation_tests::mt_verify_audit_detects_every_tamper ... ok
+test mutation_tests::mt_verify_audit_rejects_consistent_but_mislinked_entry ... ok
+test mutation_tests::mt_callbacks_return_and_apply_the_promise_result ... ok
+test mutation_tests::mt_execute_gas_and_args_boundaries ... ok
+test mutation_tests::mt_execute_requires_active_operator_and_unfrozen ... ok
+test mutation_tests::mt_promise_ok_truth_table ... ok
+test mutation_tests::mt_verify_audit_view_true_and_false ... ok
+test mutation_tests::mt_private_callbacks_reject_external_predecessor ... ok
+test tests::execute_rejects_wrong_receiver_and_deposit ... ok
+test tests::audit_chain_survives_failed_callbacks ... ok
+test tests::admin_rotation_has_no_add_key_on_accept ... ok
+test tests::failed_grant_is_not_active_and_is_removed ... ok
+test tests::execute_requires_active_operator_freeze_and_allowlist ... ok
+test tests::failed_rotate_add_receipt_is_removed_and_old_key_stays_active ... ok
+test tests::failed_recovery_callback_leaves_no_inflight_and_allows_retry ... ok
+test tests::failed_rotate_receipt_keeps_audit_and_active_set_consistent ... ok
+test tests::freeze_and_unfreeze_are_admin_only ... ok
+test tests::failed_rotation_self_callback_clears_inflight_and_allows_retry ... ok
+test tests::init_is_mode_exclusive_and_schedules_no_full_access_key ... ok
+test tests::operator_cannot_call_admin_methods ... ok
+test tests::init_rejects_both_modes ... ok
+test tests::grant_schedules_function_call_key_and_callback_confirms ... ok
+test tests::grant_and_rotate_add_only_function_call_keys ... ok
+test tests::mode_b_uses_predecessor_account ... ok
+test tests::provisioning_failure_leaves_controller_unprovisioned ... ok
+test tests::public_callback_is_private ... ok
+test tests::provisioning_callback_promotes_operators ... ok
+test tests::no_lifecycle_receipt_contains_deploy_transfer_stake_delete_account_or_full_access ... ok
+test tests::private_callback_refusal_is_logged_with_its_reason ... ok
+test tests::revoke_and_tag_revoke_are_exact ... ok
+test tests::unauthorized_admin_call_does_not_change_state ... ok
+test tests::recovery_proposes_and_pending_key_accepts ... ok
+test tests::rotation_never_leaves_zero_active_admins ... ok
+test model::tests::random_sequences_preserve_reference_and_audit has been running for over 60 seconds
+test model::tests::random_sequences_preserve_reference_and_audit ... ok
+
+test result: ok. 84 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 820.10s
+
+   Doc-tests fleet_controller
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+== Rust wasm release build ==
+warning: profiles for the non root package will be ignored, specify profiles at the workspace root:
+package:   /tmp/fleet-clean-session.8Ey4Yo/fleet/contracts/fleet-controller/Cargo.toml
+workspace: /tmp/fleet-clean-session.8Ey4Yo/fleet/Cargo.toml
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.27
+   Compiling typenum v1.20.1
+   Compiling ident_case v1.0.1
+   Compiling winnow v1.0.4
+   Compiling zmij v1.0.23
+   Compiling equivalent v1.0.3
+   Compiling serde_core v1.0.229
+   Compiling hashbrown v0.17.1
+   Compiling toml_datetime v1.1.2+spec-1.1.0
+   Compiling indexmap v2.14.2
+   Compiling hybrid-array v0.4.15
+   Compiling version_check v0.9.5
+   Compiling toml_parser v1.1.5+spec-1.1.0
+   Compiling cfg_aliases v0.2.2
+   Compiling generic-array v0.14.7
+   Compiling toml_edit v0.25.17+spec-1.1.0
+   Compiling borsh v1.8.1
+   Compiling strsim v0.11.1
+   Compiling serde v1.0.229
+   Compiling once_cell v1.21.4
+   Compiling proc-macro-crate v3.5.0
+   Compiling syn v3.0.9
+   Compiling syn v2.0.119
+   Compiling crypto-common v0.2.2
+   Compiling block-buffer v0.12.1
+   Compiling const-oid v0.10.2
+   Compiling digest v0.11.3
+   Compiling serde_json v1.0.154
+   Compiling cfg-if v1.0.5
+   Compiling memchr v2.8.3
+   Compiling rustversion v1.0.23
+   Compiling fnv v1.0.7
+   Compiling itoa v1.0.18
+   Compiling foldhash v0.2.0
+   Compiling darling_core v0.20.11
+   Compiling keccak v0.2.2
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling darling_core v0.24.1
+   Compiling bs58 v0.5.1
+   Compiling hex v0.4.3
+   Compiling base64 v0.23.1
+   Compiling digest v0.10.7
+   Compiling sha3 v0.11.0
+   Compiling near-sdk-macros v5.29.1
+   Compiling serde_derive v1.0.229
+   Compiling borsh-derive v1.8.1
+   Compiling wee_alloc v0.4.5
+   Compiling darling_macro v0.20.11
+   Compiling near-crypto-hash v0.2.0
+   Compiling heck v0.5.0
+   Compiling ripemd v0.1.3
+   Compiling strum_macros v0.26.4
+   Compiling darling_macro v0.24.1
+   Compiling darling v0.20.11
+   Compiling cfg_eval v0.1.2
+   Compiling sha2 v0.11.1
+   Compiling digest-io v0.1.0
+   Compiling base64 v0.22.1
+   Compiling darling v0.24.1
+   Compiling Inflector v0.11.4
+   Compiling memory_units v0.4.0
+   Compiling strum v0.26.3
+   Compiling serde_with_macros v3.24.0
+   Compiling cfg-if v0.1.10
+   Compiling near-sdk-env v0.1.6
+   Compiling near-sys v0.2.14
+   Compiling near-account-id v2.6.0
+   Compiling near-token v0.3.6
+   Compiling near-gas v0.3.7
+   Compiling serde_with v3.24.0
+   Compiling near-global-contracts v0.2.6
+   Compiling near-sdk-core v4.2.3
+   Compiling near-sdk v5.29.1
+   Compiling fleet-controller v0.3.0 (/tmp/fleet-clean-session.8Ey4Yo/fleet/contracts/fleet-controller)
+    Finished `release` profile [optimized] target(s) in 1m 00s
+cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f  target/wasm32-unknown-unknown/release/fleet_controller.wasm
+== TypeScript build and tests ==
+
+> fleet@0.3.0 test
+> npm run build && node --test packages/sdk/test/sdk.test.mjs packages/cli/test/cli.test.mjs packages/api/test/api.test.mjs
+
+
+> fleet@0.3.0 build
+> tsc -p packages/sdk/tsconfig.json && tsc -p packages/cli/tsconfig.json && tsc -p packages/api/tsconfig.json
+
+TAP version 13
+# Subtest: API health is read-only and explicit about the scaffold
+ok 1 - API health is read-only and explicit about the scaffold
+  ---
+  duration_ms: 7.385834
+  type: 'test'
+  ...
+# Subtest: API refuses every write method
+ok 2 - API refuses every write method
+  ---
+  duration_ms: 1.318333
+  type: 'test'
+  ...
+# Subtest: API returns 501 for planned read routes, not fake data
+ok 3 - API returns 501 for planned read routes, not fake data
+  ---
+  duration_ms: 0.874323
+  type: 'test'
+  ...
+# Subtest: CLI prints its version
+ok 4 - CLI prints its version
+  ---
+  duration_ms: 1110.460208
+  type: 'test'
+  ...
+# Subtest: CLI version supports --json
+ok 5 - CLI version supports --json
+  ---
+  duration_ms: 1101.855885
+  type: 'test'
+  ...
+# Subtest: CLI help lists implemented product commands
+ok 6 - CLI help lists implemented product commands
+  ---
+  duration_ms: 1072.463385
+  type: 'test'
+  ...
+# Subtest: CLI refuses an unknown command with exit code 2
+ok 7 - CLI refuses an unknown command with exit code 2
+  ---
+  duration_ms: 1110.606302
+  type: 'test'
+  ...
+# Subtest: CLI refuses a mainnet RPC with exit code 4
+ok 8 - CLI refuses a mainnet RPC with exit code 4
+  ---
+  duration_ms: 1099.057396
+  type: 'test'
+  ...
+# Subtest: CLI refuses a write without a signer with exit code 3
+ok 9 - CLI refuses a write without a signer with exit code 3
+  ---
+  duration_ms: 942.764583
+  type: 'test'
+  ...
+# Subtest: CLI refuses a group-readable signer key file with exit code 2
+ok 10 - CLI refuses a group-readable signer key file with exit code 2
+  ---
+  duration_ms: 1034.332708
+  type: 'test'
+  ...
+# Subtest: CLI verifies the canonical 19-entry audit file
+ok 11 - CLI verifies the canonical 19-entry audit file
+  ---
+  duration_ms: 898.186822
+  type: 'test'
+  ...
+# Subtest: CLI audit verify alias also accepts the file
+ok 12 - CLI audit verify alias also accepts the file
+  ---
+  duration_ms: 977.692864
+  type: 'test'
+  ...
+# Subtest: CLI rejects a tampered audit file with exit code 6
+ok 13 - CLI rejects a tampered audit file with exit code 6
+  ---
+  duration_ms: 975.505468
+  type: 'test'
+  ...
+# Subtest: CLI help documents the pre-signed freeze path
+ok 14 - CLI help documents the pre-signed freeze path
+  ---
+  duration_ms: 977.84849
+  type: 'test'
+  ...
+# Subtest: CLI freeze --pre-sign without --out fails with exit code 2
+ok 15 - CLI freeze --pre-sign without --out fails with exit code 2
+  ---
+  duration_ms: 918.071146
+  type: 'test'
+  ...
+# Subtest: CLI refuses a signed file without the FLEET format marker
+ok 16 - CLI refuses a signed file without the FLEET format marker
+  ---
+  duration_ms: 1043.949166
+  type: 'test'
+  ...
+# Subtest: CLI refuses a signed file whose method does not match the command
+ok 17 - CLI refuses a signed file whose method does not match the command
+  ---
+  duration_ms: 895.823229
+  type: 'test'
+  ...
+# Subtest: CLI refuses a signed file for another account
+ok 18 - CLI refuses a signed file for another account
+  ---
+  duration_ms: 1001.968177
+  type: 'test'
+  ...
+# Subtest: CLI refuses a signed file that carries key material
+ok 19 - CLI refuses a signed file that carries key material
+  ---
+  duration_ms: 935.656249
+  type: 'test'
+  ...
+# Subtest: CLI refuses an unreadable signed file with exit code 2
+ok 20 - CLI refuses an unreadable signed file with exit code 2
+  ---
+  duration_ms: 917.822969
+  type: 'test'
+  ...
+# Subtest: SDK exposes the v0.3 version
+ok 21 - SDK exposes the v0.3 version
+  ---
+  duration_ms: 5.520416
+  type: 'test'
+  ...
+# Subtest: SDK refuses a mainnet RPC before any network call
+ok 22 - SDK refuses a mainnet RPC before any network call
+  ---
+  duration_ms: 1.86776
+  type: 'test'
+  ...
+# Subtest: SDK write path refuses a missing signer before any network call
+ok 23 - SDK write path refuses a missing signer before any network call
+  ---
+  duration_ms: 1.942969
+  type: 'test'
+  ...
+# Subtest: parseBigJson preserves u64 audit timestamps as strings
+ok 24 - parseBigJson preserves u64 audit timestamps as strings
+  ---
+  duration_ms: 4.001666
+  type: 'test'
+  ...
+# Subtest: SDK accepts a well-formed pre-signed transaction
+ok 25 - SDK accepts a well-formed pre-signed transaction
+  ---
+  duration_ms: 1.110938
+  type: 'test'
+  ...
+# Subtest: SDK rejects a pre-signed transaction without the FLEET format marker
+ok 26 - SDK rejects a pre-signed transaction without the FLEET format marker
+  ---
+  duration_ms: 0.931615
+  type: 'test'
+  ...
+# Subtest: SDK rejects a pre-signed transaction that targets mainnet
+ok 27 - SDK rejects a pre-signed transaction that targets mainnet
+  ---
+  duration_ms: 0.532031
+  type: 'test'
+  ...
+# Subtest: SDK rejects a pre-signed transaction that is missing a field
+ok 28 - SDK rejects a pre-signed transaction that is missing a field
+  ---
+  duration_ms: 2.201303
+  type: 'test'
+  ...
+# Subtest: SDK rejects a pre-signed transaction that carries key material
+ok 29 - SDK rejects a pre-signed transaction that carries key material
+  ---
+  duration_ms: 2.854322
+  type: 'test'
+  ...
+# Subtest: SDK rejects a pre-signed transaction with a malformed public key
+ok 30 - SDK rejects a pre-signed transaction with a malformed public key
+  ---
+  duration_ms: 2.328906
+  type: 'test'
+  ...
+# Subtest: SDK rejects a pre-signed transaction that is not an object
+ok 31 - SDK rejects a pre-signed transaction that is not an object
+  ---
+  duration_ms: 1.022812
+  type: 'test'
+  ...
+# Subtest: SDK pre-sign path refuses a missing signer before any network call
+ok 32 - SDK pre-sign path refuses a missing signer before any network call
+  ---
+  duration_ms: 1.166562
+  type: 'test'
+  ...
+# Subtest: SDK refuses to broadcast a pre-signed transaction for another account
+ok 33 - SDK refuses to broadcast a pre-signed transaction for another account
+  ---
+  duration_ms: 0.915938
+  type: 'test'
+  ...
+# Subtest: SDK transaction hash covers the unsigned transaction, not the signed bytes
+ok 34 - SDK transaction hash covers the unsigned transaction, not the signed bytes
+  ---
+  duration_ms: 186.370261
+  type: 'test'
+  ...
+# Subtest: SDK verifies the canonical 19-entry testnet audit chain
+ok 35 - SDK verifies the canonical 19-entry testnet audit chain
+  ---
+  duration_ms: 10.89474
+  type: 'test'
+  ...
+# Subtest: SDK audit verifier rejects a tampered entry
+ok 36 - SDK audit verifier rejects a tampered entry
+  ---
+  duration_ms: 4.075156
+  type: 'test'
+  ...
+# Subtest: SDK audit verifier rejects a broken previous-hash link
+ok 37 - SDK audit verifier rejects a broken previous-hash link
+  ---
+  duration_ms: 1.66849
+  type: 'test'
+  ...
+# Subtest: SDK accepts the raw E2E audit export and the fleet-audit-v1 export
+ok 38 - SDK accepts the raw E2E audit export and the fleet-audit-v1 export
+  ---
+  duration_ms: 6.586875
+  type: 'test'
+  ...
+1..38
+# tests 38
+# suites 0
+# pass 38
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 17719.762806
+== Claims table ==
+CLAIMS 37/37 verified (37 rows)
+== Secret scan ==
+SECRET SCAN: OK (no credential file or private-key pattern found)
+== Web placeholder ==
+WEB CHECK: OK static placeholder, no script, no key field
+== Read-only testnet RPC ==
+RPC CHECK: SKIP (testnet RPC unavailable after 3 attempts: HTTP 429)
+Set FLEET_REQUIRE_RPC=1 to make this failure fatal.
+== Optional sandbox harness (not installed on this host) ==
+fleet@0.3.0 /tmp/fleet-clean-session.8Ey4Yo/fleet
+`-- (empty)
+
+
+FLEET verification: PASS
+CLAIMS 37/37 verified (37 rows)
+== The clean clone reproduces the deployed wasm bytes ==
+OK: wasm sha256 cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f
+== Negative control: a malformed VERIFIED row must be rejected ==
+OK: malformed claim rejected
+== Negative control: a mainnet RPC must be refused ==
+OK: mainnet RPC refused
+== Negative control: the SDK must refuse a mainnet client ==
+OK: mainnet client refused
+== The tree is still clean after the checks ==
+== No credential-like file in the clone ==
+
+FLEET clean-session fresh-clone test: PASS
+EXIT=0
