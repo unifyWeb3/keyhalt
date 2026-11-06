@@ -25,7 +25,7 @@ FLEET                              testnet · block 276151157 (ticking)
   agent-3.fleet-…testnet                    Active   0            operator execute ·
                                                   block 276090373 · pong
 
-Verified 28/28 → CLAIMS.md
+Verified 37/37 → CLAIMS.md
 ```
 
 Selecting a name opens the agent screen. The header block number ticks as
@@ -85,7 +85,7 @@ Timeline
   276110650   unfreeze · confirm 2      2 of 2 · ok   GFvHeSRb… ✓
   276110695   execute                   pong ✓        GR69FWJU… ✓
 
-                      Verified 28/28 → CLAIMS.md
+                      Verified 37/37 → CLAIMS.md
 ```
 
 Block heights are the Mode B run (`evidence/modeb-v03/RUN.md`). Full hashes

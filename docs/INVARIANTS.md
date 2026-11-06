@@ -65,7 +65,7 @@ invariant table trustworthy. Each one names the exact run that proves it.
   step, plus audit verification each step. Total **15,000** comparisons.
   The mutation workflow runs the same test at 1 × 20 steps per mutant
   (documented in `docs/MUTATION.md`).
-- TypeScript: **38/38 pass** (`npm test`): 18 SDK tests, 17 CLI tests, and
+- TypeScript: **41/41 pass** (`npm test`): 18 SDK tests, 20 CLI tests, and
   3 API tests.
 - Integration: **7/7 pass** in the GitHub Actions `integration` workflow
   (near-workspaces 5.0.0; not runnable on this arm64 host).

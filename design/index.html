@@ -156,7 +156,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
 <body>
 <header>
   <span class="wordmark">FLEET</span>
-  <span class="chip"><b>testnet</b> · block <span class="tick" id="block">276149637</span></span>
+  <span class="chip"><b>testnet</b> · block <span class="tick" id="block">276454237</span></span>
 </header>
 <main id="fleet">
   <section class="panel" aria-labelledby="fleet-heading">
@@ -242,12 +242,12 @@ button:disabled { opacity: 0.45; cursor: not-allowed; }
   </section>
 </main>
 <footer>
-  Verified <a href="../CLAIMS.md">28/28</a> · <a href="../docs/THREAT_MODEL.md">Threat model</a>
+  Verified <a href="../CLAIMS.md">37/37</a> · <a href="../docs/THREAT_MODEL.md">Threat model</a>
 </footer>
 <script>
 (function () {
   var blockEl = document.getElementById("block");
-  var height = 276149637;
+  var height = 276454237;
   function tick() { height += 1; blockEl.textContent = String(height); }
   setInterval(tick, 1200);
   var mains = { fleet: document.getElementById("fleet"), agent: document.getElementById("agent"), timeline: document.getElementById("timeline") };

@@ -1,6 +1,7 @@
 # Skills and tools
 
-**Status:** Phase 0 inventory, updated after the v0.3 testnet run on 2026-11-03 UTC.
+**Status:** Phase 0 inventory, updated after the v0.3 testnet run on 2026-11-03
+UTC, and extended with the **2026-11-06 final-work session report** in §7.
 **Rule:** record what is actually installed, not what would be convenient. A
 missing tool is a documented gap, not an assumed capability.
 
@@ -23,8 +24,10 @@ Skills live under `/root/arc-skills/collection/skills/` (source copies under
 **Not used:** `imagegen`, `openai-docs`, `review-agent`, `skill-creator`,
 `skill-installer`, Windows-only skills. No skill was installed or modified.
 
-**Harness skill:** the OpenCode `opencode` skill is available for OpenCode
-questions; it was not needed for FLEET product work.
+**Harness skills:** the OpenCode `opencode` skill is available for OpenCode
+questions; it was not needed for FLEET product work. The harness `report`
+skill (for filing an OpenCode issue) was also not needed — no OpenCode defect
+was found during this work.
 
 ---
 
@@ -120,3 +123,97 @@ control, a mainnet-RPC negative control, and a credential-file check.
 | Testnet deploy/calls | `near-cli-rs` (if used) or SDK; `cargo build` |
 | Claims and screener | `scripts/check-claims.mjs`, `docs/TEST_PLAN.md` |
 | Demo | `docs/DEMO_SCRIPT.md`; human records/posts |
+
+---
+
+## 7. Final-work session report — 2026-11-06
+
+### 7.1 The `unslop` skill: **not installed, not reviewed, not pinned**
+
+This is the direct answer to the question asked, and it is a negative result.
+
+| Question | Answer |
+| --- | --- |
+| Does an `unslop` skill exist on this host? | **No.** |
+| Does one exist in `/root/arc-skills`? | **No.** |
+| Was it reviewed? | **No — there was nothing to review.** |
+| Was it pinned? | **No — nothing was pinned, because no such skill exists.** |
+| Is there a commit hash for it? | **No. There is no commit hash, because the skill is not installed.** |
+
+**How that was verified** (read-only, 2026-11-06 UTC):
+
+- `find` for any path matching `*unslop*` under `/root/arc-skills`,
+  `/root/.local/share/opencode`, `/root/.config/opencode`, `/root/.agents`,
+  `/root/.claude`, `/usr/local/share`, and `/opt` — **zero matches**.
+- Every installed skill manifest (`SKILL.md`) was located and grepped for
+  `unslop` — **zero matches**. The full set of installed manifests is listed in
+  §7.3.
+- A content grep across `/root/arc-skills` — **zero matches**.
+- The only occurrences of the string anywhere on the host are inside this
+  project's own OpenCode session log and database, because the question
+  itself was asked there. They are this conversation, not a skill.
+
+The six installed skills are listed in §7.3. **There is no `unslop` among
+them**, and the pinned set below is the complete set.
+
+### 7.2 Which skills were used in this final work session
+
+**No skill file was loaded during the 2026-11-06 final-work session.** The
+working instructions for that session were the repository's own documents —
+`AGENTS.md`, `CLAIMS.md`, `docs/TEST_PLAN.md`, `docs/PROVENANCE.md` — plus the
+harness tools (`read`, `edit`, `write`, `shell`, `webfetch`, `websearch`,
+`grep`, `glob`, and the `execute` code-mode runtime for parallel calls).
+
+The skills in §1 were read earlier in the project, during Phase 1 planning
+and the v0.3 build, and they shaped the working method that this session
+continued: the evidence-per-claim discipline from `hackathon-build`, the
+restart-reconciliation approach from `project-recovery`, and the
+truthfulness rules from `frontend-audit` that the console mock-up review
+applied. They were not re-read for this session, and no new skill was
+installed.
+
+### 7.3 The pinned skill set
+
+The skill backup repository is at `/root/arc-skills`, with git **HEAD**
+`3b13ce7597fc37de72132e70694a990d7d25bd97` ("Back up Codex and OpenCode
+skills with verified restore workflow"). The working tree is clean, so that
+commit is the authoritative pin for the whole collection.
+
+| Skill | `SKILL.md` sha256 | Bytes |
+| --- | --- | ---: |
+| `find-skills` | `1e85f6f9686e145aca4a124e3b704b9bbea9aa87e08515c1e352eee70f6e6e7a` | 5,446 |
+| `frontend-audit` | `7a9dba8f1a2da56a4cf64b4c21f974bc47169569a4209c6243c5edefdbe442c8` | 12,224 |
+| `frontend-build` | `1376f8ccaad442aa7b8b0f28640a0f41fe5ecb86a9bb736af50964f45b112e75` | 5,393 |
+| `hackathon-build` | `eb8feb51b3a12d1adb6ac08defc4eaf7029c8dace4d99de9df241a385a937f89` | 6,454 |
+| `hackathon-discovery` | `b75004988b10dc610ed2c259660e14b3969347ba47a336b40768110a30f34ac4` | 13,114 |
+| `project-recovery` | `d83aa87615d30b823ba7985feed47788305d208b1f495cd8adf213bad362733b` | 13,773 |
+
+`/root/arc-skills/inventory.json` additionally pins **1,148 individual files**
+by path, byte size, and sha256, and records the scope: *"Global skill folders
+in Linux and Windows plus user-specified cskill folder. Project-local skills
+outside these paths were not searched."* That scope limit is worth stating:
+a skill living inside some other project directory would not appear in this
+inventory. The searches in §7.1 were run outside that scope as well, across
+the OpenCode and agent configuration directories, and still found nothing.
+
+### 7.4 Other tools used in this session
+
+| Tool | Version / path | Used for |
+| --- | --- | --- |
+| Node.js | 22.22.1 | The SDK/CLI test suite, the concurrency harness, the read-only name and account probes |
+| `curl` | system | Read-only public API calls: GitHub, crates.io, NEAR explorer, the live `HACKATHON.md` |
+| `python3` | system | JSON parsing of those read-only responses |
+| `playwright-core` | 1.64.1 (`/root/browser-tool/node_modules`) | Headless Chromium for the four screenshot recaptures |
+| Chromium | 1248 arm64 (`/root/.cache/ms-playwright/chromium-1248`) | The screenshot capture browser |
+| `cargo` / `rustc` | 1.93.0 via rustup | `make repro`, `make verify` |
+
+No paid tool, no hosted service, and no credentialed API was used.
+
+### 7.5 Gaps that remain open
+
+| Gap | Impact | Mitigation |
+| --- | --- | --- |
+| No Rust/NEAR-specific skill | More manual source reading | Read `near-sdk`/`multisig2` source; pin commits; test on testnet |
+| The `unslop` skill is not installed | Its guidance was not applied to the writing in this session | The repo's own `AGENTS.md` wording rules carry the same intent for the FLEET documents; if the human wants that skill's checks applied, it has to be installed and pinned first |
+| No video tool verified | Demo recording uncertain | Human records/posts; `docs/DEMO_SCRIPT.md` is the script |
+| Server restarts observed | Lost work/time | Commit often; detached runs with a log; re-run if a log ends mid-suite |

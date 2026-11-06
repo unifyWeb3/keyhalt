@@ -4,8 +4,10 @@
 which intentionally contained no product code. v0.3 product code was added after
 that tag; see `README.md` and `CLAIMS.md`. This page is not rewritten to pretend
 the baseline included the product.
-**Repository:** `fleet` (private remote configured; no push from this working
-session, no public visibility).
+**Repository:** `fleet`. Private remote configured
+(`https://github.com/unifyWeb3/fleet-private.git`); commits have been pushed to
+that private remote, and **nothing has been made public**. No public
+repository, no published tag, no X post, no submission.
 **Created:** 2026-11-03 UTC (Phase 1 was planned for 2026-10-30/31 and slipped; see `research/BUILD_STATUS.md` in the separate research workspace).
 **License:** MIT (`LICENSE`).
 
@@ -52,16 +54,59 @@ repository after the baseline tag; reuse of the v0.2 code is not assumed.
 
 ## 3. Baseline tag plan
 
-| Ref | Purpose | When |
-| --- | --- | --- |
-| `pre-hackathon` | The Phase 1 scaffold + documents + harness. No product code. | Created at the end of Phase 1, before any product implementation. **Actual creation is 2026-11-03**, after the planned 2026-10-31 cut-off; the slip is disclosed, not backdated. |
-| `hackathon-submission` | The exact submitted revision. | At submission, after the final fresh-clone test. |
+| Ref | Purpose | When | State |
+| --- | --- | --- | --- |
+| `pre-hackathon` | The Phase 1 scaffold + documents + harness. No product code. | Created at the end of Phase 1, before any product implementation. **Actual creation is 2026-11-03**, after the planned 2026-10-31 cut-off; the slip is disclosed, not backdated. | **Exists.** Annotated tag on commit `5a26e22` |
+| `hackathon-submission` | The exact submitted revision. | At submission, after the final clean-session fresh-clone test. | **Planned, not created.** Creating it requires the human's approval |
 
 The baseline tag is annotated. It is intended to let a reader diff
 `pre-hackathon..hackathon-submission` and see the product work. Because the
 Phase 1 target slipped, the tag name is retained for the event's Q-003
 convention, but its real creation date is recorded here and in the git tag
 message. It is not a claim that the repository existed on 2026-10-31.
+
+### 3.1 The `hackathon-submission` tag plan
+
+The tag is a **plan**, not an action. Nothing below is executed without the
+human's explicit approval, in this order:
+
+1. **Precondition — all local gates pass on the final tree:**
+   `make verify`, `make claims`, `make repro`, and
+   `./scripts/fresh-clone-clean-session.sh`. The clean-session log is saved as
+   `evidence/fresh-clone-v03-clean-session.log` (F-037).
+2. **Freeze the commit.** Let `S` be the commit that passes those gates.
+3. **Tag `S` locally** as an annotated tag named `hackathon-submission`, with
+   a message that records: the commit hash, the date, the wasm sha256
+   `cdb2b37c4692094d1b554f0ab2cab4256b9f9d66bc537c4404f949ee2b589f5f`, the
+   testnet chain ids used, and the fact that the tag marks the **testnet
+   prototype** submitted to the `security` track.
+4. **Push the tag only to the private remote** `origin`
+   (`https://github.com/unifyWeb3/fleet-private.git`), if the human approves
+   even that. A tag push is a publication action on a remote that the human
+   may later make public, so it waits for the same approval as the repository
+   publication.
+5. **Publish the repository** (the human's decision, before the event's
+   development deadline of 2026-11-14T23:59:00Z).
+6. **Add the compare link to the README's Q-003 section:**
+   `https://github.com/<owner>/<repo>/compare/pre-hackathon...hackathon-submission`.
+   The link cannot be written before publication because the remote is private.
+7. **Post the X demo** (human-authored and human-posted) and **submit once**
+   through `https://nearhackathon.com/api/applications`, only after the human
+   confirms the exact payload.
+
+**If the human never publishes:** no tag is created, no tag is pushed, and the
+Q-003 answer remains "the `pre-hackathon` tag exists locally and on the
+private remote; the submission tag was never created because the repository was
+not published." That is recorded rather than papered over.
+
+**What the diff contains.** `pre-hackathon..hackathon-submission` is the whole
+v0.3 product: the controller (`contracts/fleet-controller`), the SDK, the CLI,
+the read-only API scaffold, the near-workspaces integration suite, the testnet
+harness scripts, the `evidence/` tree, `CLAIMS.md` with its 37 verified rows,
+and the documentation. The baseline contributes the scaffold, the CI, and the
+reproducibility harness. The two multisig2 source files that are copied in for
+the Mode B build are attributed in §6 and excluded from the claim that the
+product code is original.
 
 ## 4. What is intentionally excluded
 

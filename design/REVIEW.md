@@ -4,12 +4,15 @@
 recording was made.** This companion collects the pixel draft for the human's
 approval. Nothing here ships as `web/` code; `design/index.html` is a static
 prototype served separately.
-**Date:** 2026-11-04 UTC.
+**Date:** 2026-11-04 UTC; backend status refreshed 2026-11-06 UTC.
 
-Backend stands as recorded in `research/BUILD_STATUS.md` §12 — 35/35 Rust,
-21/21 TypeScript, mutation 8/8, Mode A 63 checks and Mode B 52 checks
-deployed, 28/28 claims. UI work does not displace the latency measurement;
-no latency number from this draft is a claim (see "Known gaps").
+Backend stands as recorded in `research/BUILD_STATUS.md` §12: 84/84 Rust,
+38/38 TypeScript, differential reference model 3 × 5,000 steps, automated
+mutation 248/252 = 98.41%, integration 7/7 on x64 CI, Mode A and Mode B
+20-run latency recorded, Mode A 63 checks and Mode B 52 checks deployed,
+37/37 claims. The latency measurement that this review asked for has been
+run (F-029…F-032, `evidence/latency-v03/run.json`); no latency number in this
+draft is a claim, and the draft still shows no "seconds" wording.
 
 ---
 
@@ -34,8 +37,8 @@ Three Mode A agents (`evidence/testnet-v03/run.json`): state, full-access key
 count (0 everywhere), and last event with its block and verified tx link. Last
 events are honest: agent-1b's final unfreeze (block 276090540), the 12-way
 concurrent operator executes for the other two (blocks 276090372–73). The
-header chip shows network and the latest block from the verify log
-(`276149637`); the ticking script advances it every 1.2 seconds.
+header chip shows network and the latest block from the 2026-11-06 verify log
+(`276454237`); the ticking script advances it every 1.2 seconds.
 
 ### Agent (`#agent=…`)
 
@@ -82,11 +85,13 @@ row links its full hash to NearBlocks.
 
 ## Known gaps (not solved by this draft)
 
-- **Latency.** The review asks for a 20-run optimistic-inclusion remeasure
-  with p50/p95 and claims first. The recorded 20,884 ms / 27,064 ms cover
-  three transactions, finality, and polling; no draft metric repeats them as
-  "seconds," and no new number is claimed until `CLAIMS.md` carries it. The
-  backend run is still pending.
+- **Latency (closed).** The review asked for a 20-run optimistic-inclusion
+  remeasure with p50/p95 and claims first. That run is complete and in
+  `CLAIMS.md` (F-029…F-032, `evidence/latency-v03/run.json`): Mode A freeze
+  single-transaction optimistic p50 5,567 ms / p95 13,227 ms, final p50
+  13,251 ms / p95 24,753 ms; Mode B is three transactions per transition.
+  The draft repeats none of these as "seconds" and no draft metric is a
+  claim; the numbers live in `README.md` and `CLAIMS.md`.
 - **Frozen fleet row.** The fleet screenshot shows three `Active` rows because
   the captured final states are all `Active`. A `Frozen` row will appear in
   live use the block it lands; there is no frozen-state screenshot today.

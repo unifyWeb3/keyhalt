@@ -591,6 +591,7 @@ async function main(): Promise<void> {
       if (sub === "export") return commandAuditExport(args);
       if (sub === "verify") {
         const file = args.positionals[2];
+        currentCommand = "verify-audit";
         return commandVerifyAuditFile({
           positionals: file === undefined ? ["verify-audit"] : ["verify-audit", file],
           flags: args.flags,

@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { chmodSync, mkdtempSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
+
+import { FLEET_EXIT_CODES, fleetExitCode } from "../../sdk/dist/index.js";
 
 const run = promisify(execFile);
 const cli = fileURLToPath(new URL("../dist/index.js", import.meta.url));
@@ -14,6 +16,9 @@ const evidence = fileURLToPath(
 );
 const tampered = fileURLToPath(
   new URL("../../../evidence/cli-v03/tampered-audit.json", import.meta.url),
+);
+const interfacesDoc = fileURLToPath(
+  new URL("../../../docs/INTERFACES.md", import.meta.url),
 );
 
 async function runJson(args) {
@@ -218,4 +223,156 @@ test("CLI refuses an unreadable signed file with exit code 2", async () => {
   );
   assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
   assert.match(value.error.message, /cannot read signed transaction file/);
+});
+
+// ---------------------------------------------------------------------------
+// --json and stable exit codes on every product command
+// ---------------------------------------------------------------------------
+
+const PRODUCT_COMMANDS = [
+  "inventory",
+  "verify",
+  "audit export",
+  "audit verify",
+  "verify-audit",
+  "freeze",
+  "unfreeze",
+  "grant",
+  "rotate",
+  "revoke",
+  "revoke-tag",
+  "propose-admin",
+  "accept-admin",
+  "cancel-admin",
+  "recover",
+  "execute",
+];
+
+// Minimal invocations that fail before any network call: missing input
+// (exit 2) or a missing signer (exit 3).
+const PK = "ed25519:11111111111111111111111111111111";
+const PK2 = "ed25519:22222222222222222222222222222222";
+const FAILURE_INVOCATIONS = {
+  inventory: [["inventory", "--json"], "FLEET_E_BAD_ARGS", 2],
+  verify: [["verify", "--json"], "FLEET_E_BAD_ARGS", 2],
+  "audit export": [
+    ["audit", "export", "agent.testnet", "--json"],
+    "FLEET_E_BAD_ARGS",
+    2,
+  ],
+  "audit verify": [
+    ["audit", "verify", "/nonexistent/fleet-audit.json", "--json"],
+    "FLEET_E_BAD_ARGS",
+    2,
+  ],
+  "verify-audit": [
+    ["verify-audit", "/nonexistent/fleet-audit.json", "--json"],
+    "FLEET_E_BAD_ARGS",
+    2,
+  ],
+  freeze: [["freeze", "agent.testnet", "--json"], "FLEET_E_NO_SIGNER", 3],
+  unfreeze: [["unfreeze", "agent.testnet", "--json"], "FLEET_E_NO_SIGNER", 3],
+  grant: [
+    ["grant", "agent.testnet", "--key", PK, "--tag", "ops", "--json"],
+    "FLEET_E_NO_SIGNER",
+    3,
+  ],
+  rotate: [
+    ["rotate", "agent.testnet", "--old", PK, "--new", PK2, "--tag", "ops", "--json"],
+    "FLEET_E_NO_SIGNER",
+    3,
+  ],
+  revoke: [
+    ["revoke", "agent.testnet", "--key", PK, "--json"],
+    "FLEET_E_NO_SIGNER",
+    3,
+  ],
+  "revoke-tag": [
+    ["revoke-tag", "agent.testnet", "--tag", "ops", "--json"],
+    "FLEET_E_NO_SIGNER",
+    3,
+  ],
+  "propose-admin": [
+    ["propose-admin", "agent.testnet", "--new-admin", PK, "--json"],
+    "FLEET_E_NO_SIGNER",
+    3,
+  ],
+  "accept-admin": [
+    ["accept-admin", "agent.testnet", "--json"],
+    "FLEET_E_NO_SIGNER",
+    3,
+  ],
+  "cancel-admin": [
+    ["cancel-admin", "agent.testnet", "--json"],
+    "FLEET_E_NO_SIGNER",
+    3,
+  ],
+  recover: [
+    ["recover", "agent.testnet", "--new-admin", PK, "--json"],
+    "FLEET_E_NO_SIGNER",
+    3,
+  ],
+  execute: [
+    ["execute", "agent.testnet", "--method", "ping", "--json"],
+    "FLEET_E_NO_SIGNER",
+    3,
+  ],
+};
+
+test("every CLI product command accepts --json and returns its documented exit code", async () => {
+  for (const name of PRODUCT_COMMANDS) {
+    const [argv, expectedCode, expectedExit] = FAILURE_INVOCATIONS[name];
+    const value = await runJsonFailure(argv, expectedExit);
+    assert.equal(value.ok, false, `${name}: ok must be false`);
+    assert.equal(value.error.code, expectedCode, `${name}: error code`);
+    assert.equal(
+      value.command,
+      name === "audit verify" || name === "verify-audit" ? "verify-audit" : name,
+      `${name}: command field`,
+    );
+    assert.deepEqual(
+      Object.keys(value).sort(),
+      ["accountId", "command", "error", "ok"],
+      `${name}: error envelope shape`,
+    );
+    assert.equal(
+      fleetExitCode(expectedCode),
+      expectedExit,
+      `${name}: SDK mapping must agree with the observed exit code`,
+    );
+  }
+});
+
+test("CLI help documents --json for every product command", async () => {
+  const { stdout } = await run(process.execPath, [cli, "--help"]);
+  const usageLines = stdout
+    .split("\n")
+    .filter((line) => line.trimStart().startsWith("fleet "));
+  for (const name of PRODUCT_COMMANDS) {
+    const lines = usageLines.filter((line) => line.includes(`fleet ${name} `));
+    assert.ok(lines.length > 0, `help has no usage line for ${name}`);
+    for (const line of lines) {
+      assert.match(line, /--json/, `usage for ${name} must document --json`);
+    }
+  }
+});
+
+test("the documented exit-code table matches the SDK mapping", () => {
+  const text = readFileSync(interfacesDoc, "utf8");
+  const documented = new Map();
+  for (const match of text.matchAll(/\| `(FLEET_E_[A-Z_]+)` \| (\d+) \|/g)) {
+    documented.set(match[1], Number(match[2]));
+  }
+  assert.ok(documented.size >= 8, "exit-code table must list every code");
+  for (const [code, exit] of documented) {
+    assert.equal(
+      fleetExitCode(code),
+      exit,
+      `${code} documented as ${exit} but the SDK returns ${fleetExitCode(code)}`,
+    );
+  }
+  for (const code of Object.keys(FLEET_EXIT_CODES)) {
+    assert.ok(documented.has(code), `${code} missing from docs/INTERFACES.md`);
+  }
+  assert.equal(fleetExitCode("FLEET_E_NOT_A_CODE"), 2, "unknown codes fall back to 2");
 });

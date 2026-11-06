@@ -27,9 +27,10 @@ proving test. This document is the test-plan overview; where the two overlap,
 | Testnet E2E (Mode A) | `scripts/testnet-e2e.mjs` | deployed wasm, real keys, receipts, gas, callbacks | **63/63 checks**, 2026-11-03 |
 | Testnet E2E (Mode B) | `scripts/testnet-modeb.mjs` | pinned multisig, 2-of-2 confirmation, refusals, audit, storage, isolation | **52/52 checks**, 2026-11-03 |
 | Integration | `near-workspaces` on x64 CI | sandbox provisioning, no FullAccess key, execute, freeze/unfreeze, audit | **7/7 pass**; F-035 |
-| SDK/CLI | `npm test` | read paths, audit verify/tamper, exit codes, signer rules, pre-signed format | **38/38 pass** |
+| SDK/CLI | `npm test` | read paths, audit verify/tamper, exit codes, signer rules, pre-signed format, `--json` and documented exit code on every CLI command | **41/41 pass** |
 | Latency | `scripts/testnet-latency-agent.mjs` | p50/p95 submit-to-optimistic/final + blocks, 20 runs per transition | **Mode A and Mode B complete**; F-029…F-032 |
-| SDK concurrency | `scripts/testnet-sdk-concurrency.mjs` | 12 concurrent SDK `execute` calls | **12/12 first attempt**, 6,486 ms; F-033 |
+| SDK concurrency | `scripts/testnet-sdk-concurrency.mjs` | 12 concurrent SDK `execute` calls | one run 11/12 (`fetch failed`), saved run 12/12 first attempt, 6,486 ms; F-033 |
+| SDK concurrency, 50-round replay | `scripts/testnet-concurrency-50x.mjs` | the same 12-call, 3-agent scenario replayed 50 times (600 calls), paced against the public RPC rate limit | **572/600 = 95.33%** completed; every failure recorded with its cause; F-033 |
 | Pre-signed freeze | `scripts/testnet-presign-freeze.mjs` | sign without broadcast; same hash on submit | **pass**; F-034 |
 | Gas | `scripts/gas-profile.mjs` | per-operation cost from canonical evidence | **29 groups**, 3 provision rows |
 | Repro | `scripts/repro-build.sh` + multisig source build | two clean `--locked` builds per wasm | **byte-identical** |
@@ -262,7 +263,8 @@ measurements, not an SLA.
 | T-L-03 | Nonce-lane reservation / stale-hash refresh | **PARTIAL** — per-operator keys used for concurrency; the pre-sign path tests one signed payload, not a refresh race |
 | T-L-04 | Three historical Mode A cycles; submit → observed state | **PASS** (historical) — mean 22,716 ms / 21,997 ms on `rpc.testnet.near.org`; superseded by T-L-01 |
 | T-L-05 | Mode B 2-of-2 freeze/unfreeze wall time | **PASS** (historical) — 20,884 ms / 27,064 ms; superseded by F-031/F-032 |
-| T-L-06 | 12 concurrent SDK `execute` calls | **PASS** — 12/12 first attempt, 6,486 ms; F-033 |
+| T-L-06 | 12 concurrent SDK `execute` calls | **PASS** — one run 11/12 (`fetch failed`), saved run 12/12 first attempt, 6,486 ms; F-033 |
+| T-L-06b | The same 12-call, 3-agent scenario replayed 50 times (600 calls) | **PASS** — 572/600 = 95.33% completed; 28 failures, all public-RPC rate-limit/network errors; F-033 |
 | T-L-07 | Pre-signed freeze hash equals the submitted/on-chain hash | **PASS** — F-034 |
 
 The 12-way concurrency result is a throughput observation, not a latency
@@ -270,11 +272,47 @@ percentile. Mode B is three transactions per transition and both owners were
 operated by the same harness; its numbers describe the mechanism, not
 independent custody.
 
+### 8.1 The 50-round concurrency replay (T-L-06b)
+
+`scripts/testnet-concurrency-50x.mjs` replays the 12-call, 3-agent scenario
+(3 agents x 4 operator keys = 12 concurrent `createFleetClient().execute()`
+calls per round) 50 times. Every attempt of every call is written to the
+evidence file, including the error text, so the success rate and every
+failure cause can be checked afterwards. Three runs are saved:
+
+| Run | Evidence file | Pacing | Completed | Failures and cause |
+| --- | --- | --- | --- | --- |
+| 1 | `evidence/sdk-v03/concurrency-50x-attempt1-unpaced.json` | none | 331/600 | HTTP 429 `Rate limits exceeded` from `rpc.testnet.fastnear.com` |
+| 2 | `evidence/sdk-v03/concurrency-50x-attempt2-paced-unfunded.json` | 12 s between rounds, 60 s every 10 rounds | 447/600 | HTTP 429, plus `agent-2` and `agent-3` dropping below the testnet storage-stake balance floor (`lacks balance … yoctoNear for state`) |
+| 3 | `evidence/sdk-v03/concurrency-50x.json` | same pacing, after a 2.4 NEAR top-up to each of `agent-2` and `agent-3` | **572/600 = 95.33%** | 83 HTTP 429 responses and one transient `fetch failed`; no balance failure and no FLEET policy rejection |
+
+Run 3 is the measured run quoted in F-033: 560 calls succeeded on the first
+attempt, 12 succeeded after one retry, and 28 failed after three attempts.
+The failures occurred in rounds 29, 30, 32, 35, 36, and 38, where the public
+endpoint's rate-limit window closed. The top-up transactions are
+`CnL1LtP87EGrYxJZq4B1e1RHmbtju6UzUMmX5S1238TT` and
+`2maJG5FPChKvzXVAf8kMYHRuJZEJDuP8fdMeZLR3YZf5`.
+
+`agent-1b.fleet-v03-5cff9e99.testnet` is not part of this scenario: the
+canonical lifecycle run revoked two of its four operators, so it no longer
+carries four active operator keys.
+
+### 8.2 Alternative public RPC endpoints
+
+The alternatives documented by NEAR were also tried, read-only, for the same
+scenario: `rpc.testnet.near.org` returns a deprecation warning with HTTP 429
+under load (9/12 in one round), `near-testnet.drpc.org` throttled to 7/12 in
+one round (216,195 ms), `rpc.ankr.com/near_testnet` returned HTTP 403
+(`API key is not allowed to access blockchain`), and `rpc.testnet.lava.build`,
+`1rpc.io/near/testnet`, and `neartestnet.api.onfinality.io/public` did not
+answer the `status` call. Pacing `rpc.testnet.fastnear.com` was therefore the
+measurement path.
+
 ---
 
-## 9. SDK/CLI tests (38)
+## 9. SDK/CLI tests (41)
 
-`npm test` builds all packages and runs 38 tests: **18 SDK + 17 CLI + 3 API**.
+`npm test` builds all packages and runs 41 tests: **18 SDK + 20 CLI + 3 API**.
 
 | Area | Tests |
 | --- | --- |
@@ -288,8 +326,11 @@ independent custody.
 | CLI refusals: unknown command, mainnet, no signer, key mode | 4 |
 | CLI canonical audit verify, alias, tamper exit 6 | 3 |
 | CLI pre-signed file refusals: no `--out`, format, method, account, key material, unreadable | 6 |
+| CLI `--json` and documented exit code on every product command | 1 |
+| CLI help documents `--json` for every product command | 1 |
+| The documented exit-code table agrees with the SDK mapping | 1 |
 | API scaffold tests | 3 |
-| **Total** | **38** (18 SDK + 17 CLI + 3 API) |
+| **Total** | **41** (18 SDK + 20 CLI + 3 API) |
 
 Live CLI evidence: `evidence/cli-v03/` (freeze, refusal, unfreeze, inventory,
 verify, export, tamper). Live SDK evidence: `evidence/sdk-v03/concurrency.json`
@@ -362,7 +403,7 @@ acceptable, so the mutants stand as justified equivalents.
 | F-026, F-027 | `evidence/modeb-v03/run.json` latency |
 | F-028 | `evidence/modeb-v03/run.json` isolation |
 | F-029…F-032 | `evidence/latency-v03/run.json`, `agent.json` |
-| F-033 | `evidence/sdk-v03/concurrency.json` |
+| F-033 | `evidence/sdk-v03/concurrency.json`, `evidence/sdk-v03/concurrency-50x.json` |
 | F-034 | `evidence/sdk-v03/presign.json` |
 | F-035 | `evidence/integration-v03/` (x64 CI, 7/7) |
 | F-036 | `evidence/mutation-v03/`, `docs/MUTATION.md` (x64 CI, 98.41%) |

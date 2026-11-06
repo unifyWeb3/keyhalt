@@ -1,28 +1,28 @@
 # FLEET
 
-**FLEET is a native NEAR account-fleet key-lifecycle control plane.** It is
-built for the NEAR HACKATHON: Build Beyond Boundaries, `security` track.
-It is **testnet only** and **unaudited**. **Mode A is not non-custodial.**
-Mode B reduces admin-key trust with a 2-of-2 multisig but is not independently
-custodied in this evidence.
+**FLEET is a native NEAR account-fleet key-lifecycle control plane.** A team
+runs several NEAR agent accounts; FLEET governs each account's **native access
+keys** — scoped operator keys, a one-transaction freeze stop switch, tag-based
+bulk revocation, governed admin rotation, lost-admin recovery, and a SHA-256
+audit chain.
 
-**Status: v0.3 testnet prototype, final backend gates 2026-11-06.** The
-controller, TypeScript SDK, and CLI are implemented and have run against NEAR
-testnet. **The headline control is the Mode A freeze: one transaction from the
-admin key, no second confirmation.** A 20-run measurement on testnet put the
-Mode A single-transaction freeze at p50 5,567 ms / p95 13,227 ms submit-to-
-optimistic-state and p50 13,251 ms / p95 24,753 ms submit-to-final-state, with
-p50 1 / p95 1 block to optimistic effect (F-029). Mode B (2-of-2 multisig) is
-implemented and verified on testnet with a pinned, source-built `multisig2`
-contract; it takes three transactions per transition (add request plus two
-confirmations) and is not the fast path. Both Mode B owner accounts are
-operated by the same test harness in this environment, so the evidence proves
-the 2-of-2 mechanism, not independent organizational custody. The read-only
-console is **drafted, not built**: design system `docs/DESIGN_SYSTEM.md` and
-screen draft `docs/CONSOLE_DRAFT.md` are waiting for human approval. Every
-capability below maps to a `VERIFIED` row in [`CLAIMS.md`](CLAIMS.md).
+- **Track:** NEAR HACKATHON — Build Beyond Boundaries, `security` track.
+- **Network:** **testnet only.** The SDK and CLI refuse a mainnet RPC URL and
+  verify `chain_id` is `testnet` before any read or write.
+- **Status:** v0.3 testnet prototype. **Unaudited.** The read-only console is
+  **drafted, not built** and is waiting for human approval.
+- **Trust:** **Mode A is not non-custodial** (a team-held admin key can still
+  freeze, grant, or rotate). Mode B reduces admin-key trust with a 2-of-2
+  multisig but is **not independently custodied** in this evidence — both owner
+  accounts are operated by the same test harness.
 
-## Problem
+**Every capability below maps to one `VERIFIED` row in
+[`CLAIMS.md`](CLAIMS.md).** Nothing in this README is claimed without a test
+that was run or a public testnet transaction hash.
+
+---
+
+## The problem
 
 A team running several NEAR agent accounts tends to give each agent a key and
 manage that key by hand. If one agent is compromised, the team needs a fast
@@ -31,18 +31,122 @@ authority, and a per-agent custody contract moves the assets into a new trust
 boundary.
 
 FLEET governs the **native NEAR access-key lifecycle** on accounts the team
-already owns: scoped operator keys, a stop switch, tag-based bulk revocation,
-governed admin rotation, lost-admin recovery, and an audit export. It is not a
-wallet, a TEE custodian, a spending-policy engine, or a key-storage service.
+already owns. It is not a wallet, a TEE custodian, a spending-policy engine,
+or a key-storage service.
 
-## What works today
+---
 
-| Capability | Evidence |
+## Do X, see Y
+
+Prerequisites: Node.js 22.x, Rust 1.93 with the `wasm32-unknown-unknown`
+target, `git`, and a POSIX shell. **No NEAR account and no key are needed** for
+any step below — every command is read-only or runs against the public
+testnet.
+
+### 1. One-command setup
+
+```bash
+git clone <repository-url> fleet && cd fleet
+make setup
+```
+
+`make setup` checks the toolchain, installs the JavaScript dependencies, and
+builds the TypeScript and Rust workspaces.
+
+### 2. One-command verification
+
+```bash
+make verify
+```
+
+`make verify` runs `cargo fmt --check`, `cargo clippy` with warnings denied,
+84 Rust tests, 41 TypeScript tests, the release-wasm build and hash check, the
+`CLAIMS.md` validator, the secret scan, and a read-only testnet RPC check.
+Expected tail:
+
+```text
+FLEET verification: PASS
+CLAIMS 37/37 verified (37 rows)
+```
+
+The RPC check is best-effort by default; set `FLEET_REQUIRE_RPC=1` to make a
+testnet outage fail the gate. The whole gate takes several minutes because it
+builds the release wasm.
+
+### 3. See the freeze stop switch, end to end
+
+```bash
+# a) read an agent's live native-key inventory and its audit chain
+node_modules/.bin/fleet inventory agent-2.fleet-v03-5cff9e99.testnet --json
+node_modules/.bin/fleet verify   agent-2.fleet-v03-5cff9e99.testnet --json
+
+# b) freeze: ONE admin transaction. Mode A, no second confirmation.
+node_modules/.bin/fleet freeze agent-2.fleet-v03-5cff9e99.testnet \
+  --signer-key-file /secure/admin.json --json
+#   -> {"ok":true,"command":"freeze","txHash":"…","blockHeight":…}
+
+# c) an operator call is now refused, and the refusal is recorded
+node_modules/.bin/fleet execute agent-2.fleet-v03-5cff9e99.testnet \
+  --method ping --args '{}' --gas 10 \
+  --signer-key-file /secure/operator.json --json
+#   -> {"ok":false,"error":{"code":"FLEET_E_REJECTED","refusal":"controller is frozen"}}
+#      exit code 6, and the public tx hash of the refused attempt
+
+# d) unfreeze: ONE admin transaction again
+node_modules/.bin/fleet unfreeze agent-2.fleet-v03-5cff9e99.testnet \
+  --signer-key-file /secure/admin.json --json
+
+# e) export the audit chain and verify it independently
+node_modules/.bin/fleet audit export agent-2.fleet-v03-5cff9e99.testnet \
+  --out /tmp/agent-2-audit.json --json
+node_modules/.bin/fleet verify-audit /tmp/agent-2-audit.json --json
+```
+
+A signer file must live **outside** any git repository with mode `600`. The
+CLI never prints, logs, or transmits a secret key.
+
+### 4. See it from the SDK
+
+```ts
+import { createFleetClient, verifyAuditChain } from "@fleet/sdk";
+
+const fleet = createFleetClient({
+  rpcUrl: "https://rpc.testnet.fastnear.com",
+  accountId: "agent-2.fleet-v03-5cff9e99.testnet",
+});
+
+console.log(await fleet.getInventory());          // native keys, roles, allowances
+console.log(verifyAuditChain(await fleet.getAuditAll()));
+console.log(await fleet.verifyAuditOnChain());    // calls the contract's verifier
+```
+
+### 5. See the evidence from a clean session
+
+```bash
+./scripts/fresh-clone-clean-session.sh
+```
+
+This clones HEAD, runs `make setup` and `make verify` under `env -i` with an
+empty `HOME` and no `FLEET_*`/`NEAR_*` variable, and asserts that the clone
+reproduces the deployed wasm hash, rejects a malformed claim, refuses a
+mainnet RPC URL and a mainnet SDK client, and contains no credential-like
+file (F-037). The saved run is
+[`evidence/fresh-clone-v03-clean-session.log`](evidence/fresh-clone-v03-clean-session.log).
+
+---
+
+## Claim map
+
+Each row is a `VERIFIED` claim in [`CLAIMS.md`](CLAIMS.md), with its evidence
+path there.
+
+| Capability | Claim |
 | --- | --- |
 | **Mode A freeze in a single admin transaction** — p50 5,567 ms / p95 13,227 ms to optimistic state over 20 runs | F-029 |
 | Provision three native testnet sub-accounts with zero FullAccess keys; six FunctionCall keys and four active operators each | F-001, F-009 |
 | Twelve concurrent `execute` calls across three agents and four operator keys per agent (12/12 in 8,633 ms) | F-002 |
-| Twelve concurrent `execute` calls through the published SDK (12/12 in 6,486 ms, all first attempt) | F-033 |
+| Twelve concurrent `execute` calls through the published SDK — one run 11/12, saved run 12/12 in 6,486 ms | F-033 |
+| The same scenario replayed 50 times (600 calls) completed **572/600 = 95.33%**; every failure was a public-RPC rate-limit or network error | F-033 |
 | Freeze/unfreeze with a recorded refusal reason (`controller is frozen`) | F-003, F-015 |
 | Refuse a non-pinned method, non-pinned receiver, and gas above the 100 Tgas policy cap | F-004 |
 | Grant, revoke, and tag revoke native operator keys; refuse duplicate roles | F-005 |
@@ -50,8 +154,9 @@ wallet, a TEE custodian, a spending-policy engine, or a key-storage service.
 | Lost-admin recovery through a separately scoped recovery key | F-007 |
 | SHA-256 audit chain, on-chain `verify_audit`, independent JS/SDK recomputation, tamper rejection | F-008, F-016, F-020 |
 | TypeScript SDK/CLI with `--json`, local signing, and testnet-only guards | F-014…F-016, F-020 |
+| `--json` and a documented exit code on every CLI command, agreeing with the SDK exit-code map | F-020 |
 | Pre-signed freeze: sign offline to a mode-600 file, broadcast later with `--submit-signed`, same tx hash on chain | F-034 |
-| 84 Rust tests, 38 TypeScript tests, 7/7 near-workspaces integration tests | F-013, F-020, F-035 |
+| 84 Rust tests, 41 TypeScript tests, 7/7 near-workspaces integration tests | F-013, F-020, F-035 |
 | Automated mutation score 248/252 viable mutants (98.41%); 4 equivalent survivors justified in writing | F-036 |
 | Clean-session fresh clone: no inherited secret, reproduces the deployed wasm hash | F-037 |
 | Measured gas profile and reproducible wasm build | F-012, F-018, F-019 |
@@ -62,8 +167,10 @@ wallet, a TEE custodian, a spending-policy engine, or a key-storage service.
 | Measured Mode B 2-of-2 freeze/unfreeze wall time, audit storage growth, and derived allowance bound | F-026, F-027 |
 | Cross-agent FunctionCall receiver-ACL isolation with positive controls | F-028 |
 
-The canonical Mode A run is `evidence/testnet-v03/run.json` (63 checks), with a
-human-readable [`RUN.md`](evidence/testnet-v03/RUN.md). Key facts:
+### The canonical runs
+
+Mode A: `evidence/testnet-v03/run.json` (63 checks), human-readable
+[`RUN.md`](evidence/testnet-v03/RUN.md).
 
 - Parent: `fleet-v03-5cff9e99.testnet`
 - Agents: `agent-1b`, `agent-2`, `agent-3` (plus a retained pilot `agent-1`)
@@ -73,8 +180,8 @@ human-readable [`RUN.md`](evidence/testnet-v03/RUN.md). Key facts:
 - agent-1b create/init: `61t1q3SUv9uHWHmbmerh6PYMeJEA6WpgJCqGWSHruheG` /
   `7KtJ56fLf8SpgrhnyWxmaVmZVHha9r13KN8EwAfDfSrC`
 
-The Mode B run is `evidence/modeb-v03/run.json` (52 checks), with a
-human-readable [`RUN.md`](evidence/modeb-v03/RUN.md). Key facts:
+Mode B: `evidence/modeb-v03/run.json` (52 checks), human-readable
+[`RUN.md`](evidence/modeb-v03/RUN.md).
 
 - Parent / multisig: `fleet-modeb-748d4372.testnet`
 - Mode B agent: `agent-b1.fleet-modeb-748d4372.testnet`
@@ -88,6 +195,8 @@ human-readable [`RUN.md`](evidence/modeb-v03/RUN.md). Key facts:
 - Setup txs: deploy `8DfC8CZfgLT6S66oH26R6QJ7zvVDn75SLCujnHGkoqT8`, init
   `6sEkb5Ga2piDHHwXnNN1vszMBjn3o1RpcuDzm3xG5Efx`, bootstrap key delete
   `CoefaWo5T7Vqq1bWkVJ2rZNnW3LPVud453LUPz6NRPjp`
+
+---
 
 ## Measured latency (20 runs per path)
 
@@ -107,48 +216,39 @@ state polling. These are measurements, not an execution SLA.
 The Mode B row is the same harness signing for both owners, so it measures the
 2-of-2 mechanism, not independent custody. Claims F-029…F-032.
 
-## Do X, see Y
+---
 
-Prerequisites: Node.js 22.x, Rust 1.93 with the `wasm32-unknown-unknown` target,
-`git`, and a POSIX shell. No NEAR account or key is needed for these steps.
+## Concurrency, measured honestly
 
-```bash
-git clone <repository-url> fleet
-cd fleet
-make setup          # tools, JS dependencies, TypeScript build, Rust test build
-make verify         # fmt, clippy, 84 Rust tests, wasm, 38 TS tests, claims, secret scan, RPC
-```
+The 12-call, 3-agent scenario (3 agents x 4 operator keys = 12 concurrent
+`createFleetClient().execute()` calls) was replayed **50 times** on testnet:
+`scripts/testnet-concurrency-50x.mjs`, evidence
+`evidence/sdk-v03/concurrency-50x.json`.
 
-Expected end of `make verify`:
+| Run | Pacing | Completed | Cause of the failures |
+| --- | --- | ---: | --- |
+| 1 — unpaced | none | 331/600 | HTTP 429 `Rate limits exceeded` from the public RPC |
+| 2 — paced | 12 s between rounds, 60 s every 10 rounds | 447/600 | HTTP 429, plus `agent-2`/`agent-3` dropping below the testnet storage-stake balance floor |
+| 3 — paced, funded | same pacing, after a 2.4 NEAR top-up to each of `agent-2` and `agent-3` | **572/600 = 95.33%** | 83 HTTP 429 responses and one transient `fetch failed` |
 
-```text
-FLEET verification: PASS
-CLAIMS 37/37 verified (37 rows)
-```
+In run 3: **560 calls succeeded on the first attempt, 12 succeeded after one
+retry, and 28 failed after three attempts.** No failure was a FLEET policy
+rejection and no failure was a balance failure. The 28 failures fell in
+rounds 29, 30, 32, 35, 36, and 38, where the public endpoint's rate-limit
+window closed. The saved single-run evidence
+(`evidence/sdk-v03/concurrency.json`) is a 12/12 run in 6,486 ms, each call on
+its first attempt; an earlier run of the same scenario completed 11/12, with
+call 10 failing on a transient `fetch failed`.
 
-`make verify` takes several minutes because it runs the full Rust and
-TypeScript suites and builds the release wasm. The read-only RPC check is
-best-effort by default; set `FLEET_REQUIRE_RPC=1` to make a testnet outage
-fail the gate.
+`agent-1b` is not part of this scenario: the canonical lifecycle run revoked
+two of its four operators, so it no longer carries four active keys.
 
-**One-command test from a clean clone:**
-
-```bash
-./scripts/fresh-clone-test.sh          # clone HEAD, setup, verify, negative controls
-./scripts/fresh-clone-clean-session.sh # same under env -i with an empty HOME
-```
-
-The clean-session variant starts with no `FLEET_*`/`NEAR_*` variable, no
-dotfile credential, and an empty `HOME`. It asserts that `make setup` and
-`make verify` pass without any inherited secret, that the clone reproduces the
-deployed wasm sha256, that a malformed claim is rejected, that a mainnet RPC
-is refused, and that the SDK refuses a mainnet client (F-037).
+---
 
 ## CLI
 
-The CLI is the write path. Reads are public; writes are signed locally and never
-leave the machine. A signer file must be outside any git repository and mode
-600.
+The CLI is the write path. Reads are public; writes are signed locally and
+never leave the machine.
 
 ```bash
 # Reads (no key)
@@ -174,21 +274,35 @@ a bearer artifact until it is broadcast or its nonce is consumed. The signed
 payload's `tx_hash` is the hash the network assigns when it is broadcast
 (F-034).
 
-Commands: `inventory`, `verify`, `audit export`, `audit verify`, `freeze`,
-`unfreeze`, `grant`, `rotate`, `revoke`, `revoke-tag`, `propose-admin`,
-`accept-admin`, `cancel-admin`, `recover`, `execute`. Run `fleet --help` for the
-full flag list. `--json` writes one JSON object to stdout; human output goes to
-stderr.
+Commands: `inventory`, `verify`, `audit export`, `audit verify`, `verify-audit`
+(alias), `freeze`, `unfreeze`, `grant`, `rotate`, `revoke`, `revoke-tag`,
+`propose-admin`, `accept-admin`, `cancel-admin`, `recover`, `execute`. Run
+`fleet --help` for the full flag list.
 
-Exit codes: `0` success, `2` bad args/unsupported, `3` no signer, `4` mainnet
-refused, `5` RPC failure, `6` policy rejection or audit failure, `7` receipt
-failure. A refused `execute` still returns the public tx hash and the
+**Every command supports `--json`**, which writes one JSON object to stdout
+while human output goes to stderr. **Exit codes are stable and documented** in
+[`docs/INTERFACES.md`](docs/INTERFACES.md) and asserted by a test against every
+product command and against the SDK's own exit-code map:
+
+| Exit | Meaning |
+| ---: | --- |
+| `0` | success |
+| `2` | bad arguments or unsupported command |
+| `3` | write attempted without a signer |
+| `4` | mainnet refused |
+| `5` | RPC or network failure |
+| `6` | transaction-level policy rejection, or an audit that does not verify |
+| `7` | failed action receipt |
+
+A refused `execute` still returns the public tx hash and the
 `FLEET_REFUSAL:<reason>` message.
 
 Live CLI evidence is in `evidence/cli-v03/`: freeze
 `8Ssz4xogDW36JeK6K3XMuf28MXkrnbMmxNsWJBqEB5Vs`, refused execute
 `CmQsxdxF48sVbzpX4uHjXrXWJyypT7umkA5hbztfxt8o`, unfreeze
 `9x6fx2mFgMiEVFB587Yt13nvkpV5KgG1X9XThsUxYCQ7`.
+
+---
 
 ## SDK
 
@@ -239,6 +353,8 @@ await writer.submitSigned(payload);
 The SDK refuses a mainnet-looking RPC URL at construction and verifies the RPC
 `chain_id` is `testnet` before a read or write.
 
+---
+
 ## Trust model
 
 | Mode | Admin | What remains trusted | Status |
@@ -264,6 +380,8 @@ A freeze blocks new `execute` calls. It does **not** cancel a receipt already in
 flight. The audit chain is tamper-evident on-chain and in export; it is not an
 external notarization service.
 
+---
+
 ## Controller design
 
 - `contracts/fleet-controller/src/model.rs` — pure state machine: mode
@@ -285,13 +403,16 @@ external notarization service.
   account as predecessor and records the owner key that signed the outer
   transaction in the audit entry.
 
+---
+
 ## Reproduce the evidence
 
 ```bash
-make test            # 84 Rust tests + 38 TypeScript tests
+make test            # 84 Rust tests + 41 TypeScript tests
 make claims          # CLAIMS.md validator
 node scripts/mutation-test.mjs   # 8 hand-written mutants, source restored
 node scripts/testnet-sdk-concurrency.mjs  # 12 concurrent SDK calls on testnet
+node scripts/testnet-concurrency-50x.mjs  # the 50-round replay (600 calls)
 node scripts/testnet-presign-freeze.mjs   # pre-signed freeze on testnet
 node scripts/gas-profile.mjs     # reads the canonical run + testnet RPC
 ./scripts/repro-build.sh         # two isolated clean wasm builds
@@ -323,6 +444,7 @@ Evidence files:
 - `evidence/cli-v03/` — live CLI freeze/refusal/unfreeze and audit tamper test
 - `evidence/latency-v03/run.json` — 20-run Mode A and Mode B latency (F-029…F-032)
 - `evidence/sdk-v03/concurrency.json` — 12 concurrent SDK calls (F-033)
+- `evidence/sdk-v03/concurrency-50x.json` — the 50-round replay, 572/600 (F-033)
 - `evidence/sdk-v03/presign.json` — pre-signed freeze path (F-034)
 - `evidence/integration-v03/` — x64 near-workspaces CI log, 7/7 (F-035)
 - `evidence/mutation-v03/` — x64 cargo-mutants report and score (F-036)
@@ -336,6 +458,8 @@ Evidence files:
 - `evidence/mutation/mutation-report.md` — the 8 hand-written mutants (F-017)
 - `evidence/repro-build/report.md` — two-build wasm reproducibility
 - `evidence/local-tests.txt` — local fmt/clippy/test/npm/wasm log
+
+---
 
 ## What is not claimed
 
@@ -352,6 +476,10 @@ Evidence files:
 - Cross-agent isolation is tested at the native FunctionCall receiver ACL, not
   against a hostile co-resident contract.
 - No external timestamping or independent audit of the audit chain.
+- The concurrency figure is a measured rate on a throttled public RPC, not a
+  throughput guarantee.
+
+---
 
 ## Repository layout
 
@@ -360,6 +488,7 @@ contracts/        Rust controller workspace (model + near-sdk wrapper)
 packages/sdk/     TypeScript SDK v0.3.0
 packages/cli/     TypeScript CLI v0.3.0
 packages/api/     Read-only API scaffold (health route only)
+integrations/js/  near-workspaces integration suite (x64 CI)
 web/              Static placeholder; console design is approval-gated (drafts in docs/)
 docs/             Spec, threat model, interfaces, test plan, demo, provenance
 scripts/          Setup, verification, E2E, mutation, gas, repro, fresh clone
@@ -367,23 +496,66 @@ evidence/         Testnet, CLI, mutation, gas, and reproducibility records
 CLAIMS.md         Claim table; every product claim maps to evidence
 ```
 
-## AI assistance and reused material
+---
 
-- Built with AI assistance: OpenCode (agent harness) and a DeepSeek model.
-- Runtime: `near-sdk 5.29.1`, `near-api-js 7.4.0`, Node.js 22, Rust 1.93.
-- Reused: `near/core-contracts/multisig2` v0.4.0 at commit
-  `1b0436c96379c63aee7d2429c6d5d24019031ab8` for Mode B, licensed
-  `MIT OR Apache-2.0` and pinned by commit. It is source-built, not the checked-in
-  prebuilt wasm. No audit statement was found; its README disclaims guarantees.
-- Previous FLEET v0.2 research and testnet evidence are problem input, not
-  copied product code. See `docs/PROVENANCE.md`.
+## AI assistance and reused material (Q-005)
+
+**AI assistance.** This project was built with AI assistance: the OpenCode
+agent harness driving a Claude-family model through the build, test, and
+evidence phases, plus AI-written drafts for the design system and the console
+screen mock-up. The AI wrote and edited Rust, TypeScript, shell, and
+Markdown. The human made every decision that mattered: scope, the two admin
+modes, the testnet-only constraint, what may be claimed, and the approval
+gates on UI work, naming, publication, the X post, and submission. Every
+claim in `CLAIMS.md` was checked by running the test or reading the
+transaction hash, not by trusting the generator.
+
+**Libraries used** (all from the public registries, all pinned in the lockfiles):
+
+| Library | Version | Where | License |
+| --- | --- | --- | --- |
+| `near-sdk` | `=5.29.1` | controller | MIT OR Apache-2.0 |
+| `near-sdk-env` | `=0.1.6` | controller | MIT OR Apache-2.0 |
+| `borsh` | `1.8.1` | controller | MIT OR Apache-2.0 |
+| `serde` | `1` (derive) | controller | MIT OR Apache-2.0 |
+| `sha2` | `0.11` | controller | MIT OR Apache-2.0 |
+| `near-api-js` | `7.4.0` | testnet harness scripts | MIT |
+| `near-api-js` | `5.1.1` | integration suite | MIT |
+| `near-workspaces` | `5.0.0` | integration suite | MIT |
+| `typescript` | `5.9.3` | build | Apache-2.0 |
+| `@types/node` | `22.20.5` | build | MIT |
+| `binaryen` | `^132.0.0` | wasm inspection (dev) | Apache-2.0 |
+
+**Reused material.** `near/core-contracts/multisig2` v0.4.0 at commit
+`1b0436c96379c63aee7d2429c6d5d24019031ab8` is the Mode B admin contract,
+licensed `MIT OR Apache-2.0` and pinned by commit. It is **source-built** in
+this repository, not the checked-in prebuilt wasm; the build is reproduced
+byte-for-byte (F-025). No audit statement was found for it; its README
+disclaims guarantees. It is a third-party dependency, not FLEET code.
+
+**Not reused.** Previous FLEET v0.2 research and its testnet evidence are
+problem input, not copied product code. The research workspace
+(`/root/near/research`) is a separate evidence workspace with its own local
+git history and is not part of this repository. See
+[`docs/PROVENANCE.md`](docs/PROVENANCE.md) for the full provenance table.
+
+---
 
 ## Baseline and diff (Q-003)
 
-The baseline tag is `pre-hackathon` (commit `5a26e22`). The submission tag will
-be `hackathon-submission` if the human approves publication. A remote is
-configured, but no push was made from this working session; the compare link
-will be added only if the repository is made public.
+| Ref | What | Where |
+| --- | --- | --- |
+| Baseline | tag `pre-hackathon`, commit `5a26e22` — repository scaffold, CI, reproducibility harness, and documents. **No product code.** | this repository |
+| Submission | tag `hackathon-submission` — to be created at the final approved commit, only after the human approves publication | this repository |
+| Diff | `git diff pre-hackathon..hackathon-submission` — the whole v0.3 product | this repository |
+
+The compare link (`.../compare/pre-hackathon...hackathon-submission`) can only
+be linked once the repository is public, because the remote is private and the
+human has not approved publication. The tag plan, including what happens if
+the human never publishes, is in [`docs/PROVENANCE.md`](docs/PROVENANCE.md)
+§3.
+
+---
 
 ## License
 

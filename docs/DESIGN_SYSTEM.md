@@ -83,7 +83,7 @@ Light mode is deferred.
 
 ### 4.1 Header
 
-Wordmark and one chip: `testnet · block 276151157`. The block number ticks as
+Wordmark and one chip: `testnet · block 276454237`. The block number ticks as
 new blocks arrive. No other header content.
 
 ### 4.2 Fleet
@@ -124,7 +124,7 @@ See `design/DEVIATIONS.md`.
 
 ### 4.6 Footer
 
-One line: `Verified 28/28` linking to `CLAIMS.md`. Individual facts carry a
+One line: `Verified 37/37` linking to `CLAIMS.md`. Individual facts carry a
 ✓ mark that links to their transaction.
 
 ### 4.7 Errors (plain language in the UI)

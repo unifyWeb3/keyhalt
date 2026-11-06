@@ -33,7 +33,7 @@ hash. A claim without evidence is removed, not softened.
 | F-017 | Eight hand-written mutants in the controller state machine are each killed by a targeted Rust test, with the source restored byte-identical. | VERIFIED | `evidence/mutation/mutation-report.md`, `evidence/mutation/mutation-report.json` | 2026-11-03 |
 | F-018 | The canonical testnet run measured 43.04 Tgas per agent provisioning and 3.964 Tgas mean for 12 concurrent executes; a per-operation gas table is saved. | VERIFIED | `evidence/testnet-v03/gas-profile.md`, `evidence/testnet-v03/gas-profile.json` | 2026-11-03 |
 | F-019 | Two isolated clean `--locked` builds produce byte-identical 248644-byte wasm matching the deployed hash. | VERIFIED | `evidence/repro-build/report.md`, `evidence/repro-build/report.json` | 2026-11-03 |
-| F-020 | The TypeScript SDK v0.3.0 and CLI v0.3.0 pass 38 local tests, including SDK reads of live inventory, full audit-chain verification, and the pre-signed transaction format. | VERIFIED | `evidence/local-tests.txt`; `packages/sdk/test/sdk.test.mjs`, `packages/cli/test/cli.test.mjs` | 2026-11-06 |
+| F-020 | The TypeScript SDK v0.3.0 and CLI v0.3.0 pass 41 local tests, including SDK reads of live inventory, full audit-chain verification, the pre-signed transaction format, `--json` and documented exit codes on every CLI command, and agreement between the SDK exit-code map and `docs/INTERFACES.md`. | VERIFIED | `evidence/local-tests.txt`; `packages/sdk/test/sdk.test.mjs`, `packages/cli/test/cli.test.mjs` | 2026-11-06 |
 | F-021 | A Mode B agent initialized with `admin_account` set to the multisig parent has four FunctionCall operator keys, zero FullAccess keys, and no admin or recovery key. | VERIFIED | `evidence/modeb-v03/run.json` mode_b.state/native_keys; create tx `FC4TRS6e7FRX9zvb1eS5aP6UYrzYcLzKRkZeY2y43Edh`, init tx `4QHPzixTgcJk2wB1SE3cUpkmMWCe5bXKLvzhsdT2ja5Y` | 2026-11-03 |
 | F-022 | The pinned `multisig2` v0.4.0 source build is deployed to a fresh parent, initialized with two account members and two confirmations, and its bootstrap key is deleted, leaving zero access keys. | VERIFIED | `evidence/modeb-v03/run.json` multisig; deploy tx `8DfC8CZfgLT6S66oH26R6QJ7zvVDn75SLCujnHGkoqT8`, init tx `6sEkb5Ga2piDHHwXnNN1vszMBjn3o1RpcuDzm3xG5Efx`, delete tx `CoefaWo5T7Vqq1bWkVJ2rZNnW3LPVud453LUPz6NRPjp` | 2026-11-03 |
 | F-023 | One multisig confirmation does not pause the agent; the second confirmation pauses it in 20,884 ms submit-to-observed-state. A frozen execute is refused with "controller is frozen"; a second 2-of-2 unfreeze (27,064 ms) restores execute. | VERIFIED | `evidence/modeb-v03/run.json` mode_b.freeze/unfreeze; freeze add/first/second txs `dEjn26NbgqFtY1GSczDJVHmgmunUkuQUciNG9Rq1YQB`, `E9GSJFVXTX1CexZYS9nRPriJHFQFYr5XaRe4pmP65MDj`, `3GY9rkAWxmrAkqEwf9TBv3rSo5M9iBPWQfmU8coRZtuk`; frozen tx `An7vQH16RQAup3kMVEGJDZyKN9Jpw6Dxa8CkJvF8vS2f`; unfreeze add/first/second txs `BM5Xcw17BBvQe2mV3KsUsShF2NYLfaAXpFXfbV82qFaG`, `EUHXnabokXLGdkFqfCfmHtJRpBFzkSjDpofwF9bwbEMc`, `GFvHeSRbbTGiGH765Ef6BBkWCKYu8inDuV8fd1SDT1bm`; restored tx `GR69FWJU4n2xdn58KPbR7wgjCteLz1g826E5Ja8hnLS7` | 2026-11-03 |
@@ -46,7 +46,7 @@ hash. A claim without evidence is removed, not softened.
 | F-030 | Mode A unfreeze on `agent-lat.fleet-lat-1a1a7db6741.testnet` (single admin transaction) measured submit-to-optimistic-state p50 5,087 ms / p95 7,309 ms and submit-to-final-state p50 12,389 ms / p95 19,795 ms over 20 runs; blocks to effect p50 1 / p95 1 (optimistic) and p50 16 / p95 25 (final). Polling and finalization are included; this is not an execution SLA. | VERIFIED | `evidence/latency-v03/run.json` mode_a_direct.unfreeze/unfreeze_final/unfreeze_blocks/unfreeze_blocks_final | 2026-11-05 |
 | F-031 | Mode B freeze on `agent-b1.fleet-modeb-748d4372.testnet` (2-of-2 multisig: add_request plus two confirmations, three transactions) measured submit-to-optimistic-state p50 10,038 ms / p95 17,105 ms and submit-to-final-state p50 13,682 ms / p95 32,946 ms over 20 runs; blocks to effect p50 13 / p95 19 (optimistic) and p50 18 / p95 47 (final). Polling and finalization are included; this is not an execution SLA. | VERIFIED | `evidence/latency-v03/run.json` mode_b_multisig.freeze/freeze_final/freeze_blocks/freeze_blocks_final; txs per cycle in `freeze_samples` | 2026-11-05 |
 | F-032 | Mode B unfreeze on `agent-b1.fleet-modeb-748d4372.testnet` (2-of-2 multisig: add_request plus two confirmations, three transactions) measured submit-to-optimistic-state p50 11,864 ms / p95 21,581 ms and submit-to-final-state p50 15,840 ms / p95 42,479 ms over 20 runs; blocks to effect p50 14 / p95 19 (optimistic) and p50 21 / p95 66 (final). Polling and finalization are included; this is not an execution SLA. | VERIFIED | `evidence/latency-v03/run.json` mode_b_multisig.unfreeze/unfreeze_final/unfreeze_blocks/unfreeze_blocks_final; txs per cycle in `unfreeze_samples` | 2026-11-05 |
-| F-033 | The published TypeScript SDK v0.3.0 completed 12 concurrent `execute` calls on NEAR testnet through `createFleetClient().execute()`; all 12 succeeded in one run in 6,486 ms, each on its first attempt, spread over four operator keys. | VERIFIED | `evidence/sdk-v03/concurrency.json` (12 results with tx hashes, `attempts: 1`) | 2026-11-06 |
+| F-033 | The published TypeScript SDK v0.3.0 completed 12 concurrent `execute` calls on NEAR testnet through `createFleetClient().execute()`. An earlier run of the same scenario completed 11/12: call 10 failed with a transient `fetch failed` from the public RPC after three attempts. The saved single-run evidence is a later run with 12/12 in 6,486 ms, each on its first attempt, spread over four operator keys. A 50-round replay of the same scenario (600 calls, 3 agents x 4 operator keys, paced against the public RPC rate limit) completed **572/600 = 95.33%**: 560 succeeded on the first attempt, 12 succeeded after a retry, and 28 failed after three attempts. Every failure was a public-RPC environment error (83 HTTP 429 `Rate limits exceeded` responses and one transient `fetch failed`); none was a FLEET policy rejection. | VERIFIED | `evidence/sdk-v03/concurrency.json` (12 results with tx hashes, `attempts: 1`); `evidence/sdk-v03/concurrency-50x.json` (50 rounds, every attempt recorded); `evidence/sdk-v03/concurrency-50x-attempt1-unpaced.json`; `evidence/sdk-v03/concurrency-50x-attempt2-paced-unfunded.json` | 2026-11-06 |
 | F-034 | A CLI `freeze --pre-sign` written to a mode-600 file without broadcasting carried the transaction hash `DTjRvhMnkMnBTMBD1G7nYfkSqq8Fii9p9JkQTircthSP`, left the account unfrozen and the audit length unchanged; `--submit-signed` then broadcast that same payload, which is the on-chain transaction with the same hash at block 276450988, froze the account, appended one audit entry, and kept the chain verifiable; an unfreeze (`CYTyZBVcT4WBLo7QVNyGdekBseExq2oAJ9NLUs8H6mGS`) restored it. | VERIFIED | `evidence/sdk-v03/presign.json`; txs `DTjRvhMnkMnBTMBD1G7nYfkSqq8Fii9p9JkQTircthSP`, `CYTyZBVcT4WBLo7QVNyGdekBseExq2oAJ9NLUs8H6mGS` | 2026-11-06 |
 | F-035 | The near-workspaces integration suite passes 7/7 in GitHub Actions on x64: it provisions a Mode B agent with four active FunctionCall operators, holds no FullAccess key, records a verifiable audit chain, refuses a non-admin freeze without changing state, executes through the operator key, freezes and refuses execute, unfreezes, and keeps the audit chain verifiable. | VERIFIED | `evidence/integration-v03/README.md`, `evidence/integration-v03/ci-log-81325ed.txt`; GitHub Actions `integration` run `42172673971`, job `127743904887` | 2026-11-06 |
 | F-036 | cargo-mutants 27.1.0 generated 275 mutants for the controller on x64 CI; 248 were caught, 4 survived, 23 were unviable, and 0 timed out, for a score of 248/252 = 98.41%. All 4 survivors are provably equivalent and justified in writing; the production source was not edited to remove them because the deployed wasm embeds panic-location line numbers. | VERIFIED | `evidence/mutation-v03/README.md`, `evidence/mutation-v03/outcomes.json`, `evidence/mutation-v03/caught.txt`, `evidence/mutation-v03/missed.txt`; `docs/MUTATION.md`; GitHub Actions `mutation` run `42172689910` on `81325ed` | 2026-11-06 |
@@ -55,7 +55,7 @@ hash. A claim without evidence is removed, not softened.
 **Correction 2026-11-06:** F-036 adds the automated mutation score from
 cargo-mutants. F-017 remains the separate 8-mutant hand-written regression set;
 it is not the automated score. F-037 adds the clean-session fresh-clone gate.
-F-013 and F-020 now record the final counts (84 Rust, 38 TypeScript); the
+F-013 and F-020 now record the final counts (84 Rust, 41 TypeScript); the
 2026-11-03 note below is kept as history.
 
 **Correction 2026-11-06 (pre-sign hash):** The first pre-sign run printed
@@ -66,10 +66,30 @@ now hashes the borsh-serialized **unsigned** `Transaction`, and a regression
 test pins it. In the final run the pre-signed hash `DTjRvhMnk…` is exactly the
 on-chain transaction id at block 276450988.
 
-**Correction 2026-11-06 (SDK concurrency):** The first SDK concurrency run had
-11 of 12 calls succeed on their first attempt; one hit a transient public-RPC
-error and succeeded on retry. The saved `evidence/sdk-v03/concurrency.json` is
-a fresh run in which all 12 calls succeeded on their first attempt (F-033).
+**Correction 2026-11-06 (SDK concurrency):** The first SDK concurrency run
+completed **11/12** calls in 9,500 ms; call 10 failed with `fetch failed` after
+the script's three attempts — a transient public-RPC network error. The saved
+`evidence/sdk-v03/concurrency.json` is a second run that completed **12/12**
+in 6,486 ms, with every call succeeding on its first attempt. Neither run is
+described as a "first attempt" outcome of the scenario; both are runs of the
+same scenario.
+
+**Correction 2026-11-06 (50-round concurrency replay):** The 12-call, 3-agent
+scenario was replayed 50 times (600 calls) through the published SDK. Three
+runs are saved in `evidence/sdk-v03/`:
+
+| Run | File | Pacing | Completed | Cause of the failures |
+| --- | --- | --- | --- | --- |
+| 1 | `concurrency-50x-attempt1-unpaced.json` | none | 331/600 | HTTP 429 `Rate limits exceeded` from the public RPC |
+| 2 | `concurrency-50x-attempt2-paced-unfunded.json` | 12 s between rounds, 60 s every 10 rounds | 447/600 | HTTP 429 plus testnet accounts `agent-2` and `agent-3` falling below the storage-stake balance floor (`lacks balance … yoctoNear for state`) |
+| 3 | `concurrency-50x.json` | same pacing, after topping `agent-2` and `agent-3` up with 2.4 NEAR each (txs `CnL1LtP87EGrYxJZq4B1e1RHmbtju6UzUMmX5S1238TT`, `2maJG5FPChKvzXVAf8kMYHRuJZEJDuP8fdMeZLR3YZf5`) | **572/600 = 95.33%** | 83 HTTP 429 `Rate limits exceeded` responses and one transient `fetch failed`; no balance failure, no FLEET policy rejection |
+
+Run 3 is the measured run quoted in F-033. In it, 560 calls succeeded on the
+first attempt, 12 succeeded after one retry, and 28 failed after three
+attempts. The failures fell in rounds 29, 30, 32, 35, 36, and 38, which is
+where the public endpoint's rate-limit window closed. `agent-1b` is not part
+of the scenario because the canonical lifecycle run revoked two of its four
+operators, so it no longer carries four active keys.
 
 **Correction 2026-11-05:** F-029…F-032 were added from the dedicated latency
 run (`evidence/latency-v03/run.json`, 2026-11-05). Mode A is the single
