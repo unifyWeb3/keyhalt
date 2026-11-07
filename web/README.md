@@ -1,13 +1,14 @@
 # Web
 
-Static placeholder only. The console is **drafted, not built**.
+The read-only FLEET console interface. Served by `packages/console` from the
+same origin at `http://127.0.0.1:4173` via `make console`.
 
-`index.html` has no JavaScript, no wallet, no key input, no RPC call, and no
-write path. The design system is `../docs/DESIGN_SYSTEM.md` and the screen draft
-is `../docs/CONSOLE_DRAFT.md`, both awaiting human approval; until that
-approval, this page only points at the runbook, claims, and evidence.
-
-The future console is **read-only**: every write goes through the CLI or the
-user's own local signer. A private key must never enter a browser or a server.
-
-This placeholder is not a demo and must not be presented as one.
+- Real interface, not a mock: Fleet, Agent, Timeline screens with a live
+  finalized-block ticker, states for loading / empty / error / stale /
+  frozen / active, and a copyable command sheet for the CLI write path.
+- Talks only to the same-origin console API (`/api/*`); the browser never
+  calls an RPC directly and has no key.
+- No wallet, no key entry, no signing, no write route. Every write goes
+  through the CLI with a local signer outside the repository.
+- `noindex`; every screen renders live finalized-testnet reads or `CLAIMS.md`
+  numbers. Recording and public use stay human-approval gates.
