@@ -1,8 +1,9 @@
 # FLEET threat model
 
-**Status:** v0.3 design document. The controller, SDK, CLI, and Mode B 2-of-2
-path are implemented and have run on testnet; the console is not. Mitigations
-with a green test in `docs/TEST_PLAN.md` are marked there; the rest remain design
+**Status:** v0.3 design document, revised with §10 on 2026-11-07 for the
+read-only console (built 2026-11-07). The controller, SDK, CLI, and Mode B
+2-of-2 path are implemented and have run on testnet. Mitigations with a green
+test in `docs/TEST_PLAN.md` are marked there; the rest remain design
 requirements. This is not an audit.
 **Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC; Phase 1 target was
 2026-10-31, slip disclosed in `research/BUILD_STATUS.md`).
@@ -190,3 +191,39 @@ specified but not implemented in v0.3.
 | Does `multisig2` 2-of-2 call the controller with enough gas? | **PASS** 2026-11-03 | Mode B run: 2-of-2 freeze/unfreeze executed; `evidence/modeb-v03/run.json` |
 | Can the read API detect a stale RPC? | `HYPOTHESIS` | Block-height/finality test + multi-provider comparison |
 | Is any component audited? | **No** | Do not claim audit |
+
+## 10. Console server (read-only) — added 2026-11-07
+
+The console (`packages/console` + `web/`) serves the built interface and a
+small JSON/SSE API. It is read-only and testnet-only; it holds no signer and
+no key material. It was built after this document's v0.3 baseline, so it gets
+its own section rather than retroactive "always covered" text.
+
+| Actor / component | What it can do | Mitigation |
+| --- | --- | --- |
+| Browser client | Read `/api/*`, receive SSE, render | Same-origin CSP (`script-src 'self'`, no inline script), escaped rendering, `noindex`, no key entry |
+| Anyone on the loopback interface | Hit the API | 405 on every non-GET/HEAD; unknown accounts 404; no write path exists to abuse |
+| RPC provider (P-4, unchanged) | Lie about state, go stale, or partition | Failover with pacing and per-provider cooldown; retry cap 120 s; last-good block + stale banner; pinning per snapshot; never synth state |
+| Watch-file writer (repo working dir) | Add tx hashes | Bounded to 60 hashes, base58-validated; only effect is extra archival RPC reads; file inspected on every scan |
+| Server owner (`FLEET_CONSOLE_*`) | Reconfigure agents/providers/ports | Loopback by default; non-loopback refuses to start unless `FLEET_CONSOLE_ALLOW_REMOTE=1` is set explicitly |
+| Server process | Crash / leak | No secrets in memory; provider stats contain URLs and counts only; no persistence beyond a mode-600 receipt cache in `cacheDir` (mode 700) |
+
+Attack surface notes:
+
+- **A lying RPC can render convincing numbers.** `verify_audit` and every
+  inventory read travel the same trust domain as the RPC. The pinned-snapshot
+  design keeps heights internally consistent; it cannot force truthfulness.
+  Mitigation is social, not cryptographic: any full node can re-verify the
+  export. Do not describe the console as proof.
+- **SSE read amplification.** Each open tab receives every block event.
+  `/api/stream` is unauthenticated on purpose (data is public); loopback bind
+  keeps it off the network. If `FLEET_CONSOLE_ALLOW_REMOTE=1` is set, don't.
+- **Watch file injection.** A local writer can make the watcher fetch
+  arbitrary base58 strings from the archival RPC — bounded, read-only, and
+  rate-limited by pacing/cooldown. No execution follows from a receipt.
+- **Error text leaks.** Errors from providers are truncated to ~240 chars and
+  carry URLs, never key material; the CLI output is the only place keys could
+  appear (they never do — the CLI expects key *files*).
+
+This section extends, and does not replace, §3–§9. The controller findings
+above are unchanged.

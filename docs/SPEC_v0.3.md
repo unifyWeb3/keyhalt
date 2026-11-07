@@ -2,9 +2,10 @@
 
 **Status:** design target, now implemented as the v0.3 controller. The contract,
 SDK, CLI, and Mode B 2-of-2 path exist and ran on testnet on 2026-11-03. The
-console is not implemented. Every `HYPOTHESIS` still needs a test before it is
-claimed; the current claim status is in `docs/TEST_PLAN.md`. This is not a
-security audit.
+console is built read-only (`packages/console` + `web/`; live testnet reads,
+no writes, no signing) — see `docs/INTERFACES.md` §4.2 and `docs/DESIGN_SYSTEM.md`.
+Every `HYPOTHESIS` still needs a test before it is claimed; the current claim
+status is in `docs/TEST_PLAN.md`. This is not a security audit.
 **Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC). Phase 1 target
 was 2026-10-31; the slip is disclosed in `research/BUILD_STATUS.md`.
 **Base evidence:** v0.2 controller `fleet-controller-v2/0.2.0` and multisig

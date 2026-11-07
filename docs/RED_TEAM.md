@@ -56,7 +56,10 @@ multisig, which is still not trustless and is unaudited.” Show the trust table
 while a judge runs the demo or the hosted console.
 **Why it hurts:** The demo appears broken; claims cannot be re-checked live.
 **Response:** The repo contains a recorded demo, saved tx hashes, and a
-read-only console that shows the last known block height with a 503 on failure.
+read-only console that shows the last good block with a stale banner while
+failing over across providers (paced, bounded at 120 s of retries, never
+synthesizes state), and renders an explicit error box only when no good read
+exists.
 The verifier retries and never invents state. A local sandbox path is documented
 where possible. The demo script has a labelled sandbox fallback.
 **Evidence/test:** T-S-003, T-I-09, `scripts/rpc-check.mjs`; hosted console

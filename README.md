@@ -17,6 +17,15 @@ audit chain.
   multisig but is **not independently custodied** in this evidence — both owner
   accounts are operated by the same test harness.
 
+**The problem in one line:** every agent gets a hand-managed access key, and
+one of those keys is a single stolen credential from a fleet incident. FLEET
+is the stop switch, the scoped lifecycle, and the audit trail for those keys.
+
+**Start here:** `make setup` then `make verify` — toolchain and build, then
+every check (Rust tests, TypeScript tests, wasm hash, claims table).
+`make console` opens the live read-only console at
+http://127.0.0.1:4173 — Fleet, Agent, Timeline backed by live testnet reads.
+
 **Every capability below maps to one `VERIFIED` row in
 [`CLAIMS.md`](CLAIMS.md).** Nothing in this README is claimed without a test
 that was run or a public testnet transaction hash.
