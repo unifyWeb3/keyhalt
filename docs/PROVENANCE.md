@@ -32,6 +32,11 @@ source-built reuse of `near/core-contracts/multisig2` for Mode B. The console is
 still absent. The baseline section above remains accurate for tag
 `pre-hackathon`.
 
+**v0.3 console note (2026-11-07):** the console has since been built
+(`packages/console` + `web/`), read-only and testnet-only. `web/` is no
+longer a placeholder. Recording, publication, and any public use still
+require written human approval.
+
 ## 2. Pre-existing material (not copied into this repository)
 
 | Material | Created | Where it lives | In this repo? |

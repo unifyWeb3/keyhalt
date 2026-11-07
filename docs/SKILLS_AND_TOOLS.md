@@ -91,7 +91,8 @@ recorded here and in `docs/TEST_PLAN.md`; it is not hidden by a skipped test.
 5. `npm test` (TypeScript build + 8 Node tests)
 6. `node scripts/check-claims.mjs`
 7. `./scripts/secret-scan.sh`
-8. a static web placeholder check (no script, no key field, no network call)
+8. a console smoke check (read-only boot, same-origin CSP, no RPC from the
+   browser, empty-state render)
 9. a read-only NEAR testnet `status` RPC check (refuses mainnet)
 
 The fresh-clone test adds `make setup`, `make verify`, a malformed-claim negative
@@ -106,7 +107,7 @@ control, a mainnet-RPC negative control, and a credential-file check.
 | `cargo-near` missing | No `cargo near` build/deploy helper | Use `cargo build --target wasm32-unknown-unknown`; install `cargo-near` in Phase 2 if needed |
 | `near-workspaces`/`near-sandbox` missing locally | No local sandbox integration tests | Run on x64 CI; use testnet E2E locally; record versions when installed |
 | No Rust/NEAR-specific skill | More manual source reading | Read `near-sdk`/`multisig2` source; pin commits; test on testnet |
-| No browser automation tool verified | UI checks are static/manual | Keep the v0.3 web placeholder static; re-check before console work |
+| Browser automation via the local Playwright tool | Pixel/UX verification was reachable | The console is now covered at 1280×900 and 390×844; keep `console-smoke` in verify |
 | No video tool verified | Demo recording uncertain | Human records/posts; test capture in Phase 2 |
 | Server restarts observed | Lost work/time | Commit often; `research/BUILD_STATUS.md`; short checkpoints |
 

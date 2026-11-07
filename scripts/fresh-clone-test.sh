@@ -26,6 +26,9 @@ make setup
 echo "== make verify =="
 make verify
 
+echo "== Console starts read-only in the fresh clone =="
+node scripts/console-smoke.mjs
+
 echo "== Negative control: malformed VERIFIED row must be rejected =="
 cp CLAIMS.md CLAIMS.md.bak
 printf '| F-999 | Malformed row with no evidence | VERIFIED | — | 2026-11-03 |\n' >> CLAIMS.md

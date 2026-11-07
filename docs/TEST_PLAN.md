@@ -420,8 +420,10 @@ Open gaps, in priority order:
    organizational custody is not.
 2. The multisig contract is third-party and unaudited; its upstream README
    disclaims guarantees.
-3. Console design and build are approval-gated; the pixel draft awaits the
-   human's approval and `web/` is a placeholder.
+3. Console design was approved (the `unslop` direction; pixel draft in
+   `design/index.html` is the reference) and the console is built
+   read-only (`packages/console` + `web/`); recording and public use remain
+   human-approval gates.
 4. No demo recording or replay (`T-E-07`).
 5. Allowance budget is derived, not exhausted (`T-G-02`).
 6. Property tests are deterministic and cover a subset of transitions.

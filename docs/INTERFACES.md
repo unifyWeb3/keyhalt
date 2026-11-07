@@ -3,9 +3,9 @@
 **Status:** v0.3 — controller, TypeScript SDK, and CLI are implemented and have
 run on NEAR testnet. Mode B 2-of-2 administration is implemented and verified on
 testnet by the harness, not yet exposed as SDK/CLI write commands. The read-only
-API is still a **scaffold** (`/health` only). The console is **drafted, not
-built**: design system `docs/DESIGN_SYSTEM.md`, screen draft
-`docs/CONSOLE_DRAFT.md`; both are approval-gated.
+API is still a **scaffold** (`/health` only). The console is **built and
+read-only** (`@fleet/console`): design system `docs/DESIGN_SYSTEM.md`, screen
+draft `docs/CONSOLE_DRAFT.md`; recording and public use remain approval-gated.
 **Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC).
 **Rule:** a private key never enters a browser, a server, a log, or the
 repository. Writes are signed locally by the CLI/SDK; the API has no write route.
@@ -257,7 +257,9 @@ output.
 
 ---
 
-## 4. Read-only API scaffold
+## 4. Read-only services
+
+### 4.1 Read-only API scaffold
 
 Package: `@fleet/api` (`packages/api`), version `0.3.0-phase1`.
 
@@ -269,8 +271,52 @@ Package: `@fleet/api` (`packages/api`), version `0.3.0-phase1`.
 | any other route | — | 501 |
 | non-GET/HEAD | any | throws `FLEET API is read-only` |
 
-There is no HTTP server and no write route in v0.3. The SDK/CLI are the product
-interfaces until the console design is approved.
+There is no HTTP server in this package and no write route in v0.3. The
+SDK/CLI are the write interfaces. The console (below) is the built read-only
+surface.
+
+### 4.2 Read-only console server
+
+Package: `@fleet/console` (`packages/console`), version `0.3.0`.
+
+The console serves the built interface in `web/` from the same origin and a
+small JSON/SSE API. It is **read-only and testnet-only**. The browser never
+calls an RPC and has no key; all reads go through the SDK, pinned to one
+finalized block per refresh (`blockId` in `FleetClientOptions`).
+
+| Method | Path | Result |
+| --- | --- | --- |
+| GET/HEAD | `/api/health` | 200 aggregate: `headBlock`, `pinnedBlock`, `lastGoodBlock`, `stale`, retry cap, configured agents, claims count, provider stats, receipt watch |
+| GET/HEAD | `/api/fleet` | 200 Fleet snapshot: rows (state, operator keys, tags, full-access keys, audit length, last event), totals, providers, `CLAIMS.md` count |
+| GET/HEAD | `/api/agent?account=<id>` | 200 Agent snapshot: pinned state + SDK audit verification + on-chain `verify_audit`, operators, native keys (`null` while the key read is in flight), admin, recent events, commands |
+| GET/HEAD | `/api/timeline?limit=1..500&account=<id>?` | 200 merged audit + watched-receipt events, `counts { events, refused, blocks }` |
+| GET/HEAD | `/api/audit-export?account=<id>` | 200 `fleet-audit-v1` export (download) |
+| GET | `/api/stream` | SSE: `retry: 3000`, events `init`, `block`, `snapshot`, `timeline` |
+| GET/HEAD | `/` `/app.js` `/styles.css` `/favicon.svg` `/fonts/*` `/claims.md` `/threat-model.md` | static, same-origin, `Content-Security-Policy: default-src 'self'; script-src 'self'…` |
+| any other write method | any route | 405 `FLEET_CONSOLE_READ_ONLY`, `Allow: GET, HEAD` |
+
+Rules:
+
+- `readOnly: true` and `noSigner: true` on every payload; unknown accounts
+  return 404 `FLEET_CONSOLE_UNKNOWN_AGENT`, never a guess.
+- One block per refresh. The header ticker is the live finalized block feed
+  (poll `block { finality: "final" }`; free public RPC ships no block
+  WebSocket). When reads fail, the console shows the last good block plus a
+  stale marker.
+- Every snapshot pins to one finalized block (`block_id`); a pinned key read
+  uses raw `query` `view_access_key_list`. `getNativeKeys()` in the SDK uses
+  the same pinned path.
+- Provider failover with pacing and per-provider cooldown: FastNEAR → dRPC →
+  NEAR Foundation → Intear; archival (for watched receipts): FastNEAR archival
+  → NEAR Foundation archival. Overall retry cap 120 s; calls that cannot
+  succeed in the window fail with a pacing/cooldown error rather than spin.
+- The Timeline merges audit entries (chain-verified in the SDK) with receipts
+  the console explicitly watches (`tmp/console-watch.json` by default). The
+  watch file holds only transaction hashes; every displayed receipt field is
+  parsed from an archival RPC response, never from the file. A refusal row is
+  sourced from the real receipt and is never synthesised.
+- The console never signs, stores a key, or calls a write method. Writes are
+  CLI/SDK only.
 
 ---
 

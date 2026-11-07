@@ -1,10 +1,13 @@
 # FLEET console draft (v0.3, amended)
 
-**Status: DRAFT for human review — not approved, not shipped.** The pixel draft
-in `design/index.html` is a static prototype served separately, not `web/`
-code. Human approval is required before any recording or public use.
+**Status: BUILT (read-only) — not approved for recording or public use.**
+The screen sketches below are the design target; the shipped screens live in
+`web/` and render live testnet reads, and are no longer the static pixel draft
+alone. `design/index.html` remains approval-gated as a pixel reference.
+Human approval is required before any recording or public use.
 **Date:** 2026-11-04 UTC (screen sketches reconciled with the pixel draft on
-2026-11-07, after the human approved the `unslop` direction).
+2026-11-07, after the human approved the `unslop` direction; console built
+2026-11-07 from these sketches).
 **Design basis:** `docs/DESIGN_SYSTEM.md` (Inter + JetBrains Mono, sentence
 case, three screens, fleet first, chain spine and scope tag).
 **Data basis:** SDK reads (`getInventory`, `getAuditAll`, `verifyAuditOnChain`),
@@ -114,8 +117,9 @@ Mode B state instead.
 
 - Wallet connect, sign buttons, write forms, and any key entry.
 - Charts, price feeds, fleet graph, search across accounts.
-- A hosted demo URL or public link. `web/` stays a static placeholder with
-  `noindex` until the human approves deployment.
+- A hosted demo URL or public link. `web/` is built read-only, ships
+  `noindex`, and serves same-origin testnet reads only until the human
+  approves deployment. No hosted demo exists.
 - The Mode B multi-confirmation timeline, per `design/REVIEW.md` decision 3.
 
 ## Review checklist for the human

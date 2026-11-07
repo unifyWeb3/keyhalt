@@ -10,7 +10,8 @@ audit chain.
 - **Network:** **testnet only.** The SDK and CLI refuse a mainnet RPC URL and
   verify `chain_id` is `testnet` before any read or write.
 - **Status:** v0.3 testnet prototype. **Unaudited.** The read-only console is
-  **drafted, not built** and is waiting for human approval.
+  **built** (live testnet reads, no signing); recording and public use await
+  human approval.
 - **Trust:** **Mode A is not non-custodial** (a team-held admin key can still
   freeze, grant, or rotate). Mode B reduces admin-key trust with a 2-of-2
   multisig but is **not independently custodied** in this evidence — both owner
@@ -304,6 +305,49 @@ Live CLI evidence is in `evidence/cli-v03/`: freeze
 
 ---
 
+## The console
+
+Read-only, testnet-only, and safe to run locally. One command:
+
+```bash
+make console        # builds, then http://127.0.0.1:4173
+```
+
+`web/` is a real interface served by the console server from the same origin —
+it never talks to an RPC directly and never sees a key. It renders the three
+screens — Fleet, Agent, Timeline — from live finalized chain state read
+through the SDK, pinned to one finalized block per refresh. The header ticker
+is the live finalized block feed, not a timer.
+
+What it never does: sign, store a key, call a write method (writes stay in the
+CLI), or fall back to invented numbers. If every read fails it shows the last
+good block with a stale marker until reads recover.
+
+```bash
+make console-smoke  # deterministic read-only boot check (no network)
+make console-demo   # rehearse freeze -> refusal -> unfreeze (see below)
+```
+
+Notes and limits:
+
+- `FLEET_CONSOLE_ACCOUNTS= make console` starts it with an empty fleet.
+- Every snapshot pins its reads to the same finalized block; the block feed
+  polls `block { finality: "final" }` (free public RPC has no block
+  WebSocket).
+- The CLI/SDK freeze and unfreeze; the console only displays. Rehearse the
+  whole loop with `make console-demo` (needs `FLEET_DEMO_ADMIN_KEY_FILE` and
+  `FLEET_DEMO_OPERATOR_KEY_FILE` outside the repository, mode 600). The demo
+  refuses to run if the admin key file is inside the repo or not mode 600.
+- The Timeline merges controller audit entries with receipts the console
+  explicitly watches (`tmp/console-watch.json`, a list of tx hashes). A
+  receipt row appears only after an archival RPC returns it.
+- Free public RPC rate limits apply. Providers are paced and fail over
+  (FastNEAR → dRPC → NEAR Foundation → Intear, archival: FastNEAR →
+  NEAR Foundation), with an overall retry cap of 120 s.
+- Verification: `make console-smoke` proves the boot is read-only (405 on
+  writes, same-origin CSP, empty-state render) without any network.
+- Verified claim count in the footer is read live from `CLAIMS.md`.
+
 ## SDK
 
 `@fleet/sdk` reads live state, native key permissions, and the audit chain. It
@@ -466,9 +510,13 @@ Evidence files:
 - No mainnet support, real funds, audit, production readiness, or non-custody.
 - Mode B is not independently custodied: both owner accounts are operated by the
   same test harness here, and the multisig contract is unaudited.
-- The console is **drafted, not built**; `web/` is a static placeholder, not a
-  demo. Design system: `docs/DESIGN_SYSTEM.md`; screen draft:
-  `docs/CONSOLE_DRAFT.md`.
+- The console is read-only and built, but it is not a wallet, not a hosting
+  target, and not an approval to record or publish anything: every screen
+  still awaits human approval for recording and public use. It reads free
+  public RPC endpoints that rate-limit; sustained failures surface as the last
+  good block plus a stale marker, never as invented numbers. It has no
+  account, history, or receipt indexer of its own — the Timeline only merges
+  chain reads plus a local watch file of tx hashes.
 - No freeze-latency target. The measured wall time includes transaction
   finalization and state polling, not only contract execution.
 - No in-flight receipt cancellation, allowance top-up, or paymaster/gas-key
@@ -489,7 +537,8 @@ packages/sdk/     TypeScript SDK v0.3.0
 packages/cli/     TypeScript CLI v0.3.0
 packages/api/     Read-only API scaffold (health route only)
 integrations/js/  near-workspaces integration suite (x64 CI)
-web/              Static placeholder; console design is approval-gated (drafts in docs/)
+web/              Read-only console interface (same-origin; talks only to the console API)
+packages/console/ Read-only Node console server (block feed, SSE, block-pinned SDK reads)
 docs/             Spec, threat model, interfaces, test plan, demo, provenance
 scripts/          Setup, verification, E2E, mutation, gas, repro, fresh clone
 evidence/         Testnet, CLI, mutation, gas, and reproducibility records

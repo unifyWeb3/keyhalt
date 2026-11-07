@@ -2,7 +2,10 @@
 
 **Status:** v0.3 — **planned, not recorded.** Every command below is runnable
 against the recorded canonical testnet evidence; no video exists and `T-E-07`
-is still planned. Do not present this script as a recording.
+is still planned. Do not present this script as a recording. The console is
+now **built and read-only**: the variant in `docs/CONSOLE_SHOT_LIST.md`
+(rehearsed 2026-11-07, ~30 s end to end) replaces this script's pre-built
+"B — static draft" path entirely.
 **Format:** approved split-screen plan (`docs/DESIGN_SYSTEM.md` §5) — terminal
 on one side, console on the other, the ticking block as the visible timer.
 **Date:** 2026-11-06 UTC (canonical runs 2026-11-03; latency runs 2026-11-05).

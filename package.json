@@ -8,15 +8,17 @@
   "workspaces": [
     "packages/sdk",
     "packages/cli",
-    "packages/api"
+    "packages/api",
+    "packages/console"
   ],
   "engines": {
     "node": ">=22.0.0"
   },
   "scripts": {
-    "build": "tsc -p packages/sdk/tsconfig.json && tsc -p packages/cli/tsconfig.json && tsc -p packages/api/tsconfig.json",
-    "test": "npm run build && node --test packages/sdk/test/sdk.test.mjs packages/cli/test/cli.test.mjs packages/api/test/api.test.mjs",
-    "clean": "rm -rf packages/sdk/dist packages/cli/dist packages/api/dist"
+    "build": "tsc -p packages/sdk/tsconfig.json && tsc -p packages/cli/tsconfig.json && tsc -p packages/api/tsconfig.json && tsc -p packages/console/tsconfig.json",
+    "test": "npm run build && node --test packages/sdk/test/sdk.test.mjs packages/cli/test/cli.test.mjs packages/api/test/api.test.mjs packages/console/test/console.test.mjs",
+    "clean": "rm -rf packages/sdk/dist packages/cli/dist packages/api/dist packages/console/dist",
+    "console": "npm run build && node packages/console/dist/cli.js"
   },
   "devDependencies": {
     "@types/node": "22.20.5",

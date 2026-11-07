@@ -1,58 +1,116 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
-    <title>FLEET — console not built</title>
-    <style>
-      :root { color-scheme: dark; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-      body { margin: 0; background: #0b0f14; color: #d7e0ea; }
-      main { max-width: 52rem; margin: 0 auto; padding: 4rem 1.5rem; }
-      h1 { font-size: 1.5rem; letter-spacing: 0.04em; }
-      .tag { display: inline-block; border: 1px solid #39506a; padding: 0.2rem 0.5rem; font-size: 0.75rem; }
-      .warn { border-left: 3px solid #c08a2e; padding-left: 1rem; color: #e8c98a; }
-      table { border-collapse: collapse; width: 100%; margin-top: 1.5rem; }
-      th, td { text-align: left; border-bottom: 1px solid #223041; padding: 0.5rem; font-size: 0.85rem; }
-      code { color: #9fd0ff; }
-    </style>
-  </head>
-  <body>
-    <main>
-      <p class="tag">V0.3 TESTNET PROTOTYPE — CONSOLE NOT BUILT</p>
-      <h1>FLEET</h1>
-      <p>A native NEAR account-fleet key-lifecycle control plane.</p>
-      <p class="warn">
-        The controller, TypeScript SDK, CLI, and Mode B 2-of-2 testnet path are
-        implemented and have run on NEAR testnet. This page is a static
-        placeholder: the read-only console is waiting for design-system and
-        draft approval. It has no JavaScript, no wallet connection, no key
-        input, and no network calls.
-      </p>
-      <table>
-        <thead>
-          <tr><th>Panel</th><th>v0.3 state</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Fleet inventory</td><td>Live through the SDK/CLI; console pending</td></tr>
-          <tr><td>Freeze / unfreeze</td><td>Live through the CLI and Mode B harness; console pending</td></tr>
-          <tr><td>Tag revocation</td><td>Live through the CLI; console pending</td></tr>
-          <tr><td>Audit export</td><td>Live through the CLI/SDK; console pending</td></tr>
-          <tr><td>Mode B 2-of-2</td><td>Verified on testnet with a pinned source-built multisig; console pending</td></tr>
-          <tr><td>Claims</td><td>28 VERIFIED rows; see <code>CLAIMS.md</code></td></tr>
-        </tbody>
-      </table>
-      <p>
-        Runbook: <code>README.md</code>. Test plan: <code>docs/TEST_PLAN.md</code>.
-        Canonical Mode A run: <code>evidence/testnet-v03/RUN.md</code>. Canonical
-        Mode B run: <code>evidence/modeb-v03/RUN.md</code>. The demo script is a
-        plan, not a recording: <code>docs/DEMO_SCRIPT.md</code>.
-      </p>
-      <p>
-        Testnet only. Unaudited. Mode A is not non-custodial. Mode B reduces
-        single-admin-key trust but is not independently custodied in this
-        evidence; both owner accounts were operated by the same test harness.
-      </p>
-    </main>
-  </body>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<meta name="color-scheme" content="dark" />
+<title>FLEET console</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <a class="brand" href="#/fleet" aria-label="FLEET fleet home">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+    <span class="wordmark">FLEET</span>
+  </a>
+  <nav class="nav" aria-label="Screens">
+    <a href="#/fleet" data-nav="fleet">Fleet</a>
+    <a href="#/timeline" data-nav="timeline">Timeline</a>
+  </nav>
+  <span class="net" id="net">
+    <span class="net-label">testnet</span>
+    <span class="net-sep" aria-hidden="true">·</span>
+    <span class="net-label">block</span>
+    <span class="tick mono" id="block">—</span>
+  </span>
+</header>
+
+<div class="banner" id="banner" role="status" aria-live="polite" hidden></div>
+
+<main id="main">
+  <section class="view" id="view-fleet">
+    <section class="panel" aria-labelledby="fleet-heading">
+      <div class="panel-head">
+        <h1 id="fleet-heading">Fleet</h1>
+        <span class="meta mono" id="fleet-meta">Reading finalized block…</span>
+      </div>
+      <div id="fleet-body" aria-busy="true">
+        <div class="skeleton-table" aria-hidden="true">
+          <span class="skeleton skeleton-wide"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton skeleton-wide"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton skeleton-wide"></span>
+          <span class="skeleton"></span>
+        </div>
+        <p class="loading-note">Waiting for the first pinned testnet read.</p>
+      </div>
+    </section>
+    <p class="more"><a href="#/timeline" id="fleet-timeline-link">Timeline <span class="ic" aria-hidden="true">→</span></a></p>
+  </section>
+
+  <section class="view" id="view-agent" hidden>
+    <p class="back"><a href="#/fleet" id="agent-back">← Fleet</a></p>
+    <section class="panel" aria-labelledby="agent-heading">
+      <div class="panel-head">
+        <h1 class="agent-id mono" id="agent-heading">Agent</h1>
+        <span class="meta mono" id="agent-meta">Reading finalized block…</span>
+      </div>
+      <div id="agent-body" aria-busy="true">
+        <div class="skeleton-table" aria-hidden="true">
+          <span class="skeleton skeleton-wide"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton skeleton-wide"></span>
+          <span class="skeleton"></span>
+        </div>
+        <p class="loading-note">Reading this agent at the same finalized block.</p>
+      </div>
+      <div class="sheet" id="command-sheet" hidden>
+        <code id="command-text"></code>
+        <p class="sheet-note">Run this in the repository root with your mode-600 admin key outside the repository. The console never sees the key and never signs.</p>
+        <div class="row">
+          <button class="btn" id="copy-command" type="button">Copy command</button>
+          <span class="copied" id="copy-status" role="status" aria-live="polite" hidden></span>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <section class="view" id="view-timeline" hidden>
+    <p class="back"><a href="#/fleet">← Fleet</a></p>
+    <section class="panel" aria-labelledby="timeline-heading">
+      <div class="panel-head">
+        <h1 id="timeline-heading">Timeline</h1>
+        <span class="meta mono" id="timeline-meta">Reading finalized block…</span>
+      </div>
+      <div id="timeline-body" aria-busy="true">
+        <div class="skeleton-table" aria-hidden="true">
+          <span class="skeleton skeleton-wide"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton skeleton-wide"></span>
+          <span class="skeleton"></span>
+          <span class="skeleton skeleton-wide"></span>
+          <span class="skeleton"></span>
+        </div>
+        <p class="loading-note">Reading audit entries and watched receipts.</p>
+      </div>
+    </section>
+  </section>
+</main>
+
+<footer>
+  <span>Verified <a href="/claims.md" id="claims-link">—</a></span>
+  <span aria-hidden="true">·</span>
+  <a href="/threat-model.md">Threat model</a>
+  <span class="foot-note" id="foot-note">Read-only · no key stored</span>
+  <span aria-hidden="true">·</span>
+  <a href="https://testnet.nearblocks.io/account/agent-b1.fleet-modeb-748d4372.testnet" id="modeb-link" rel="noopener noreferrer" target="_blank">Mode B demo</a>
+</footer>
+
+<script type="module" src="/app.js"></script>
+</body>
 </html>

@@ -1,0 +1,37 @@
+{
+  "ok": true,
+  "accountId": "agent-1b.fleet-v03-5cff9e99.testnet",
+  "rpcUrl": "https://near-testnet.drpc.org",
+  "consoleUrl": "http://127.0.0.1:4173",
+  "watchFile": "/root/fleet/tmp/console-watch.json",
+  "freeze": {
+    "txHash": "DzRWt8t1wDQMjE6rhiv3MYxvDNy1kuBcsdvjadEG9JSi",
+    "blockHeight": 276610241,
+    "gasBurnt": "3137492731167"
+  },
+  "refusedExecute": {
+    "txHash": "2ZEPJHPCJQTBkvcz9G1oqwpWGiTYzk7YJC9Khequ7Nhs",
+    "blockHeight": 276610256,
+    "code": "FLEET_E_REJECTED",
+    "message": "controller is frozen"
+  },
+  "unfreeze": {
+    "txHash": "Eby39vSha6WUv3WgLoGSUEmST8Ngr66yuXcpzxGpMsDW",
+    "blockHeight": 276610269,
+    "gasBurnt": "3172139450368"
+  },
+  "console": {
+    "headBlock": 276610277,
+    "events": 39,
+    "refused": 5,
+    "blocks": 534770,
+    "refusedRow": {
+      "event": "execute while frozen",
+      "result": "refused",
+      "blockHeight": 276610256,
+      "source": "receipt"
+    }
+  },
+  "error": null,
+  "watched": 3
+}

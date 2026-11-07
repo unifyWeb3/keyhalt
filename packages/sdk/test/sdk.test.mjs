@@ -37,6 +37,100 @@ test("SDK exposes the v0.3 version", () => {
   assert.equal(FLEET_SDK_VERSION, "0.3.0");
 });
 
+test("SDK rejects an invalid blockId before any network call", () => {
+  for (const bad of [-1, 1.5, Number.NaN]) {
+    assert.throws(
+      () =>
+        createFleetClient({
+          rpcUrl: "https://rpc.testnet.fastnear.com",
+          accountId: "agent.testnet",
+          blockId: bad,
+        }),
+      (error) => {
+        assert.ok(error instanceof FleetError);
+        assert.equal(error.code, "FLEET_E_BAD_ARGS");
+        return true;
+      },
+    );
+  }
+});
+
+test("SDK pins contract and key reads to the requested block", async () => {
+  const calls = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, init) => {
+    const body = JSON.parse(init.body);
+    calls.push(body);
+    let result;
+    if (body.method === "status") {
+      result = { chain_id: "testnet" };
+    } else if (body.params?.request_type === "call_function") {
+      result = { result: Array.from(Buffer.from("[]")) };
+    } else if (body.params?.request_type === "view_access_key_list") {
+      result = { keys: [], block_height: 4242 };
+    } else {
+      throw new Error(`unexpected method ${body.method}`);
+    }
+    return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, result }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+  try {
+    const fleet = createFleetClient({
+      rpcUrl: "https://rpc.testnet.fastnear.com",
+      accountId: "agent.testnet",
+      blockId: 4242,
+    });
+    assert.equal(fleet.blockId, 4242);
+    await fleet.getAudit(0, 10);
+    await fleet.getNativeKeys();
+    const reads = calls.filter((call) => call.method === "query");
+    assert.equal(reads.length, 2);
+    for (const read of reads) {
+      assert.equal(read.params.block_id, 4242);
+      assert.equal("finality" in read.params, false);
+      assert.equal(read.params.account_id, "agent.testnet");
+    }
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("SDK reads without a blockId use finality final", async () => {
+  const calls = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, init) => {
+    const body = JSON.parse(init.body);
+    calls.push(body);
+    const result =
+      body.method === "status"
+        ? { chain_id: "testnet" }
+        : body.params?.request_type === "view_access_key_list"
+          ? { keys: [] }
+          : { result: Array.from(Buffer.from("[]")) };
+    return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, result }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+  try {
+    const fleet = createFleetClient({
+      rpcUrl: "https://rpc.testnet.fastnear.com",
+      accountId: "agent.testnet",
+    });
+    assert.equal(fleet.blockId, null);
+    await fleet.getNativeKeys();
+    const read = calls.find(
+      (call) => call.params?.request_type === "view_access_key_list",
+    );
+    assert.equal(read.params.finality, "final");
+    assert.equal("block_id" in read.params, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("SDK refuses a mainnet RPC before any network call", () => {
   assert.throws(
     () =>

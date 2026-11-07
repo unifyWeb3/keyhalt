@@ -32,15 +32,8 @@ node scripts/check-claims.mjs
 echo "== Secret scan =="
 ./scripts/secret-scan.sh
 
-echo "== Web placeholder =="
-node - <<'NODE'
-import { readFileSync } from "node:fs";
-const html = readFileSync("web/index.html", "utf8");
-if (/<script\b/i.test(html)) throw new Error("web placeholder must not contain a script tag");
-if (/fetch\s*\(/i.test(html)) throw new Error("web placeholder must not make network calls");
-if (/private[_-]?key\s*[:=]/i.test(html)) throw new Error("web placeholder must not contain key fields");
-console.log("WEB CHECK: OK static placeholder, no script, no key field");
-NODE
+echo "== Console smoke (read-only, static, empty state) =="
+node scripts/console-smoke.mjs
 
 echo "== Read-only testnet RPC =="
 # Best-effort by default; a public RPC outage must not make local reproduction

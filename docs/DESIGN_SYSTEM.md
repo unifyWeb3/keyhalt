@@ -1,12 +1,15 @@
 # FLEET console design system (v0.3 draft, amended)
 
-**Status: DRAFT for human review — not approved, not built.** No console code,
-no Figma file, and no recording exist. Do not present this document as a
-finished UI. UI generation and recording happen only after written human
-approval of this draft.
+**Status: BUILT (read-only) — not approved for recording or public use.** The
+design system has been applied in `web/` + `packages/console/`; this document
+remains the authority for type, colour, layout and copy. No Figma file and no
+recording exist. Recording and public use happen only after written human
+approval of this build.
 **Date:** 2026-11-04 UTC (amended after the 2026-11-04 design review; type,
 colour, layout and copy amended 2026-11-07 after the human approved the
-`unslop` direction — see `design/UNSLOP_AUDIT.md` §6).
+`unslop` direction — see `design/UNSLOP_AUDIT.md`; console built and
+rehearsed 2026-11-07, see `evidence/console-v03/` and
+`docs/CONSOLE_SHOT_LIST.md`).
 **Scope:** read-only console for NEAR **testnet** only. The console never signs,
 never stores a key, and never calls a write method. Every write stays in the
 SDK/CLI (local signing) per `docs/INTERFACES.md` §1.
@@ -236,5 +239,8 @@ Fleet → Agent → Timeline
 3. Human approves the pixel draft in `design/REVIEW.md`.
 4. Only then: demo recording and any Figma work.
 
-**This is a draft, not a working UI.** The live product today is the
-controller, SDK, and CLI; `web/index.html` remains a static placeholder.
+**This is the shipped direction.** The screens in `web/` implement it
+(Fleet, Agent, Timeline) and are the live product today together with the
+controller, SDK, and CLI. `design/index.html` remains the approval-gated
+pixel reference; recording and public use still require written human
+approval.

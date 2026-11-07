@@ -197,6 +197,12 @@ export interface FleetClientOptions {
   rpcUrl: string;
   accountId: string;
   /**
+   * Pin every read to this finalized block height. When omitted, reads use
+   * `finality: "final"`. The console uses this so every screen renders one
+   * consistent snapshot instead of mixing heights.
+   */
+  blockId?: number;
+  /**
    * Local signer: a `ed25519:...`/`secp256k1:...` secret string or an object
    * with a `secretKey` field. It is passed only to the in-process Account.
    */
@@ -206,6 +212,7 @@ export interface FleetClientOptions {
 export interface FleetClient {
   readonly rpcUrl: string;
   readonly accountId: string;
+  readonly blockId: number | null;
   getState(): Promise<FleetState>;
   getNativeKeys(): Promise<NativeKey[]>;
   getInventory(): Promise<FleetInventory>;
@@ -258,6 +265,15 @@ interface RawQueryResult {
   block_hash?: string;
 }
 
+interface RawAccessKeyList {
+  keys?: Array<{
+    public_key: string;
+    access_key?: { permission?: unknown };
+  }>;
+  block_height?: number;
+  block_hash?: string;
+}
+
 interface RawOutcome {
   status: unknown;
   transaction_outcome?: {
@@ -293,6 +309,10 @@ interface RawAuditEntry {
 }
 
 const MAX_SAFE = Number.MAX_SAFE_INTEGER;
+
+// The console creates a fresh client for each pinned snapshot. A chain-id check
+// is a property of the RPC endpoint, not the client, so cache it per URL.
+const TESTNET_CHECKS = new Map<string, Promise<void>>();
 
 function toNumber(value: unknown, field: string): number {
   if (typeof value === "number" && Number.isSafeInteger(value)) return value;
@@ -637,9 +657,10 @@ function wrapError(error: unknown, fallback: FleetErrorCode): FleetError {
 class FleetClientImpl implements FleetClient {
   readonly rpcUrl: string;
   readonly accountId: string;
+  readonly blockId: number | null;
   private readonly provider: JsonRpcProvider;
   private readonly account: Account | null;
-  private testnetCheck: Promise<void> | null = null;
+  private readonly blockQuery: { block_id: number } | { finality: "final" };
 
   constructor(options: FleetClientOptions) {
     if (!options.accountId || !/^[a-z0-9._-]+$/.test(options.accountId)) {
@@ -654,8 +675,22 @@ class FleetClientImpl implements FleetClient {
         "FLEET is testnet-only; mainnet RPC URLs are refused",
       );
     }
+    if (
+      options.blockId !== undefined &&
+      (!Number.isSafeInteger(options.blockId) || options.blockId < 0)
+    ) {
+      throw new FleetError(
+        "FLEET_E_BAD_ARGS",
+        `blockId must be a non-negative integer, got ${String(options.blockId)}`,
+      );
+    }
     this.rpcUrl = options.rpcUrl;
     this.accountId = options.accountId;
+    this.blockId = options.blockId ?? null;
+    this.blockQuery =
+      options.blockId === undefined
+        ? { finality: "final" }
+        : { block_id: options.blockId };
     this.provider = new JsonRpcProvider({ url: options.rpcUrl });
     const signer = options.signer;
     if (signer === undefined) {
@@ -678,23 +713,24 @@ class FleetClientImpl implements FleetClient {
   }
 
   private async ensureTestnet(): Promise<void> {
-    if (this.testnetCheck === null) {
-      this.testnetCheck = (async () => {
-        const status = (await this.provider.sendJsonRpc("status", [])) as {
-          chain_id?: string;
-        };
-        if (status.chain_id !== "testnet") {
-          throw new FleetError(
-            "FLEET_E_MAINNET",
-            `refusing non-testnet chain: ${String(status.chain_id)}`,
-          );
-        }
-      })().catch((error: unknown) => {
-        this.testnetCheck = null;
-        throw wrapError(error, "FLEET_E_RPC");
-      });
-    }
-    return this.testnetCheck;
+    const cached = TESTNET_CHECKS.get(this.rpcUrl);
+    if (cached !== undefined) return cached;
+    const check = (async () => {
+      const status = (await this.provider.sendJsonRpc("status", [])) as {
+        chain_id?: string;
+      };
+      if (status.chain_id !== "testnet") {
+        throw new FleetError(
+          "FLEET_E_MAINNET",
+          `refusing non-testnet chain: ${String(status.chain_id)}`,
+        );
+      }
+    })().catch((error: unknown) => {
+      TESTNET_CHECKS.delete(this.rpcUrl);
+      throw wrapError(error, "FLEET_E_RPC");
+    });
+    TESTNET_CHECKS.set(this.rpcUrl, check);
+    return check;
   }
 
   private async viewRaw(
@@ -705,7 +741,7 @@ class FleetClientImpl implements FleetClient {
     try {
       const response = (await this.provider.sendJsonRpc("query", {
         request_type: "call_function",
-        finality: "final",
+        ...this.blockQuery,
         account_id: this.accountId,
         method_name: method,
         args_base64: Buffer.from(JSON.stringify(args)).toString("base64"),
@@ -724,11 +760,15 @@ class FleetClientImpl implements FleetClient {
   async getNativeKeys(): Promise<NativeKey[]> {
     await this.ensureTestnet();
     try {
-      const response = await this.provider.viewAccessKeyList({
-        accountId: this.accountId,
-        finalityQuery: { finality: "final" },
-      });
-      return response.keys.map((entry) => {
+      // near-api-js viewAccessKeyList accepts only a finality reference, so a
+      // block-pinned read goes through raw `query`. Mixing finality here would
+      // silently mix heights inside one console snapshot.
+      const response = (await this.provider.sendJsonRpc("query", {
+        request_type: "view_access_key_list",
+        ...this.blockQuery,
+        account_id: this.accountId,
+      })) as unknown as RawAccessKeyList;
+      return (response.keys ?? []).map((entry) => {
         const mapped = permissionOf(entry);
         return { ...mapped, publicKey: entry.public_key };
       });
