@@ -376,3 +376,44 @@ test("the documented exit-code table matches the SDK mapping", () => {
   }
   assert.equal(fleetExitCode("FLEET_E_NOT_A_CODE"), 2, "unknown codes fall back to 2");
 });
+
+test("CLI help lists the Mode B multisig admin commands", async () => {
+  const { stdout } = await run(process.execPath, [cli, "--help"]);
+  assert.match(stdout, /fleet admin request freeze <agent>/);
+  assert.match(stdout, /fleet admin confirm <agent> <request-id>/);
+  assert.match(stdout, /fleet admin status <agent>/);
+});
+
+test("fleet admin request without an agent is a bad-args exit", async () => {
+  const value = await runJsonFailure(["admin", "request", "freeze", "--json"], 2);
+  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+});
+
+test("fleet admin request without a member signer exits 3 before any RPC", async () => {
+  const value = await runJsonFailure(
+    ["admin", "request", "freeze", "agent.testnet", "--rpc-url", "http://127.0.0.1:9", "--json"],
+    3,
+  );
+  assert.equal(value.error.code, "FLEET_E_NO_SIGNER");
+});
+
+test("fleet admin confirm without a request-id is a bad-args exit", async () => {
+  const value = await runJsonFailure(
+    ["admin", "confirm", "agent.testnet", "--signer-key-file", "/tmp/does-not-exist.json", "--json"],
+    2,
+  );
+  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+});
+
+test("fleet admin confirm requires a member signer before any RPC", async () => {
+  const value = await runJsonFailure(
+    ["admin", "confirm", "agent.testnet", "7", "--rpc-url", "http://127.0.0.1:9", "--json"],
+    3,
+  );
+  assert.equal(value.error.code, "FLEET_E_NO_SIGNER");
+});
+
+test("fleet admin with an unknown subcommand is a bad-args exit", async () => {
+  const value = await runJsonFailure(["admin", "bogus", "--json"], 2);
+  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+});

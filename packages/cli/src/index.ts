@@ -15,6 +15,7 @@ import {
   FleetError,
   buildAuditExport,
   createFleetClient,
+  createMultisigAdminClient,
   fleetExitCode,
   parseSignedTransaction,
   verifyAuditChain,
@@ -77,6 +78,19 @@ Pre-signed freeze:
   --pre-sign signs the call locally and writes it to a file without sending
   it. --submit-signed broadcasts a file written by --pre-sign. A signed file
   holds a signature, not a secret key; treat it as a bearer artifact.
+
+Mode B multisig admin (2-of-2; agent's admin is the multisig contract):
+  fleet admin request freeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
+  fleet admin request unfreeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
+  fleet admin confirm <agent> <request-id> --signer-key-file <member.json> [--rpc-url URL] [--json]
+  fleet admin status <agent> [--rpc-url URL] [--json]
+
+  "request" proposes a freeze/unfreeze through the agent's multisig admin and
+  prints the new request id. "confirm" signs the pending request; reaching
+  numConfirmations executes it, otherwise the confirmation is recorded and the
+  agent stays as it is. "confirm" refuses (no broadcast) any request that is
+  not a freeze/unfreeze FunctionCall for the same agent. "status" shows the
+  members, required confirmations, and pending requests.
 
 Signer key files must live outside a git repository and be mode 600.
 Default RPC: ${DEFAULT_TESTNET_RPC}
@@ -186,6 +200,60 @@ function readSignerSecret(path: string): string {
     );
   }
   return secret;
+}
+
+interface SignerIdentity {
+  secretKey: string;
+  accountId: string | null;
+}
+
+/** Like readSignerSecret, but also returns the member account id when the
+ *  key file carries one (the modeb member files are account JSONs). The
+ *  secret itself is never printed or returned outside the local process. */
+function readSignerIdentity(path: string): SignerIdentity {
+  const absolute = realpathSync(resolve(path));
+  const stat = lstatSync(absolute);
+  if (!stat.isFile()) {
+    throw new FleetError("FLEET_E_BAD_ARGS", "signer key path is not a file");
+  }
+  if ((stat.mode & 0o077) !== 0) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "signer key file must be mode 600 (no group or world permissions)",
+    );
+  }
+  const root = gitRootFor(dirname(absolute));
+  if (root !== null) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "signer key file must live outside a git repository",
+    );
+  }
+  const text = readFileSync(absolute, "utf8").trim();
+  let secret = text;
+  let accountId: string | null = null;
+  if (text.startsWith("{")) {
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(text) as Record<string, unknown>;
+    } catch {
+      throw new FleetError("FLEET_E_BAD_ARGS", "signer key JSON is malformed");
+    }
+    const candidate = parsed.secret_key ?? parsed.private_key;
+    secret = typeof candidate === "string" ? candidate : "";
+    const rawAccount = parsed.account_id ?? parsed.accountId;
+    accountId =
+      typeof rawAccount === "string" && /^[a-z0-9._-]+$/.test(rawAccount)
+        ? rawAccount
+        : null;
+  }
+  if (!/^(ed25519|secp256k1):[1-9A-HJ-NP-Za-km-z]+$/.test(secret)) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "signer key file must contain a NEAR secret_key or private_key",
+    );
+  }
+  return { secretKey: secret, accountId };
 }
 
 function signerPath(args: ParsedArgs): string {
@@ -454,6 +522,265 @@ async function commandWrite(
   }
 }
 
+interface AdminContext {
+  agentId: string;
+  mode: "A" | "B";
+  adminAccount: string | null;
+  paused: boolean;
+  rpcUrl: string;
+}
+
+async function resolveAdminContext(
+  args: ParsedArgs,
+  agentId: string,
+): Promise<AdminContext> {
+  const client = clientFor(args, agentId, false);
+  const state = await client.getState();
+  if (state.mode !== "B") {
+    throw new FleetError(
+      "FLEET_E_UNSUPPORTED",
+      `${agentId} is a Mode A agent; use 'fleet freeze'/'fleet unfreeze' (single admin)`,
+    );
+  }
+  if (state.adminAccount === null || !/^[a-z0-9._-]+$/.test(state.adminAccount)) {
+    throw new FleetError(
+      "FLEET_E_UNSUPPORTED",
+      `${agentId} is Mode B but has no multisig admin account; refusing to guess`,
+    );
+  }
+  return {
+    agentId,
+    mode: state.mode,
+    adminAccount: state.adminAccount,
+    paused: state.paused,
+    rpcUrl: rpcUrl(args),
+  };
+}
+
+function requireMemberAccountId(identity: SignerIdentity): string {
+  if (identity.accountId === null) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "a Mode B admin write needs the member account id; the signer file must contain account_id (the NEAR default key-file format does)",
+    );
+  }
+  return identity.accountId;
+}
+
+function multisigClientFor(
+  context: AdminContext,
+  args: ParsedArgs,
+  signer: SignerIdentity | null,
+): ReturnType<typeof createMultisigAdminClient> {
+  if (signer === null) {
+    return createMultisigAdminClient({
+      rpcUrl: context.rpcUrl,
+      accountId: context.adminAccount as string,
+    });
+  }
+  const accountId = signer.accountId;
+  if (accountId === null) {
+    // Defensive: requireMemberAccountId runs before this in both write paths.
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "a Mode B admin write needs the member account id; the signer file must contain account_id",
+    );
+  }
+  return createMultisigAdminClient({
+    rpcUrl: context.rpcUrl,
+    accountId: context.adminAccount as string,
+    signer: { secretKey: signer.secretKey, accountId },
+  });
+}
+
+async function adminMembershipGuard(
+  context: AdminContext,
+  args: ParsedArgs,
+  identity: SignerIdentity,
+): Promise<string[]> {
+  const members = await multisigClientFor(context, args, null).getMembers();
+  const ids = members
+    .map((member) => (member.kind === "account" ? member.accountId : member.publicKey))
+    .filter((value): value is string => value !== null);
+  if (identity.accountId !== null && !ids.includes(identity.accountId)) {
+    throw new FleetError(
+      "FLEET_E_REJECTED",
+      `signer (${identity.accountId}) is not a member of ${context.adminAccount}; the multisig is the admin, not this key`,
+    );
+  }
+  return ids;
+}
+
+async function commandAdminRequest(
+  args: ParsedArgs,
+  subcommand: string,
+): Promise<void> {
+  if (subcommand !== "freeze" && subcommand !== "unfreeze") {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "admin request expects 'freeze' or 'unfreeze'",
+    );
+  }
+  const agentId = args.positionals[3];
+  if (agentId === undefined) {
+    throw new FleetError("FLEET_E_BAD_ARGS", "missing agent account id");
+  }
+  currentAccount = agentId;
+  currentCommand = `admin request ${subcommand}`;
+  const identity = readSignerIdentity(signerPath(args));
+  requireMemberAccountId(identity);
+  const context = await resolveAdminContext(args, agentId);
+  await adminMembershipGuard(context, args, identity);
+  const multisig = multisigClientFor(context, args, identity);
+  const result = await multisig.addFunctionCallRequest(agentId, subcommand);
+  if (jsonMode) {
+    emitJson({
+      ok: true,
+      command: currentCommand,
+      agentId,
+      multisigId: result.multisigId,
+      requestId: result.requestId,
+      txHash: result.txHash,
+      blockHeight: result.blockHeight,
+      gasBurnt: result.gasBurnt,
+      refusal: result.refusal,
+    });
+  } else {
+    human(
+      `admin ${subcommand} request created: id=${result.requestId} tx=${result.txHash} block=${result.blockHeight}`,
+    );
+    human(`multisig: ${result.multisigId} · a second member must confirm to execute`);
+  }
+}
+
+async function commandAdminConfirm(args: ParsedArgs): Promise<void> {
+  const agentId = args.positionals[2];
+  if (agentId === undefined) {
+    throw new FleetError("FLEET_E_BAD_ARGS", "missing agent account id");
+  }
+  const rawId = args.positionals[3];
+  const requestId = rawId === undefined ? NaN : Number(rawId);
+  if (!Number.isSafeInteger(requestId) || requestId < 0 || requestId > 1_000_000) {
+    throw new FleetError(
+      "FLEET_E_BAD_ARGS",
+      "request-id must be an integer 0..1000000",
+    );
+  }
+  currentAccount = agentId;
+  currentCommand = "admin confirm";
+  const identity = readSignerIdentity(signerPath(args));
+  requireMemberAccountId(identity);
+  const context = await resolveAdminContext(args, agentId);
+  await adminMembershipGuard(context, args, identity);
+  const multisig = multisigClientFor(context, args, identity);
+  // Safety: never blind-sign an arbitrary request. Only confirm a freeze or
+  // unfreeze FunctionCall targeting this exact agent.
+  const request = await multisig.getRequest(requestId);
+  const call = request.functionCalls[0];
+  const targetOk =
+    request.receiverId === agentId &&
+    (request.methodName === "freeze" || request.methodName === "unfreeze") &&
+    call !== undefined;
+  if (!targetOk) {
+    throw new FleetError(
+      "FLEET_E_REJECTED",
+      `refusing to confirm request ${requestId}: it is not a freeze/unfreeze FunctionCall for ${agentId} (receiver=${request.receiverId} method=${request.methodName ?? "none"})`,
+    );
+  }
+  const result = await multisig.confirm(requestId);
+  if (jsonMode) {
+    emitJson({
+      ok: true,
+      command: currentCommand,
+      agentId,
+      multisigId: context.adminAccount,
+      requestId,
+      txHash: result.txHash,
+      blockHeight: result.blockHeight,
+      gasBurnt: result.gasBurnt,
+      refusal: result.refusal,
+      executed: result.executed,
+      confirmations: result.confirmations,
+      confirmationCount: result.confirmationCount,
+      required: result.required,
+    });
+  } else {
+    human(
+      `admin confirm: id=${requestId} tx=${result.txHash} block=${result.blockHeight} · ${result.confirmationCount}/${result.required} confirmations${result.executed ? " · executed" : " · recorded (needs another confirmation)"}`,
+    );
+  }
+}
+
+async function commandAdminStatus(args: ParsedArgs): Promise<void> {
+  const agentId = args.positionals[2];
+  if (agentId === undefined) {
+    throw new FleetError("FLEET_E_BAD_ARGS", "missing agent account id");
+  }
+  currentAccount = agentId;
+  currentCommand = "admin status";
+  const context = await resolveAdminContext(args, agentId);
+  const multisig = multisigClientFor(context, args, null);
+  const [members, required, nonce, pending] = await Promise.all([
+    multisig.getMembers(),
+    multisig.getNumConfirmations(),
+    multisig.getRequestNonce(),
+    multisig.listRequestIds(),
+  ]);
+  const requests = [];
+  for (const requestId of pending) {
+    try {
+      const request = await multisig.getRequest(requestId);
+      requests.push(request);
+    } catch {
+      requests.push({
+        requestId,
+        receiverId: null,
+        actionTypes: [],
+        functionCalls: [],
+        methodName: null,
+        confirmations: [],
+        confirmationCount: 0,
+        required,
+      });
+    }
+  }
+  if (jsonMode) {
+    emitJson({
+      ok: true,
+      command: currentCommand,
+      agentId,
+      multisigId: context.adminAccount,
+      paused: context.paused,
+      members: members.map((member) =>
+        member.kind === "account" ? member.accountId : member.publicKey,
+      ),
+      required,
+      requestNonce: nonce,
+      pendingRequests: requests,
+    });
+  } else {
+    human(`agent: ${agentId} (mode B · admin: multisig ${context.adminAccount})`);
+    human(`paused: ${context.paused}`);
+    human(`members (${members.length}) · ${required} confirmations required`);
+    for (const member of members) {
+      human(
+        `  - ${member.kind === "account" ? member.accountId : member.publicKey}`,
+      );
+    }
+    human(`request nonce: ${nonce}`);
+    if (requests.length === 0) {
+      human("pending requests: none");
+    } else {
+      human(`pending requests: ${requests.length}`);
+      for (const request of requests) {
+        human(
+          `  #${request.requestId} ${request.methodName ?? "?"} -> ${request.receiverId ?? "?"} · ${request.confirmationCount}/${request.required} confirmations`,
+        );
+      }
+    }
+  }
+}
+
 function readSignedFile(path: string): FleetSignedTransaction {
   let raw: unknown;
   try {
@@ -709,6 +1036,22 @@ async function main(): Promise<void> {
       const receiver = flagString(args, "receiver") ?? accountId;
       return commandWrite(args, accountId, (client) =>
         client.execute(receiver, method, payload, gas),
+      );
+    }
+    case "admin": {
+      const sub = args.positionals[1];
+      if (sub === "request") {
+        return commandAdminRequest(args, args.positionals[2] ?? "");
+      }
+      if (sub === "confirm") {
+        return commandAdminConfirm(args);
+      }
+      if (sub === "status") {
+        return commandAdminStatus(args);
+      }
+      throw new FleetError(
+        "FLEET_E_BAD_ARGS",
+        "admin expects 'request', 'confirm', or 'status'",
       );
     }
     default:

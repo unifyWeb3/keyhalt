@@ -173,6 +173,7 @@ path there.
 | Mode B `admin_account` provisioning with no admin/recovery key and four FunctionCall operators | F-021 |
 | Pinned source-built 2-of-2 multisig; zero access keys after bootstrap deletion | F-022, F-025 |
 | One confirmation is a no-op; the second freezes; a second 2-of-2 unfreezes | F-023 |
+| Mode B CLI admin path: request/confirm/status through the product CLI; 2-of-2 freeze and unfreeze executed on testnet; one confirmation does not execute; non-member refused before broadcast | F-038, F-039, F-040 |
 | Direct member bypass and non-member request are refused; audit attributes actions to the multisig | F-024 |
 | Measured Mode B 2-of-2 freeze/unfreeze wall time, audit storage growth, and derived allowance bound | F-026, F-027 |
 | Cross-agent FunctionCall receiver-ACL isolation with positive controls | F-028 |
@@ -286,8 +287,14 @@ payload's `tx_hash` is the hash the network assigns when it is broadcast
 
 Commands: `inventory`, `verify`, `audit export`, `audit verify`, `verify-audit`
 (alias), `freeze`, `unfreeze`, `grant`, `rotate`, `revoke`, `revoke-tag`,
-`propose-admin`, `accept-admin`, `cancel-admin`, `recover`, `execute`. Run
-`fleet --help` for the full flag list.
+`propose-admin`, `accept-admin`, `cancel-admin`, `recover`, `execute`,
+`admin request`, `admin confirm`, `admin status`. Run
+`fleet --help` for the full flag list. For Mode B, `admin confirm` refuses
+(no broadcast) any request that is not a freeze/unfreeze FunctionCall for the
+same agent, and `admin request` refuses Mode A agents (they are governed by
+the single-admin commands). One confirmation of a Mode B request records a
+confirmation and leaves the agent unchanged; the second executes. This is the
+same mechanism as F-023, driven by the product CLI — see F-038…F-040.
 
 **Every command supports `--json`**, which writes one JSON object to stdout
 while human output goes to stderr. **Exit codes are stable and documented** in

@@ -14,6 +14,7 @@ import {
 
 import {
   createFleetClient,
+  createMultisigAdminClient,
   FLEET_SDK_VERSION,
   FleetError,
   fleetTransactionHash,
@@ -388,4 +389,154 @@ test("SDK audit verifier rejects a broken previous-hash link", () => {
 test("SDK accepts the raw E2E audit export and the fleet-audit-v1 export", () => {
   assert.equal(verifyAuditExport(JSON.parse(readFileSync(evidence, "utf8"))).ok, true);
   assert.equal(verifyAuditExport(JSON.parse(readFileSync(exported, "utf8"))).ok, true);
+});
+
+test("multisig client rejects a mainnet RPC URL", () => {
+  assert.throws(
+    () =>
+      createMultisigAdminClient({
+        rpcUrl: "https://rpc.mainnet.near.org",
+        accountId: "multisig.testnet",
+      }),
+    (error) => {
+      assert.ok(error instanceof FleetError);
+      assert.equal(error.code, "FLEET_E_MAINNET");
+      return true;
+    },
+  );
+});
+
+test("multisig views parse members, nonce, request ids and request details", async () => {
+  const calls = [];
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, init) => {
+    const body = JSON.parse(init.body);
+    calls.push(body);
+    let result;
+    if (body.method === "status") {
+      result = { chain_id: "testnet" };
+    } else if (body.method === "query") {
+      const args = JSON.parse(
+        Buffer.from(body.params.args_base64, "base64").toString("utf8"),
+      );
+      switch (body.params.method_name) {
+        case "get_members":
+          result = {
+            result: Array.from(
+              Buffer.from(
+                JSON.stringify([
+                  { account_id: "owner-a.testnet" },
+                  { public_key: "ed25519:kB5fcDtfZA6Au6xmd8U2coeBiRg4dHpShADXCAybB2L" },
+                ]),
+              ),
+            ),
+          };
+          break;
+        case "get_num_confirmations":
+          result = { result: Array.from(Buffer.from("2")) };
+          break;
+        case "get_request_nonce":
+          result = { result: Array.from(Buffer.from("53")) };
+          break;
+        case "list_request_ids":
+          result = { result: Array.from(Buffer.from("[2,5]")) };
+          break;
+        case "get_confirmations":
+          assert.equal(args.request_id, 5);
+          result = {
+            result: Array.from(
+              Buffer.from(
+                JSON.stringify(['{"account_id":"owner-a.testnet"}']),
+              ),
+            ),
+          };
+          break;
+        case "get_request":
+          assert.equal(args.request_id, 5);
+          result = {
+            result: Array.from(
+              Buffer.from(
+                JSON.stringify({
+                  receiver_id: "agent.testnet",
+                  actions: [
+                    {
+                      type: "FunctionCall",
+                      method_name: "freeze",
+                      args: "",
+                      deposit: "0",
+                      gas: "50000000000000",
+                    },
+                  ],
+                }),
+              ),
+            ),
+          };
+          break;
+        default:
+          throw new Error(`unexpected view ${body.params.method_name}`);
+      }
+    } else {
+      throw new Error(`unexpected method ${body.method}`);
+    }
+    return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, result }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+  try {
+    const multisig = createMultisigAdminClient({
+      rpcUrl: "https://rpc.testnet.fastnear.com",
+      accountId: "multisig.testnet",
+    });
+    const members = await multisig.getMembers();
+    assert.deepEqual(members, [
+      { kind: "account", accountId: "owner-a.testnet", publicKey: null },
+      { kind: "accessKey", accountId: null, publicKey: "ed25519:kB5fcDtfZA6Au6xmd8U2coeBiRg4dHpShADXCAybB2L" },
+    ]);
+    assert.equal(await multisig.getNumConfirmations(), 2);
+    assert.equal(await multisig.getRequestNonce(), 53);
+    assert.deepEqual(await multisig.listRequestIds(), [2, 5]);
+    assert.deepEqual(await multisig.getConfirmations(5), ["owner-a.testnet"]);
+    const request = await multisig.getRequest(5);
+    assert.equal(request.receiverId, "agent.testnet");
+    assert.equal(request.methodName, "freeze");
+    assert.deepEqual(request.actionTypes, ["FunctionCall"]);
+    assert.equal(request.confirmationCount, 1);
+    assert.equal(request.required, 2);
+    assert.equal(request.functionCalls[0].gas, "50000000000000");
+    assert.equal(request.functionCalls[0].depositYocto, "0");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("multisig views reject an undeclared method before Broadcasting", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, init) => {
+    const body = JSON.parse(init.body);
+    const result =
+      body.method === "status"
+        ? { chain_id: "testnet" }
+        : { result: Array.from(Buffer.from("[1,2")) };
+    return new Response(JSON.stringify({ jsonrpc: "2.0", id: body.id, result }), {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    });
+  };
+  try {
+    const multisig = createMultisigAdminClient({
+      rpcUrl: "https://rpc.testnet.fastnear.com",
+      accountId: "multisig.testnet",
+    });
+    await assert.rejects(
+      () => multisig.listRequestIds(),
+      (error) => {
+        assert.ok(error instanceof FleetError);
+        assert.equal(error.code, "FLEET_E_RPC");
+        return true;
+      },
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

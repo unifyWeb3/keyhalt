@@ -88,11 +88,13 @@ state machine complexity. Growth cost is linear and priced. Documented in
 `docs/TEST_PLAN.md` / `CLAIMS.md` F-027 (storage per entry) and
 `docs/THREAT_MODEL.md` §9. Not a blocker.
 
-**B1-8 — "Who can freeze/unfreeze in Mode B today?" (Medium, real gap, owned
-by Item 2)** Until Item 2 lands, Mode B freeze/unfreeze is only possible
-via the harness (two multisig confirmations). The CLI has no product path.
-The claim table is honest about this today ("Mode B verified through the
-harness only"); Item 2 either fixes it in the product or the wording stays.
+**B1-8 — "Who can freeze/unfreeze in Mode B today?" (Medium, real gap —
+closed)** The product path now exists: `fleet admin request freeze|unfreeze`,
+`fleet admin confirm`, `fleet admin status`, verified on testnet 2026-11-07
+(F-038…F-040). One confirmation is recorded without effect; the second
+executes; a non-member is refused before any broadcast. The remaining honesty
+line: the two owner keys are still operated by the same harness, and fresh
+explicit out-of-band approval for production use remains out of scope.
 
 **B1-9 — "The console is an XSS-and-exfil gift if someone embeds it." (Low,
 mitigated)** CSP is `default-src 'self'` with `script-src 'self'`, no inline
@@ -169,7 +171,7 @@ this section was re-run after the fix.
 | Risk | Why accepted |
 | --- | --- |
 | RPC truthfulness (B1-1) | No cryptographic proof exists in v0.3 scope; accepted with failover and honesty labels; any full node can re-verify |
-| Mode B product write path (B1-8) | Item 2 timebox; until it passes, Mode B remains documented as harness-verified only |
+| Mode B same-harness custody | Both owner keys operated by the same harness; 2-of-2 reduces single-key risk but is not independently custodied — unaudited, unreviewed |
 | Free public RPC rate limits | Provider failover + pacing + bounded retry; a full outage degrades the UI to last-good + stale, never to invented data |
 | Unaudited controller | By policy; no claim of audit anywhere; submission must repeat this |
 

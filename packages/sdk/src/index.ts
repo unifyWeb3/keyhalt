@@ -640,7 +640,7 @@ function sumGas(outcome: RawOutcome): string {
 
 function isRpcFailure(error: unknown): boolean {
   const text = `${(error as { message?: string })?.message ?? error}`;
-  return /fetch failed|ECONNRESET|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|socket hang up|\b429\b|\b5\d\d\b|timeout/i.test(
+  return /fetch failed|ECONNRESET|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|socket hang up|\b429\b|\b5\d\d\b|internal server error|unavailable|bad gateway|timeout/i.test(
     text,
   );
 }
@@ -1119,4 +1119,589 @@ export function buildAuditExport(
     entries,
     verified: verification.ok,
   };
+}
+
+// ============================================================
+// Mode B — 2-of-2 multisig administration
+//
+// The Mode B controller's admin is the pinned `near/core-contracts`
+// `multisig2` contract (v0.4.0), not a key. Calls to `add_request` propose an
+// action; reaching `num_confirmations` (2 here) members makes `confirm`
+// execute it. Views are JSON-encoded. This client signs locally; it never
+// holds a key beyond the in-process Account.
+// ============================================================
+
+export interface MultisigMemberInfo {
+  kind: "account" | "accessKey";
+  accountId: string | null;
+  publicKey: string | null;
+}
+
+export interface MultisigFunctionCall {
+  methodName: string;
+  argsBase64: string;
+  depositYocto: string;
+  gas: string;
+}
+
+export interface MultisigRequestInfo {
+  requestId: number;
+  receiverId: string;
+  actionTypes: string[];
+  functionCalls: MultisigFunctionCall[];
+  /** The first FunctionCall method name, if any. */
+  methodName: string | null;
+  confirmations: string[];
+  confirmationCount: number;
+  required: number;
+}
+
+export interface MultisigProposeResult extends FleetTxResult {
+  requestId: number;
+  multisigId: string;
+}
+
+export interface MultisigConfirmResult extends FleetTxResult {
+  requestId: number;
+  executed: boolean;
+  confirmations: string[];
+  confirmationCount: number;
+  required: number;
+}
+
+export interface MultisigAdminClientOptions {
+  rpcUrl: string;
+  /** The multisig contract account — the agent's `adminAccount`. */
+  accountId: string;
+  /**
+   * Optional member signer. Writes sign with the member's account id, never
+   * the multisig contract (the contract holds no keys). The file-export
+   * format `{ account_id, public_key, secret_key }` carries the id; a bare
+   * `{ secretKey }` without `accountId` is accepted for views only and is
+   * refused for writes.
+   */
+  signer?: string | { secretKey: string; accountId?: string };
+}
+
+export interface MultisigAdminClient {
+  readonly rpcUrl: string;
+  readonly accountId: string;
+  /** Members of the multisig (account ids, or access keys for pk members). */
+  getMembers(): Promise<MultisigMemberInfo[]>;
+  getNumConfirmations(): Promise<number>;
+  getRequestNonce(): Promise<number>;
+  listRequestIds(): Promise<number[]>;
+  getConfirmations(requestId: number): Promise<string[]>;
+  getRequest(requestId: number): Promise<MultisigRequestInfo>;
+  /**
+   * Propose a `FunctionCall` action through the multisig. The signer's key
+   * must belong to a member; the contract refuses non-members.
+   */
+  addFunctionCallRequest(
+    receiverId: string,
+    methodName: string,
+    argsBase64?: string,
+    gasTgas?: number,
+  ): Promise<MultisigProposeResult>;
+  /**
+   * Confirm a pending request. Reaching `numConfirmations` executes the
+   * proposed action; otherwise the confirmation is recorded and nothing
+   * happens. The caller gets `executed` back from the receipt itself.
+   */
+  confirm(requestId: number, gasTgas?: number): Promise<MultisigConfirmResult>;
+}
+
+const MULTISIG_MAX_REQUEST_ID = 1_000_000;
+
+interface MultisigRawAction {
+  type?: unknown;
+  method_name?: unknown;
+  args?: unknown;
+  deposit?: unknown;
+  gas?: unknown;
+}
+
+interface MultisigRawRequest {
+  receiver_id?: unknown;
+  actions?: unknown;
+}
+
+interface MultisigRawOutcome extends RawOutcome {
+  // The multisig contract returns raw JSON bytes; see the module note.
+}
+
+function base64OfUtf8(text: string): string {
+  return Buffer.from(text, "utf8").toString("base64");
+}
+
+function utf8OfBase64(value: string): string {
+  return Buffer.from(value, "base64").toString("utf8");
+}
+
+function parseMultisigMemberString(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("{")) return trimmed;
+  try {
+    const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+    if (typeof parsed.account_id === "string") return parsed.account_id;
+    if (typeof parsed.public_key === "string") return parsed.public_key;
+  } catch {
+    // Keep the raw string; the chain's encoding is a hint, not a guarantee.
+  }
+  return trimmed;
+}
+
+function normalizeMultisigMember(raw: unknown): MultisigMemberInfo {
+  const member = (raw ?? {}) as Record<string, unknown>;
+  if (typeof member.account_id === "string") {
+    return { kind: "account", accountId: member.account_id, publicKey: null };
+  }
+  if (typeof member.public_key === "string") {
+    return { kind: "accessKey", accountId: null, publicKey: member.public_key };
+  }
+  throw new FleetError(
+    "FLEET_E_RPC",
+    `unexpected multisig member encoding: ${JSON.stringify(raw).slice(0, 200)}`,
+  );
+}
+
+function parseMultisigRequest(
+  requestId: number,
+  raw: unknown,
+  confirmations: string[],
+  numConfirmations: number,
+): MultisigRequestInfo {
+  const request = (raw ?? {}) as MultisigRawRequest;
+  if (typeof request.receiver_id !== "string") {
+    throw new FleetError(
+      "FLEET_E_RPC",
+      `multisig request ${requestId} has no receiver_id`,
+    );
+  }
+  const rawActions = Array.isArray(request.actions) ? request.actions : [];
+  const functionCalls: MultisigFunctionCall[] = [];
+  const actionTypes: string[] = [];
+  for (const entry of rawActions as MultisigRawAction[]) {
+    const type = typeof entry?.type === "string" ? entry.type : "Unknown";
+    actionTypes.push(type);
+    if (type !== "FunctionCall") continue;
+    functionCalls.push({
+      methodName: String(entry.method_name ?? ""),
+      argsBase64: typeof entry.args === "string" ? entry.args : "",
+      depositYocto:
+        entry.deposit === undefined || entry.deposit === null
+          ? "0"
+          : String(entry.deposit),
+      gas:
+        entry.gas === undefined || entry.gas === null ? "0" : String(entry.gas),
+    });
+  }
+  return {
+    requestId,
+    receiverId: request.receiver_id,
+    actionTypes,
+    functionCalls,
+    methodName: functionCalls[0]?.methodName ?? null,
+    confirmations,
+    confirmationCount: confirmations.length,
+    required: numConfirmations,
+  };
+}
+
+class MultisigClientImpl implements MultisigAdminClient {
+  readonly rpcUrl: string;
+  readonly accountId: string;
+  private readonly provider: JsonRpcProvider;
+  private readonly account: Account | null;
+  private signerAccountId: string | null = null;
+  private signerBlocked = false;
+
+  constructor(options: MultisigAdminClientOptions) {
+    if (!options.accountId || !/^[a-z0-9._-]+$/.test(options.accountId)) {
+      throw new FleetError(
+        "FLEET_E_BAD_ARGS",
+        `invalid testnet account id: ${options.accountId}`,
+      );
+    }
+    if (/mainnet/i.test(options.rpcUrl)) {
+      throw new FleetError(
+        "FLEET_E_MAINNET",
+        "FLEET is testnet-only; mainnet RPC URLs are refused",
+      );
+    }
+    this.rpcUrl = options.rpcUrl;
+    this.accountId = options.accountId;
+    this.provider = new JsonRpcProvider({ url: options.rpcUrl });
+    const signer = options.signer;
+    if (signer === undefined) {
+      this.account = null;
+      this.signerAccountId = null;
+    } else if (typeof signer === "string") {
+      // A bare secret carries no member account id. Views work; writes need
+      // it, so constructing an Account without one would sign with the wrong
+      // identity. Refuse early and loudly.
+      this.account = null;
+      this.signerAccountId = null;
+      this.signerBlocked = true;
+    } else {
+      const secret = signer.secretKey;
+      if (!/^(ed25519|secp256k1):[1-9A-HJ-NP-Za-km-z]+$/.test(secret)) {
+        throw new FleetError(
+          "FLEET_E_BAD_ARGS",
+          "signer must be a NEAR secret key string",
+        );
+      }
+      const signerAccountId =
+        typeof signer.accountId === "string" && /^[a-z0-9._-]+$/.test(signer.accountId)
+          ? signer.accountId
+          : null;
+      if (signerAccountId === null) {
+        this.account = null;
+        this.signerAccountId = null;
+        this.signerBlocked = true;
+      } else {
+        this.signerAccountId = signerAccountId;
+        this.signerBlocked = false;
+        this.account = new Account(signerAccountId, options.rpcUrl, secret as KeyPairString);
+      }
+    }
+  }
+
+  private async ensureTestnet(): Promise<void> {
+    const cached = TESTNET_CHECKS.get(this.rpcUrl);
+    if (cached !== undefined) return cached;
+    const check = (async () => {
+      const status = (await this.provider.sendJsonRpc("status", [])) as {
+        chain_id?: string;
+      };
+      if (status.chain_id !== "testnet") {
+        throw new FleetError(
+          "FLEET_E_MAINNET",
+          `refusing non-testnet chain: ${String(status.chain_id)}`,
+        );
+      }
+    })().catch((error: unknown) => {
+      TESTNET_CHECKS.delete(this.rpcUrl);
+      throw wrapError(error, "FLEET_E_RPC");
+    });
+    TESTNET_CHECKS.set(this.rpcUrl, check);
+    return check;
+  }
+
+  private async viewJson<T>(
+    method: string,
+    args: Record<string, unknown>,
+  ): Promise<T> {
+    await this.ensureTestnet();
+    try {
+      const response = (await this.provider.sendJsonRpc("query", {
+        request_type: "call_function",
+        finality: "final",
+        account_id: this.accountId,
+        method_name: method,
+        args_base64: base64OfUtf8(JSON.stringify(args)),
+      })) as unknown as RawQueryResult;
+      const text = Buffer.from(response.result).toString("utf8");
+      if (text.length === 0) {
+        throw new FleetError(
+          "FLEET_E_RPC",
+          `multisig view ${method} returned an empty result`,
+        );
+      }
+      return JSON.parse(text) as T;
+    } catch (error) {
+      if (error instanceof FleetError) throw error;
+      throw wrapError(error, "FLEET_E_RPC");
+    }
+  }
+
+  async getMembers(): Promise<MultisigMemberInfo[]> {
+    const raw = await this.viewJson<unknown[]>("get_members", {});
+    if (!Array.isArray(raw)) {
+      throw new FleetError("FLEET_E_RPC", "get_members did not return an array");
+    }
+    return raw.map(normalizeMultisigMember);
+  }
+
+  async getNumConfirmations(): Promise<number> {
+    return toNumber(await this.viewJson<unknown>("get_num_confirmations", {}), "get_num_confirmations");
+  }
+
+  async getRequestNonce(): Promise<number> {
+    return toNumber(await this.viewJson<unknown>("get_request_nonce", {}), "get_request_nonce");
+  }
+
+  async listRequestIds(): Promise<number[]> {
+    const raw = await this.viewJson<unknown[]>("list_request_ids", {});
+    if (!Array.isArray(raw)) {
+      throw new FleetError("FLEET_E_RPC", "list_request_ids did not return an array");
+    }
+    return raw.map((value) => toNumber(value, "list_request_ids id"));
+  }
+
+  async getConfirmations(requestId: number): Promise<string[]> {
+    const raw = await this.viewJson<unknown>("get_confirmations", {
+      request_id: requestId,
+    });
+    if (!Array.isArray(raw)) {
+      throw new FleetError(
+        "FLEET_E_RPC",
+        `get_confirmations did not return an array for request ${requestId}`,
+      );
+    }
+    return raw.map((value) => parseMultisigMemberString(String(value)));
+  }
+
+  async getRequest(requestId: number): Promise<MultisigRequestInfo> {
+    if (
+      !Number.isSafeInteger(requestId) ||
+      requestId < 0 ||
+      requestId > MULTISIG_MAX_REQUEST_ID
+    ) {
+      throw new FleetError(
+        "FLEET_E_BAD_ARGS",
+        `requestId must be an integer 0..${MULTISIG_MAX_REQUEST_ID}`,
+      );
+    }
+    const numConfirmations = await this.getNumConfirmations();
+    let confirmations: string[] = [];
+    try {
+      confirmations = await this.getConfirmations(requestId);
+    } catch {
+      confirmations = [];
+    }
+    const raw = await this.viewJson<unknown>("get_request", {
+      request_id: requestId,
+    });
+    return parseMultisigRequest(requestId, raw, confirmations, numConfirmations);
+  }
+
+  private async multisigCall(
+    method: string,
+    args: Record<string, unknown>,
+    gasTgas: number,
+  ): Promise<MultisigRawOutcome> {
+    if (this.signerBlocked) {
+      throw new FleetError(
+        "FLEET_E_BAD_ARGS",
+        "a Mode B admin write needs the member account id; the signer file must contain account_id (the NEAR default key-file format does)",
+      );
+    }
+    if (this.account === null) {
+      throw new FleetError(
+        "FLEET_E_NO_SIGNER",
+        `fleet ${method} requires a member signer key file`,
+      );
+    }
+    await this.ensureTestnet();
+    try {
+      const outcome = await this.account.signAndSendTransaction({
+        receiverId: this.accountId,
+        actions: [
+          actions.functionCall(method, args, teraToGas(gasTgas), 0n),
+        ],
+        waitUntil: "FINAL",
+        throwOnFailure: false,
+      });
+      return outcome as MultisigRawOutcome;
+    } catch (error) {
+      throw wrapError(error, "FLEET_E_REJECTED");
+    }
+  }
+
+  private receiptLogs(outcome: MultisigRawOutcome): string[] {
+    return collectLogs(outcome);
+  }
+
+  private failureText(outcome: MultisigRawOutcome): string {
+    const top = statusKind(outcome.status);
+    const receipts = outcome.receipts_outcome ?? [];
+    return JSON.stringify([
+      outcome.status,
+      top,
+      ...receipts.map((receipt) => receipt.outcome?.status),
+    ]);
+  }
+
+  private async toResult(
+    outcome: MultisigRawOutcome,
+    method: string,
+  ): Promise<{
+    txHash: string;
+    blockHeight: number;
+    gasBurnt: string;
+    logs: string[];
+    refusal: string | null;
+    valueText: string | null;
+  }> {
+    const txHash = outcome.transaction_outcome?.id ?? "";
+    const blockHash = outcome.transaction_outcome?.block_hash;
+    let blockHeight = 0;
+    if (blockHash) {
+      try {
+        const block = await this.provider.viewBlock({ blockId: blockHash });
+        blockHeight = block.header.height;
+      } catch {
+        blockHeight = 0;
+      }
+    }
+    const logs = collectLogs(outcome);
+    const refusal =
+      logs.find((log) => log.startsWith("FLEET_REFUSAL:"))?.slice(
+        "FLEET_REFUSAL:".length,
+      )?.trim() ?? null;
+    const top = statusKind(outcome.status);
+    const failedReceipt = (outcome.receipts_outcome ?? []).find(
+      (receipt) => statusKind(receipt.outcome?.status) === "failure",
+    );
+    const valueBytes =
+      (outcome.status as { SuccessValue?: unknown } | undefined)?.SuccessValue;
+    const valueText =
+      typeof valueBytes === "string" ? utf8OfBase64(valueBytes) : null;
+    if (top === "failure" || failedReceipt !== undefined) {
+      const failure = this.failureText(outcome);
+      throw new FleetError(
+        "FLEET_E_REJECTED",
+        refusal ?? `${method} failed: ${failure.slice(0, 400)}`,
+        { txHash, blockHeight, refusal },
+      );
+    }
+    return {
+      txHash,
+      blockHeight,
+      gasBurnt: sumGas(outcome),
+      logs,
+      refusal,
+      valueText,
+    };
+  }
+
+  async addFunctionCallRequest(
+    receiverId: string,
+    methodName: string,
+    argsBase64 = "",
+    gasTgas = 50,
+  ): Promise<MultisigProposeResult> {
+    if (this.account === null) {
+      throw new FleetError(
+        "FLEET_E_NO_SIGNER",
+        "fleet admin request requires a member signer key file",
+      );
+    }
+    if (!/^[a-z0-9._-]+$/.test(receiverId)) {
+      throw new FleetError("FLEET_E_BAD_ARGS", `invalid receiver: ${receiverId}`);
+    }
+    if (!/^[a-zA-Z_][a-zA-Z0-9_]{0,127}$/.test(methodName)) {
+      throw new FleetError("FLEET_E_BAD_ARGS", `invalid method: ${methodName}`);
+    }
+    if (!Number.isSafeInteger(gasTgas) || gasTgas < 5 || gasTgas > 200) {
+      throw new FleetError("FLEET_E_BAD_ARGS", "gasTgas must be 5..200");
+    }
+    // The args payload is base64 of raw bytes; freeze/unfreeze take none.
+    const hexGas = String(gasTgas * 1e12);
+    const request = {
+      receiver_id: receiverId,
+      actions: [
+        {
+          type: "FunctionCall",
+          method_name: methodName,
+          args: argsBase64,
+          deposit: "0",
+          gas: hexGas,
+        },
+      ],
+    };
+    const outcome = await this.multisigCall(
+      "add_request",
+      { request },
+      Math.min(200, Math.max(30, gasTgas + 50)),
+    );
+    const result = await this.toResult(outcome, "add_request");
+    const requestId =
+      result.valueText === null ? NaN : Number(result.valueText);
+    if (!Number.isSafeInteger(requestId) || requestId < 0) {
+      throw new FleetError(
+        "FLEET_E_RPC",
+        `add_request did not return a request id (raw: ${String(
+          result.valueText,
+        ).slice(0, 120)})`,
+      );
+    }
+    return {
+      txHash: result.txHash,
+      blockHeight: result.blockHeight,
+      gasBurnt: result.gasBurnt,
+      logs: result.logs,
+      refusal: result.refusal,
+      requestId,
+      multisigId: this.accountId,
+    };
+  }
+
+  async confirm(
+    requestId: number,
+    gasTgas = 100,
+  ): Promise<MultisigConfirmResult> {
+    if (this.account === null) {
+      throw new FleetError(
+        "FLEET_E_NO_SIGNER",
+        "fleet admin confirm requires a member signer key file",
+      );
+    }
+    if (!Number.isSafeInteger(requestId) || requestId < 0 || requestId > 1_000_000) {
+      throw new FleetError(
+        "FLEET_E_BAD_ARGS",
+        `requestId must be an integer 0..1000000`,
+      );
+    }
+    if (!Number.isSafeInteger(gasTgas) || gasTgas < 20 || gasTgas > 200) {
+      throw new FleetError("FLEET_E_BAD_ARGS", "gasTgas must be 20..200");
+    }
+    const outcome = await this.multisigCall(
+      "confirm",
+      { request_id: requestId },
+      gasTgas,
+    );
+    const result = await this.toResult(outcome, "confirm");
+    // The contract's confirm returns true whether or not it executed the
+    // action: execution removes the request and its confirmations. Reading
+    // the post-transaction request list is the deterministic answer.
+    let remainingIds: number[] = [];
+    let confirmations: string[] = [];
+    let required = 0;
+    try {
+      remainingIds = await this.listRequestIds();
+    } catch {
+      remainingIds = [requestId];
+    }
+    try {
+      confirmations = await this.getConfirmations(requestId);
+    } catch {
+      confirmations = [];
+    }
+    try {
+      required = await this.getNumConfirmations();
+    } catch {
+      required = confirmations.length >= 1 ? confirmations.length : 2;
+    }
+    const executed = !remainingIds.includes(requestId);
+    return {
+      txHash: result.txHash,
+      blockHeight: result.blockHeight,
+      gasBurnt: result.gasBurnt,
+      logs: result.logs,
+      refusal: result.refusal,
+      requestId,
+      executed,
+      confirmations,
+      confirmationCount: confirmations.length,
+      required,
+    };
+  }
+}
+
+export function createMultisigAdminClient(
+  options: MultisigAdminClientOptions,
+): MultisigAdminClient {
+  return new MultisigClientImpl(options);
 }

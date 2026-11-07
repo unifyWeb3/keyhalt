@@ -1,0 +1,153 @@
+{
+  "run": "fleet admin — Mode B 2-of-2 through the CLI, 2026-11-07",
+  "agent": "agent-b1.fleet-modeb-748d4372.testnet",
+  "multisig": "fleet-modeb-748d4372.testnet",
+  "members": [
+    "fleet-v03-5cff9e99.testnet",
+    "fleet-v03-fund2-8b91351d.testnet"
+  ],
+  "num_confirmations": 2,
+  "commands": {
+    "request": "fleet admin request freeze|unfreeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]",
+    "confirm": "fleet admin confirm <agent> <request-id> --signer-key-file <member.json> [--rpc-url URL] [--json]",
+    "status": "fleet admin status <agent> [--rpc-url URL] [--json]"
+  },
+  "freeze_cycle_55": {
+    "request": {
+      "command": "fleet admin request freeze agent-b1.fleet-modeb-748d4372.testnet --json",
+      "ok": true,
+      "requestId": 55,
+      "txHash": "6DCjtGMNuTevTA23oKxPTUVUpi41qwoePZpG88kHZzu3",
+      "blockHeight": 276643696
+    },
+    "owner1_confirm": {
+      "command": "fleet admin confirm agent-b1.fleet-modeb-748d4372.testnet 55 --signer-key-file fleet-v03-5cff9e99.testnet.json --json",
+      "ok": true,
+      "txHash": "DBR6Spz8iG81Ngd34MzVPQ1RgFktstKmzDiPkKzNks3E",
+      "blockHeight": 276643740,
+      "executed": false,
+      "confirmations": ["fleet-v03-5cff9e99.testnet"],
+      "confirmationCount": 1
+    },
+    "owner2_confirm": {
+      "provider": "https://near-testnet.drpc.org",
+      "provider_error": "Internal server error (the executing send_tx response was dropped by dRPC after the tx landed)",
+      "executed_on_chain": true,
+      "audit_head": {
+        "seq": 53,
+        "action": "freeze",
+        "actor_account": "fleet-modeb-748d4372.testnet",
+        "signer_pk": "ed25519:27zeqN555dhm6B65WCk4QePiztXthKpPG92nj44z6f5t",
+        "subject": "paused=true",
+        "block_height": 276643790
+      }
+    },
+    "state_after": { "paused": true },
+    "cycle_1": {
+      "request_id": 53,
+      "note": "proposed by the diagnostic broadcast probe; the product create path was verified in cycle 54/55",
+      "owner1_confirm": {
+        "txHash": "A9fNAY6vsiDF4hSeyVkVXriMwPpeG1boEvMgX21NEvz8",
+        "blockHeight": 276642539,
+        "executed": false
+      },
+      "owner2_confirm": {
+        "provider_error": "Internal server error (executed on chain; dRPC dropped the response)",
+        "audit_head": { "seq": 51, "action": "freeze", "block_height": 276642904 }
+      }
+    }
+  },
+  "unfreeze_cycle_56": {
+    "request": {
+      "ok": true,
+      "requestId": 56,
+      "txHash": "7orkDXbyDVPLERKjZA4Z1vScVPDrjFMGV4AyzSJFRsRZ",
+      "blockHeight": 276644188
+    },
+    "owner1_confirm": {
+      "ok": true,
+      "txHash": "6BZmG62mAz1G6unhkdo4xEGtkR33JYcjVJuuiWYJh7NS",
+      "blockHeight": 276644202,
+      "executed": false,
+      "confirmations": ["fleet-v03-5cff9e99.testnet"],
+      "confirmationCount": 1
+    },
+    "owner1_confirm_presubmit": {
+      "note": "one confirmation by owner1 left the agent paused=true (the unfreeze did not happen at 1/2)"
+    },
+    "owner2_confirm": {
+      "provider": "https://testnet-rpc.intea.rs",
+      "ok": true,
+      "executed": true,
+      "txHash": "AqkwUPxvRhR9VbLdLQ5hdxouYb5hEzZSR1F8QDXntLGs",
+      "blockHeight": 276644329,
+      "gasBurnt": "7408141866650"
+    },
+    "state_after": {
+      "paused": false,
+      "audit_head": {
+        "seq": 54,
+        "action": "unfreeze",
+        "actor_account": "fleet-modeb-748d4372.testnet",
+        "block_height": 276644331
+      }
+    },
+    "cycle_1": {
+      "request_id": 54,
+      "request": {
+        "txHash": "AFqJTAfX1zsAUVcHfJvh1q5gsxfoHNJgRDFkh1rMmz9t",
+        "blockHeight": 276643330
+      },
+      "owner1_confirm": {
+        "txHash": "42FZx2bZdBVTUhoZdrVLV3Pr9E7a1Gzsn44uBZgteFNy",
+        "blockHeight": 276643373,
+        "executed": false
+      },
+      "owner2_confirm": {
+        "provider_error": "Internal server error (executed on chain; dRPC dropped the response)",
+        "audit_head": { "seq": 52, "action": "unfreeze", "block_height": 276643418 }
+      }
+    }
+  },
+  "non_member_control": {
+    "signer": "agent-1b.fleet-v03-5cff9e99.testnet (Mode A admin, not a multisig member)",
+    "command": "fleet admin request freeze agent-b1.fleet-modeb-748d4372.testnet --signer-key-file agent-1b_fleet-v03-5cff9e99_testnet__admin3.json --json",
+    "ok": false,
+    "code": "FLEET_E_REJECTED",
+    "exitCode": 6,
+    "message": "signer (agent-1b.fleet-v03-5cff9e99.testnet) is not a member of fleet-modeb-748d4372.testnet; the multisig is the admin, not this key",
+    "broadcast": false
+  },
+  "wrong_request_control": {
+    "signer": "fleet-v03-5cff9e99.testnet (member)",
+    "command": "fleet admin confirm agent-b1.fleet-modeb-748d4372.testnet 2 --signer-key-file fleet-v03-5cff9e99.testnet.json --json",
+    "note": "request 2 is an unrelated Transfer to agent-lat1; the product must not confirm non-freeze/unfreeze requests for the agent",
+    "ok": false,
+    "code": "FLEET_E_REJECTED",
+    "exitCode": 6,
+    "broadcast": false
+  },
+  "stale_pending_requests_untouched": [
+    {
+      "requestId": 2,
+      "actions": "Transfer 3000000000000000000000000 -> agent-lat1.fleet-modeb-748d4372.testnet",
+      "confirmations": ["fleet-v03-5cff9e99.testnet"]
+    },
+    {
+      "requestId": 5,
+      "actions": "FunctionCall freeze -> agent-b1.fleet-modeb-748d4372.testnet",
+      "confirmations": []
+    }
+  ],
+  "wasted_receipts": [
+    "Two retries of the executing unfreeze confirm on request 56, run against dRPC and rpc.testnet.near.org AFTER the unfreeze had already executed; both panicked on-chain with 'No such request'. No state change.",
+    "Two earlier executing confirms (freeze 53 owner2; unfreeze 54 owner2) were broadcast by the CLI and dropped by dRPC ('Internal server error'); their effects were verified from the audit chain."
+  ],
+  "provider_notes": {
+    "drpc": "FastNEAR-family endpoint; accepts send_tx for non-executing requests, but drops the response for the executing confirm (cross-contract chain). Raw execution still completes.",
+    "intear": "executed the executing unfreeze confirm cleanly with waitUntil FINAL (tx AqkwUPxv...)",
+    "fastnear": "intermittent fetch failures and rate limits during the same run"
+  },
+  "signer_key_files": "kept outside the repository, mode 600; owner files confirmed as member signer identities (public keys only recorded)",
+  "final_state": { "paused": false, "audit_head_seq": 54 }
+}

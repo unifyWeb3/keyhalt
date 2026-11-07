@@ -2,7 +2,9 @@
 
 **Status:** v0.3 — controller, TypeScript SDK, and CLI are implemented and have
 run on NEAR testnet. Mode B 2-of-2 administration is implemented and verified on
-testnet by the harness, not yet exposed as SDK/CLI write commands. The read-only
+testnet both by the harness and through the product CLI
+(`fleet admin request freeze|unfreeze` / `fleet admin confirm` /
+`fleet admin status`; claim rows F-038…F-040). The read-only
 API is still a **scaffold** (`/health` only). The console is **built and
 read-only** (`@fleet/console`): design system `docs/DESIGN_SYSTEM.md`, screen
 draft `docs/CONSOLE_DRAFT.md`; recording and public use remain approval-gated.
@@ -210,7 +212,27 @@ fleet accept-admin <account> --signer-key-file <path> [--json]
 fleet cancel-admin <account> --signer-key-file <path> [--json]
 fleet recover <account> --new-admin <public-key> --signer-key-file <path> [--json]
 fleet execute <account> --method <name> [--args '<json>'] [--gas <tgas>] [--receiver <account>] --signer-key-file <path> [--json]
+
+# Mode B multisig (agent admin is the deployed 2-of-2 multisig2 contract):
+fleet admin request freeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
+fleet admin request unfreeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
+fleet admin confirm <agent> <request-id> --signer-key-file <member.json> [--rpc-url URL] [--json]
+fleet admin status <agent> [--rpc-url URL] [--json]
 ```
+
+`admin request` reads the agent's state, requires Mode B and a multisig
+admin account, verifies the signer's membership (a non-member is refused,
+exit 6, before broadcast), and proposes a freeze/unfreeze FunctionCall on the
+agent controller through the admin multisig. `admin confirm` fetches the
+pending request, refuses (no broadcast) any request that is not a
+freeze/unfreeze FunctionCall targeting the same agent, verifies member
+signer identity when the key file carries `account_id`, and confirms.
+Reaching the multisig's required confirmations executes the action; below it,
+the confirmation is recorded and the agent is unchanged. `admin status`
+reports the members, required confirmations, request nonce, and pending
+requests. The Mode B product path is verified on testnet (F-038…F-040).
+Membership enforcement is enforced locally **and** by the multisig itself
+(the pinned contract's predecessor check).
 
 `--rpc-url` defaults to `https://rpc.testnet.fastnear.com`; `FLEET_RPC_URL` is
 also accepted. `--signer-key-file` falls back to `FLEET_SIGNER_KEY_FILE`.
