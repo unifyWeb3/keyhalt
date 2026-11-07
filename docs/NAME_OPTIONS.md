@@ -4,7 +4,8 @@
 registered, reserved, claimed, or created.** Every check below is a read-only
 lookup.
 
-**Checked on:** 2026-11-06 UTC.
+**Checked on:** 2026-11-06 UTC; re-verified 2026-11-07 UTC against live
+GitHub, X and nearblocks APIs with fresh 404/301/200 controls.
 
 ## How the check was done
 
@@ -122,3 +123,60 @@ human's explicit approval**, and each is a one-shot operation that cannot be
 undone cleanly. The NEAR root account in particular needs a funded account to
 create, which is a mainnet action and is therefore outside the current
 testnet-only scope.
+
+---
+
+## Re-verification (2026-11-07 UTC)
+
+| Axis | Fleetgate | Keyhalt | Squadfence |
+| --- | --- | --- | --- |
+| GitHub repos matching name | 5, all 0 stars, none NEAR | 0 | 0 |
+| GitHub account/org | **TAKEN** (HTTP 200) | free (404) | free (404) |
+| `unifyWeb3/<name>` repo | free (404) | free (404) | free (404) |
+| Public X handle (after `-L`) | free (404) | free (404) | free (404) |
+| NEAR root account (`<name>.near`) | free (no account record) | free | free |
+| NEAR ecosystem clash | none found | none found | none found |
+| Trademark-looking conflict | one small unrelated UK company (FleetGate Hardware Ltd, higher education) | none found | none found; phonetic adjacency to SCADAfence (Honeywell OT security, acquired 2023) |
+| X OAuth `oembed` calibration | 301→follows to 404 (free); `NEARProtocol` = 200, `zzzfleetcheck9x8` = 404 | same | same |
+| Recommended label | strongest product story | safest all-clean | weakest story |
+
+## Recommendation
+
+**Fleetgate**, with the repository kept under the existing `unifyWeb3` org.
+
+Why: in a security-track product, the name should say the action. "Fleetgate"
+is what the freeze is: you close a gate on the fleet. It carries the audit
+story (the gate's own log), the Mode A/Mode B honesty (a gate is not a
+guarantee), and it presents well in a demo title. The GitHub org being taken
+is cosmetic — the repository lives under `unifyWeb3/fleetgate` (free), the X
+handle is free, and `fleetgate.near` is free. The one trademark-looking hit
+(a 4-person UK education-sector company) has no software, crypto, or security
+footprint and no evidence of actual registration or enforcement; it is
+recorded here so the human can judge it.
+
+**Alternate:** **Keyhalt** — 100% clean on every axis. If any collision
+question makes the human uneasy, pick Keyhalt instead: zero disambiguation
+burden, full honesty about the tradeoff (narrower name, undersells audit and
+the two admin modes).
+
+**Third:** **Squadfence** — clean on all axes, but reads as a derivative of
+Honeywell's SCADAfence in a security audience and dilutes the product story.
+
+## Blast radius if the human picks a rename
+
+153 files contain a case-insensitive `fleet`; 17 reference `FLEET_E_*`; 4
+packages are `@fleet/*`; the CLI binary is `fleet`; the root package is
+`fleet`; the wordmark/brand lives in web/. A rename in one commit touches:
+repository name and `git remote` URL; `packages/*/package.json` names;
+`package-lock.json` workspace entries; `@fleet/*` imports and build scripts;
+the CLI bin name and its docs; `README.md` (title, claim sections, repository
+layout); `web/` wordmark/favicon; `Makefile` / scripts / harness command
+strings (`console-demo`, `fresh-clone-test`); `CLAIMS.md` row text that names
+packages (`@fleet/sdk` etc.); `docs/*` references. Evidence files and audit
+exports are historical and stay verbatim; `FLEET_E_*` error codes stay unless
+the human explicitly wants the SDK wire format broken (all tests and the SDK
+test matrix would move with it). Screenshots regenerate after approval.
+No wasm change: the controller source is out of scope of the display name.
+
+**No rename happens until the human picks.** The dry run itself lists every
+affected file and string before anything is applied.
