@@ -8,7 +8,7 @@ set -euo pipefail
 umask 077
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP="$(mktemp -d "${TMPDIR:-/tmp}/fleet-fresh-clone.XXXXXX")"
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/keyhalt-fresh-clone.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 
 if ! git -C "$ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
@@ -16,9 +16,9 @@ if ! git -C "$ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "== Fresh clone into $TMP/fleet =="
-git clone --quiet --no-hardlinks "$ROOT" "$TMP/fleet"
-cd "$TMP/fleet"
+echo "== Fresh clone into $TMP/keyhalt =="
+git clone --quiet --no-hardlinks "$ROOT" "$TMP/keyhalt"
+cd "$TMP/keyhalt"
 
 echo "== make setup =="
 make setup
@@ -31,13 +31,16 @@ node scripts/console-smoke.mjs
 
 echo "== Negative control: malformed VERIFIED row must be rejected =="
 cp CLAIMS.md CLAIMS.md.bak
-printf '| F-999 | Malformed row with no evidence | VERIFIED | — | 2026-11-03 |\n' >> CLAIMS.md
+printf '| F-999 | Malformed row with no evidence | VERIFIED |: | 2026-11-03 |\n' >> CLAIMS.md
 if node scripts/check-claims.mjs >/dev/null 2>&1; then
   echo "FRESH CLONE: FAIL: claims checker accepted a VERIFIED row without evidence" >&2
   exit 1
 fi
 mv CLAIMS.md.bak CLAIMS.md
 echo "OK: malformed claim rejected"
+
+echo "== Style gate (fresh clone) =="
+node scripts/style-check.mjs
 
 echo "== Negative control: mainnet RPC must be refused =="
 if NEAR_RPC_URL=https://rpc.mainnet.near.org node scripts/rpc-check.mjs >/dev/null 2>&1; then
@@ -57,4 +60,4 @@ if [ ! -x scripts/secret-scan.sh ] || [ ! -x scripts/fresh-clone-test.sh ]; then
 fi
 
 echo
-echo "FLEET fresh-clone test: PASS"
+echo "Keyhalt fresh-clone test: PASS"
