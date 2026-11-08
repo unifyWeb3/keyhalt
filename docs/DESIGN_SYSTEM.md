@@ -166,7 +166,7 @@ See `design/DEVIATIONS.md`.
 
 ### 4.6 Footer
 
-One line: `Verified 37/37` linking to `CLAIMS.md`, and `Threat model`.
+One line: `Verified 40/40` linking to `CLAIMS.md`, and `Threat model`.
 Individual facts carry a check mark that links to their transaction. A quiet
 right-hand note states that the draft renders captured testnet evidence and
 that the block counter is a stand-in.

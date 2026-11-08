@@ -107,7 +107,7 @@ not published." That is recorded rather than papered over.
 **What the diff contains.** `pre-hackathon..hackathon-submission` is the whole
 v0.3 product: the controller (`contracts/fleet-controller`), the SDK, the CLI,
 the read-only API scaffold, the near-workspaces integration suite, the testnet
-harness scripts, the `evidence/` tree, `CLAIMS.md` with its 37 verified rows,
+harness scripts, the `evidence/` tree, `CLAIMS.md` with its 37 verified rows at the time (40 as of 2026-11-08),
 and the documentation. The baseline contributes the scaffold, the CI, and the
 reproducibility harness. The two multisig2 source files that are copied in for
 the Mode B build are attributed in §6 and excluded from the claim that the

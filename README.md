@@ -76,7 +76,7 @@ Expected tail:
 
 ```text
 FLEET verification: PASS
-CLAIMS 37/37 verified (37 rows)
+CLAIMS 40/40 verified (40 rows)
 ```
 
 The RPC check is best-effort by default; set `FLEET_REQUIRE_RPC=1` to make a

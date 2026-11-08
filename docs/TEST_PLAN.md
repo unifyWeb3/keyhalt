@@ -35,7 +35,7 @@ proving test. This document is the test-plan overview; where the two overlap,
 | Gas | `scripts/gas-profile.mjs` | per-operation cost from canonical evidence | **29 groups**, 3 provision rows |
 | Repro | `scripts/repro-build.sh` + multisig source build | two clean `--locked` builds per wasm | **byte-identical** |
 | Fresh clone | `scripts/fresh-clone-test.sh`, `scripts/fresh-clone-clean-session.sh` | a clean clone can reproduce the deployed artifact with no inherited secret | **PASS** 2026-11-06; F-037 |
-| Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **37/37 verified** |
+| Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **40/40 verified** |
 
 **Sandbox note:** `near-workspaces` cannot run on the arm64 development host
 (`Unsupported platform: Linux arm64`; the newer sandbox needs Node ≥22.22.2
@@ -348,7 +348,7 @@ and `evidence/sdk-v03/presign.json`.
 | T-SC-02 | Claims checker rejects malformed/unsupported rows | **PASS** (clean-session negative control) |
 | T-SC-03 | README "do X, see Y" matches reality | **PASS** in the fresh-clone run |
 | T-SC-04 | No key/credential in clone or history | **PASS** working tree + history scan |
-| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL** — 37 rows, tx hashes public; not one re-run script |
+| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL** — 40 rows, tx hashes public; not one re-run script |
 | T-S-001…T-S-007 | Setup, verify, claims, secret scan, mainnet refusal, static web check | **PASS** (v0.3 verify + fresh clone) |
 
 ### 10.1 Automated mutation survivors (4 of 252) and their disposition
