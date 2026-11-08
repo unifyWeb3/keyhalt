@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 /**
- * FLEET v0.3 — pre-signed freeze on NEAR testnet.
+ * Keyhalt v0.3: pre-signed freeze on NEAR testnet.
  *
  * Testnet only. No mainnet, no spend, no registration.
  *
  * The script drives the published CLI (packages/cli) through the whole
  * pre-signed path:
  *
- *   1. `fleet freeze <agent> --pre-sign --out <file>` signs the call locally
+ *   1. `keyhalt freeze <agent> --pre-sign --out <file>` signs the call locally
  *      and writes it out without broadcasting it;
- *   2. the agent must still be unfrozen at this point — a pre-signed
+ *   2. the agent must still be unfrozen at this point: a pre-signed
  *      transaction must not change any state;
- *   3. `fleet freeze <agent> --submit-signed <file>` broadcasts the signed
+ *   3. `keyhalt freeze <agent> --submit-signed <file>` broadcasts the signed
  *      transaction;
  *   4. the agent must now be frozen, and the audit chain must have grown by
  *      one entry;
- *   5. `fleet unfreeze <agent>` restores the agent.
+ *   5. `keyhalt unfreeze <agent>` restores the agent.
  *
  * The signed file holds a signature, not a secret key. The script checks the
  * file mode (600), checks that it carries no secret key, and deletes it at
@@ -25,9 +25,9 @@
  *   node scripts/testnet-presign-freeze.mjs
  *
  * Environment:
- *   FLEET_RPC           RPC URL (default: https://rpc.testnet.fastnear.com)
- *   FLEET_PRESIGN_AGENT agent account id
- *   FLEET_SDK_KEY_ROOT  directory with the agent key files
+ *   KEYHALT_RPC           RPC URL (default: https://rpc.testnet.fastnear.com)
+ *   KEYHALT_PRESIGN_AGENT agent account id
+ *   KEYHALT_SDK_KEY_ROOT  directory with the agent key files
  *
  * Evidence: evidence/sdk-v03/presign.json
  */
@@ -38,20 +38,20 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
-import { createFleetClient } from "../packages/sdk/dist/index.js";
+import { createKeyhaltClient } from "../packages/sdk/dist/index.js";
 
 const run = promisify(execFile);
 
-const RPC = process.env.FLEET_RPC || "https://rpc.testnet.fastnear.com";
+const RPC = process.env.KEYHALT_RPC || "https://rpc.testnet.fastnear.com";
 if (/mainnet/i.test(RPC) || process.env.NEAR_MAINNET) {
   console.error("refusing to run against mainnet");
   process.exit(2);
 }
 
 const AGENT =
-  process.env.FLEET_PRESIGN_AGENT || "agent-lat.fleet-lat-1a1a7db6741.testnet";
+  process.env.KEYHALT_PRESIGN_AGENT || "agent-lat.fleet-lat-1a1a7db6741.testnet";
 const KEY_ROOT =
-  process.env.FLEET_SDK_KEY_ROOT || "/root/.near-fallback-keys/fleet-v03/modeb";
+  process.env.KEYHALT_SDK_KEY_ROOT || "/root/.near-fallback-keys/fleet-v03/modeb";
 const CLI = fileURLToPath(new URL("../packages/cli/dist/index.js", import.meta.url));
 const SIGNED_DIR = resolve("evidence/sdk-v03");
 const EVIDENCE = join(SIGNED_DIR, "presign.json");
@@ -134,7 +134,7 @@ async function unfreezeAgent(client, adminPath) {
 async function main() {
   const adminPath = keyPath(AGENT, "admin");
   const secret = loadSecret(adminPath);
-  const client = createFleetClient({ rpcUrl: RPC, accountId: AGENT, signer: secret });
+  const client = createKeyhaltClient({ rpcUrl: RPC, accountId: AGENT, signer: secret });
 
   const before = await withRetry("get_state", () => client.getState());
   if (before.paused) {
@@ -179,8 +179,8 @@ async function main() {
   assert(!raw.includes(secret), "signed file must not contain the secret key");
   const payload = JSON.parse(raw);
   assert(
-    payload.format === "fleet-signed-tx-v1",
-    "signed file must carry the FLEET format marker",
+    payload.format === "keyhalt-signed-tx-v1",
+    "signed file must carry the Keyhalt format marker",
   );
   assert(payload.method === "freeze", "signed file must carry the freeze method");
   assert(payload.network === "testnet", "signed file must target testnet");
@@ -239,7 +239,7 @@ async function main() {
     network: "testnet",
     rpc: RPC,
     agent: AGENT,
-    path: "packages/cli fleet freeze --pre-sign / --submit-signed",
+    path: "packages/cli keyhalt freeze --pre-sign / --submit-signed",
     pre_signed: {
       tx_hash: preSigned.txHash,
       public_key: preSigned.publicKey,

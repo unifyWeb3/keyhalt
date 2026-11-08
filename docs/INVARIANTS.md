@@ -1,4 +1,4 @@
-# FLEET controller invariants
+# Keyhalt controller invariants
 
 **Status:** v0.3 invariant-to-test map, final 2026-11-06 UTC.
 
@@ -34,7 +34,7 @@ the invariant `FAILED` and the release is blocked.
 | I-10 | The rotation/provision callback path is private and idempotent on failure | `tests::public_callback_is_private`; `tests::private_callback_refusal_is_logged_with_its_reason`; `tests::failed_rotation_self_callback_clears_inflight_and_allows_retry`; `tests::failed_recovery_callback_leaves_no_inflight_and_allows_retry`; `tests::provisioning_callback_promotes_operators`; `model::tests::grant_failure_removes_pending_operator` | VERIFIED |
 | I-11 | Mode A and Mode B are exclusive; Mode B acts only through the predecessor account | `model::tests::init_rejects_both_modes`; `model::tests::init_rejects_both_or_neither_mode`; `model::tests::mode_b_admin_is_predecessor_only`; `tests::mode_b_uses_predecessor_account`; `tests::init_rejects_both_modes`; integration “provisions a Mode B agent with four active FunctionCall operators”; F-021, F-022, F-024 | VERIFIED |
 | I-12 | No lifecycle method issues `AddKey` for a key that already has a role; activation performs no `AddKey` | `model::tests::grant_and_propose_reject_keys_that_already_have_a_role`; `model::tests::rotate_is_fresh_key_first_and_keeps_old_until_confirmed`; `tests::admin_rotation_has_no_add_key_on_accept`; `tests::grant_and_rotate_add_only_function_call_keys`; F-006 | VERIFIED |
-| I-13 | The differential reference model matches the implementation on shared random sequences | `model::tests::reference_model_matches_a_short_sequence`; `model::tests::random_sequences_preserve_reference_and_audit` — 3 seeds × 5,000 steps = 15,000 comparisons; the reference model is in `contracts/fleet-controller/src/reference_model.rs`, written from `docs/SPEC_v0.3.md` alone | VERIFIED |
+| I-13 | The differential reference model matches the implementation on shared random sequences | `model::tests::reference_model_matches_a_short_sequence`; `model::tests::random_sequences_preserve_reference_and_audit`: 3 seeds × 5,000 steps = 15,000 comparisons; the reference model is in `contracts/fleet-controller/src/reference_model.rs`, written from `docs/SPEC_v0.3.md` alone | VERIFIED |
 | I-14 | Cross-agent keys are rejected by the native FunctionCall receiver ACL on the other agent and accepted on their own | testnet `evidence/modeb-v03/run.json` isolation; F-028 | VERIFIED (native ACL layer; not a hostile co-resident contract test) |
 
 ## Backend gates (final v0.3)
@@ -49,18 +49,18 @@ invariant table trustworthy. Each one names the exact run that proves it.
 | Integration suite | A real near-sandbox (near-workspaces 5.0.0) provisions a Mode B agent, holds no FullAccess key, runs operator execute, freezes/refuses/unfreezes, and keeps the audit chain verifiable | `integrations/js/integrations.test.mjs` (7 tests); GitHub Actions `integration` run on `81325ed` | VERIFIED |
 | Mode A latency | 20 freeze and 20 unfreeze cycles on the single-transaction admin path with p50/p95 submit-to-optimistic and submit-to-final, plus blocks to effect | `evidence/latency-v03/run.json`; F-029, F-030 | VERIFIED |
 | Mode B latency | 20 freeze and 20 unfreeze cycles on the 2-of-2 multisig path (three transactions each) with the same statistics | `evidence/latency-v03/run.json`; F-031, F-032 | VERIFIED |
-| SDK concurrency | 12 concurrent `createFleetClient().execute()` calls through the published SDK all succeed on testnet | `evidence/sdk-v03/concurrency.json`; F-033 | VERIFIED |
+| SDK concurrency | 12 concurrent `createKeyhaltClient().execute()` calls through the published SDK all succeed on testnet | `evidence/sdk-v03/concurrency.json`; F-033 | VERIFIED |
 | Pre-signed freeze | CLI signs a freeze without broadcasting it (state and audit length unchanged), then `--submit-signed` broadcasts it, the account freezes, the audit chain verifies, and an unfreeze restores it | `evidence/sdk-v03/presign.json`; F-034 | VERIFIED |
 | Claims discipline | Every VERIFIED claim has evidence, and the checker rejects a malformed VERIFIED row | `scripts/check-claims.mjs`; negative control in `scripts/fresh-clone-clean-session.sh` (F-037) | VERIFIED |
-| Clean-session clone | A clone with no inherited `FLEET_*`/`NEAR_*` variable and an empty `HOME` passes `make setup` and `make verify` and reproduces the deployed wasm sha256 | `scripts/fresh-clone-clean-session.sh`; F-037 | VERIFIED |
+| Clean-session clone | A clone with no inherited `KEYHALT_*`/`NEAR_*` variable and an empty `HOME` passes `make setup` and `make verify` and reproduces the deployed wasm sha256 | `scripts/fresh-clone-clean-session.sh`; F-037 | VERIFIED |
 
 ## Test counts for v0.3 (final, 2026-11-06 UTC)
 
 - Rust: **84/84 pass** in `cargo test -p fleet-controller --lib`:
-  - 19 `model::tests` — pure state machine, audit chain, and the differential
+  - 19 `model::tests`: pure state machine, audit chain, and the differential
     reference-model property test;
-  - 25 `tests` — near-sdk wrapper, callback, receipt, and policy tests;
-  - 40 `mutation_tests` — targeted mutant-killing regression set.
+  - 25 `tests`: near-sdk wrapper, callback, receipt, and policy tests;
+  - 40 `mutation_tests`: targeted mutant-killing regression set.
 - Property/differential: **3 sequences × 5,000 steps** compared after every
   step, plus audit verification each step. Total **15,000** comparisons.
   The mutation workflow runs the same test at 1 × 20 steps per mutant

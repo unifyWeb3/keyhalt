@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FLEET v0.3 latency agent provisioning.
+ * Keyhalt v0.3 latency agent provisioning.
  *
  * Testnet only. Creates a dedicated Mode A agent for the latency harness so
  * that the canonical agents are never mutated by a measurement run.
@@ -33,9 +33,9 @@ import { installHttpsFetch } from "./lib/https-fetch.mjs";
 setDefaultResultOrder("ipv4first");
 installHttpsFetch();
 
-const RPC = process.env.FLEET_RPC || "https://rpc.testnet.fastnear.com";
+const RPC = process.env.KEYHALT_RPC || "https://rpc.testnet.fastnear.com";
 if (/mainnet/i.test(RPC) || process.env.NEAR_MAINNET) {
-  throw new Error("FLEET is testnet-only; refusing mainnet");
+  throw new Error("Keyhalt is testnet-only; refusing mainnet");
 }
 const KEY_ROOT = "/root/.near-fallback-keys/fleet-v03/modeb";
 const CONTROLLER_WASM = resolve(
@@ -216,7 +216,7 @@ async function faucet(accountId, publicKey) {
 }
 
 async function ensureParent() {
-  const existing = process.env.FLEET_LATENCY_PARENT;
+  const existing = process.env.KEYHALT_LATENCY_PARENT;
   if (existing) {
     const key = loadKey(existing, "latency-parent");
     if (!key) throw new Error(`missing latency-parent key for ${existing}`);

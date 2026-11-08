@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * fleet-mcp — read-only FLEET MCP server on stdio.
+ * keyhalt-mcp: read-only Keyhalt MCP server on stdio.
  *
  *   node packages/mcp/dist/cli.js [--rpc-url URL]
  *
@@ -11,13 +11,13 @@
 import { createInterface } from "node:readline";
 
 import {
-  FleetMcpService,
+  KeyhaltMcpService,
   MCP_SERVER_VERSION,
   handleRpc,
   type JsonRpcRequest,
 } from "./index.js";
 
-import { DEFAULT_TESTNET_RPC } from "@fleet/sdk";
+import { DEFAULT_TESTNET_RPC } from "@keyhalt/sdk";
 
 function parseRpcUrl(argv: string[]): string {
   for (let index = 0; index < argv.length; index += 1) {
@@ -26,27 +26,27 @@ function parseRpcUrl(argv: string[]): string {
       const value = argv[index + 1];
       if (value === undefined) throw new Error("--rpc-url needs a value");
       if (/mainnet/i.test(value)) {
-        throw new Error("FLEET is testnet-only; mainnet RPC URLs are refused");
+        throw new Error("Keyhalt is testnet-only; mainnet RPC URLs are refused");
       }
       return value;
     }
     if (arg === "--help" || arg === "-h") {
       process.stdout.write(
-        `fleet-mcp ${MCP_SERVER_VERSION} — read-only FLEET MCP server\n\nUsage:\n  fleet-mcp [--rpc-url URL]\n`,
+        `keyhalt-mcp ${MCP_SERVER_VERSION}: read-only Keyhalt MCP server\n\nUsage:\n  keyhalt-mcp [--rpc-url URL]\n`,
       );
       process.exit(0);
     }
     throw new Error(`unknown argument: ${arg}`);
   }
-  const fromEnv = process.env.FLEET_MCP_RPC_URL ?? process.env.FLEET_RPC_URL;
+  const fromEnv = process.env.KEYHALT_MCP_RPC_URL ?? process.env.KEYHALT_RPC_URL;
   if (fromEnv !== undefined && /mainnet/i.test(fromEnv)) {
-    throw new Error("FLEET is testnet-only; mainnet RPC URLs are refused");
+    throw new Error("Keyhalt is testnet-only; mainnet RPC URLs are refused");
   }
   return fromEnv ?? DEFAULT_TESTNET_RPC;
 }
 
 const rpcUrl = parseRpcUrl(process.argv.slice(2));
-const service = new FleetMcpService({ rpcUrl });
+const service = new KeyhaltMcpService({ rpcUrl });
 
 async function main(): Promise<void> {
   const rl = createInterface({ input: process.stdin });
@@ -84,6 +84,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error: unknown) => {
-  process.stderr.write(`fleet-mcp: ${String(error)}\n`);
+  process.stderr.write(`keyhalt-mcp: ${String(error)}\n`);
   process.exit(1);
 });

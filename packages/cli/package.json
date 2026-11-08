@@ -1,11 +1,11 @@
 {
-  "name": "@fleet/cli",
+  "name": "@keyhalt/cli",
   "version": "0.3.0",
   "private": true,
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "fleet": "./dist/index.js"
+    "keyhalt": "./dist/index.js"
   },
   "license": "MIT",
   "scripts": {

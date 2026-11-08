@@ -1,10 +1,10 @@
 # Web
 
-The read-only FLEET / Keyhalt console interface. Served by
+The read-only Keyhalt / Keyhalt console interface. Served by
 `packages/console` from the same origin at `http://127.0.0.1:4173` via
 `make console`.
 
-- Real interface: Fleet, Agent, Timeline screens driven by explicit state
+- Real interface: Keyhalt, Agent, Timeline screens driven by explicit state
   machines in `state.js` (see `docs/UI_STATE_MACHINES.md`).
 - Live finalized-block ticker in the header; SSE-driven refreshes; all
   numbers on screen are read live from testnet or counted from `CLAIMS.md`.

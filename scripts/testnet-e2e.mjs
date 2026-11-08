@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FLEET v0.3 testnet end-to-end run.
+ * Keyhalt v0.3 testnet end-to-end run.
  *
  * Testnet only. Provisions three native sub-account agents from a faucet-funded
  * parent, proves zero full-access keys, runs 12 concurrent executions (3 agents
@@ -24,17 +24,17 @@ import { createHash, randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
-const RPC = process.env.FLEET_RPC || "https://rpc.testnet.near.org";
+const RPC = process.env.KEYHALT_RPC || "https://rpc.testnet.near.org";
 if (/mainnet/i.test(RPC) || process.env.NEAR_MAINNET) {
-  throw new Error("FLEET is testnet-only; refusing mainnet");
+  throw new Error("Keyhalt is testnet-only; refusing mainnet");
 }
 
-const PARENT = process.env.FLEET_PARENT || "fleet-v03-5cff9e99.testnet";
+const PARENT = process.env.KEYHALT_PARENT || "fleet-v03-5cff9e99.testnet";
 const PARENT_KEY =
-  process.env.FLEET_PARENT_KEY ||
+  process.env.KEYHALT_PARENT_KEY ||
   `/root/.near-fallback-keys/fleet-v03-faucet/${PARENT}.json`;
 const KEY_ROOT =
-  process.env.FLEET_KEY_ROOT || "/root/.near-fallback-keys/fleet-v03/e2e";
+  process.env.KEYHALT_KEY_ROOT || "/root/.near-fallback-keys/fleet-v03/e2e";
 const WASM_PATH = resolve(
   "target/wasm32-unknown-unknown/release/fleet_controller.wasm",
 );
@@ -44,9 +44,9 @@ const AGENT_BALANCE = 2_800_000_000_000_000_000_000_000n; // 2.8 NEAR
 const AGENT_COUNT = 3;
 const OPERATORS_PER_AGENT = 4;
 const AGENT_IDS = [
-  process.env.FLEET_AGENT1 || `agent-1.${PARENT}`,
-  process.env.FLEET_AGENT2 || `agent-2.${PARENT}`,
-  process.env.FLEET_AGENT3 || `agent-3.${PARENT}`,
+  process.env.KEYHALT_AGENT1 || `agent-1.${PARENT}`,
+  process.env.KEYHALT_AGENT2 || `agent-2.${PARENT}`,
+  process.env.KEYHALT_AGENT3 || `agent-3.${PARENT}`,
 ];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -304,7 +304,7 @@ function makeRecorder() {
     },
     check(name, ok, detail) {
       checks.push({ name, ok, detail });
-      console.log(`[check] ${ok ? "PASS" : "FAIL"} ${name}${detail ? ` — ${detail}` : ""}`);
+      console.log(`[check] ${ok ? "PASS" : "FAIL"} ${name}${detail ? `: ${detail}` : ""}`);
       if (!ok) throw new Error(`check failed: ${name}${detail ? `: ${detail}` : ""}`);
     },
   };
@@ -1181,7 +1181,7 @@ async function main() {
 
 function renderMarkdown(evidence) {
   const lines = [];
-  lines.push("# FLEET v0.3 testnet run");
+  lines.push("# Keyhalt v0.3 testnet run");
   lines.push("");
   lines.push(`- Started: ${evidence.run.started_at}`);
   lines.push(`- Finished: ${evidence.run.finished_at}`);
@@ -1198,10 +1198,10 @@ function renderMarkdown(evidence) {
   for (const agent of evidence.agents) {
     const createCell = agent.create_tx
       ? `[${agent.create_tx}](https://testnet.nearblocks.io/txns/${agent.create_tx})`
-      : "reused — see `testnet/run-v03.json`";
+      : "reused: see `testnet/run-v03.json`";
     const initCell = agent.init_tx
       ? `[${agent.init_tx}](https://testnet.nearblocks.io/txns/${agent.init_tx})`
-      : "reused — see `testnet/run-v03.json`";
+      : "reused: see `testnet/run-v03.json`";
     lines.push(
       `| \`${agent.id}\` | ${createCell} | ${initCell} | \`${agent.admin_pk}\` | \`${agent.recovery_pk}\` |`,
     );
@@ -1253,7 +1253,7 @@ function renderMarkdown(evidence) {
 }
 
 main().catch((error) => {
-  console.error("[fatal] FLEET testnet run failed");
+  console.error("[fatal] Keyhalt testnet run failed");
   console.error(error instanceof Error ? error.stack : String(error));
   process.exitCode = 1;
 });

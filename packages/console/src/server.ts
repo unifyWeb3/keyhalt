@@ -1,5 +1,5 @@
 /**
- * Read-only HTTP server for the FLEET console.
+ * Read-only HTTP server for the Keyhalt console.
  *
  * GET and HEAD only. No signer, key path, write route, or wallet connection
  * exists in this process. The browser never talks to an RPC directly; it reads
@@ -198,7 +198,7 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
     }),
     claims,
     onUpdate: () => {
-      const current = snapshot.fleetPayload();
+      const current = snapshot.keyhaltPayload();
       broadcast("snapshot", {
         status: current.status,
         headBlock: current.headBlock,
@@ -216,7 +216,7 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
   const server = createServer((req, res) => {
     void handle(req, res).catch((error: unknown) => {
       if (!res.headersSent) {
-        fail(res, 500, "FLEET_CONSOLE_ERROR", String((error as Error).message ?? error));
+        fail(res, 500, "KEYHALT_CONSOLE_ERROR", String((error as Error).message ?? error));
       } else {
         res.end();
       }
@@ -242,7 +242,7 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
   async function handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const method = (req.method ?? "GET").toUpperCase();
     if (!READ_ONLY_METHODS.has(method)) {
-      fail(res, 405, "FLEET_CONSOLE_READ_ONLY", "console is read-only; use GET or HEAD", {
+      fail(res, 405, "KEYHALT_CONSOLE_READ_ONLY", "console is read-only; use GET or HEAD", {
         allow: "GET, HEAD",
       });
       return;
@@ -252,21 +252,21 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
 
     if (path === "/api/health") {
       const feedState = feed.current;
-      const fleet = snapshot.fleetPayload();
+      const keyhalt = snapshot.keyhaltPayload();
       json(res, 200, {
         ok: true,
-        status: fleet.status,
-        service: "fleet-console",
+        status: keyhalt.status,
+        service: "keyhalt-console",
         version: VERSION,
         readOnly: true,
         noSigner: true,
         chainId: "testnet",
-        headBlock: fleet.headBlock,
-        pinnedBlock: fleet.pinnedBlock,
-        lastGoodBlock: fleet.lastGoodBlock,
-        lastGoodAt: fleet.lastGoodAt,
-        stale: fleet.stale,
-        staleSince: fleet.staleSince,
+        headBlock: keyhalt.headBlock,
+        pinnedBlock: keyhalt.pinnedBlock,
+        lastGoodBlock: keyhalt.lastGoodBlock,
+        lastGoodAt: keyhalt.lastGoodAt,
+        stale: keyhalt.stale,
+        staleSince: keyhalt.staleSince,
         blockFeed: {
           pollMs: config.blockPollMs,
           lastGoodAt:
@@ -298,22 +298,22 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
       return;
     }
 
-    if (path === "/api/fleet") {
+    if (path === "/api/keyhalt") {
       if (config.agents.length > 0 && snapshot.lastGood === null) {
         await waitForData(undefined, 6_000);
       }
-      json(res, 200, snapshot.fleetPayload());
+      json(res, 200, snapshot.keyhaltPayload());
       return;
     }
 
     if (path === "/api/agent") {
       const accountId = url.searchParams.get("account");
       if (accountId === null || accountId === "") {
-        fail(res, 400, "FLEET_CONSOLE_BAD_ARGS", "missing account query parameter");
+        fail(res, 400, "KEYHALT_CONSOLE_BAD_ARGS", "missing account query parameter");
         return;
       }
       if (!snapshot.hasAgent(accountId)) {
-        fail(res, 404, "FLEET_CONSOLE_UNKNOWN_AGENT", `account is not configured: ${accountId}`);
+        fail(res, 404, "KEYHALT_CONSOLE_UNKNOWN_AGENT", `account is not configured: ${accountId}`);
         return;
       }
       const current = snapshot.agentPayload(accountId);
@@ -322,7 +322,7 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
       }
       const payload = snapshot.agentPayload(accountId);
       if (payload === null) {
-        fail(res, 503, "FLEET_CONSOLE_LOADING", "agent snapshot is not ready yet");
+        fail(res, 503, "KEYHALT_CONSOLE_LOADING", "agent snapshot is not ready yet");
         return;
       }
       json(res, 200, payload);
@@ -332,7 +332,7 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
     if (path === "/api/timeline") {
       const accountId = url.searchParams.get("account") ?? undefined;
       if (accountId !== undefined && !snapshot.hasAgent(accountId)) {
-        fail(res, 404, "FLEET_CONSOLE_UNKNOWN_AGENT", `account is not configured: ${accountId}`);
+        fail(res, 404, "KEYHALT_CONSOLE_UNKNOWN_AGENT", `account is not configured: ${accountId}`);
         return;
       }
       const rawLimit = url.searchParams.get("limit");
@@ -340,7 +340,7 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
       if (rawLimit !== null) {
         const parsed = Number(rawLimit);
         if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > 500) {
-          fail(res, 400, "FLEET_CONSOLE_BAD_ARGS", "limit must be 1..500");
+          fail(res, 400, "KEYHALT_CONSOLE_BAD_ARGS", "limit must be 1..500");
           return;
         }
         limit = parsed;
@@ -352,17 +352,17 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
     if (path === "/api/audit-export") {
       const accountId = url.searchParams.get("account");
       if (accountId === null || accountId === "") {
-        fail(res, 400, "FLEET_CONSOLE_BAD_ARGS", "missing account query parameter");
+        fail(res, 400, "KEYHALT_CONSOLE_BAD_ARGS", "missing account query parameter");
         return;
       }
       if (!snapshot.hasAgent(accountId)) {
-        fail(res, 404, "FLEET_CONSOLE_UNKNOWN_AGENT", `account is not configured: ${accountId}`);
+        fail(res, 404, "KEYHALT_CONSOLE_UNKNOWN_AGENT", `account is not configured: ${accountId}`);
         return;
       }
       await waitForData(accountId, 8_000);
       const exported = await snapshot.auditExport(accountId);
       if (exported === null) {
-        fail(res, 503, "FLEET_CONSOLE_LOADING", "audit chain is not ready yet");
+        fail(res, 503, "KEYHALT_CONSOLE_LOADING", "audit chain is not ready yet");
         return;
       }
       const body = JSON.stringify(exported, null, 2);
@@ -386,7 +386,7 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
       res.write("retry: 3000\n\n");
       const client: SseClient = { res };
       clients.add(client);
-      const current = snapshot.fleetPayload();
+      const current = snapshot.keyhaltPayload();
       res.write(
         `event: init\ndata: ${JSON.stringify({
           status: current.status,
@@ -414,14 +414,14 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
     }
 
     if (path.startsWith("/api/")) {
-      fail(res, 404, "FLEET_CONSOLE_NOT_FOUND", `no route for ${path}`);
+      fail(res, 404, "KEYHALT_CONSOLE_NOT_FOUND", `no route for ${path}`);
       return;
     }
 
     if (path === "/" || path === "/index.html") {
       const file = safeJoin(config.webRoot, "index.html");
       if (file !== null && serveFile(req, res, file, "no-store")) return;
-      fail(res, 404, "FLEET_CONSOLE_NOT_FOUND", "console build missing web/index.html");
+      fail(res, 404, "KEYHALT_CONSOLE_NOT_FOUND", "console build missing web/index.html");
       return;
     }
 
@@ -431,7 +431,7 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
           ? config.claimsPath
           : resolve(config.repoRoot, "docs/THREAT_MODEL.md");
       if (serveFile(req, res, file, "no-store")) return;
-      fail(res, 404, "FLEET_CONSOLE_NOT_FOUND", `${path} is not available`);
+      fail(res, 404, "KEYHALT_CONSOLE_NOT_FOUND", `${path} is not available`);
       return;
     }
 
@@ -440,13 +440,13 @@ export function createConsoleServer(config: ConsoleConfig): ConsoleServer {
       if (file !== null && serveFile(req, res, file, "public, max-age=31536000, immutable")) {
         return;
       }
-      fail(res, 404, "FLEET_CONSOLE_NOT_FOUND", "font not found");
+      fail(res, 404, "KEYHALT_CONSOLE_NOT_FOUND", "font not found");
       return;
     }
 
     const file = safeJoin(config.webRoot, path);
     if (file !== null && serveFile(req, res, file, "no-store")) return;
-    fail(res, 404, "FLEET_CONSOLE_NOT_FOUND", `not found: ${path}`);
+    fail(res, 404, "KEYHALT_CONSOLE_NOT_FOUND", `not found: ${path}`);
   }
 
   return {

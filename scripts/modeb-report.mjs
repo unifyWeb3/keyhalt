@@ -40,7 +40,7 @@ const audit = modeB.audit;
 const latency = evidence.latency ?? {};
 const provision = modeB.provision ?? {};
 
-push("# FLEET v0.3 Mode B testnet run");
+push("# Keyhalt v0.3 Mode B testnet run");
 push("");
 push(`- Started: ${run.started_at}`);
 push(`- Finished: ${run.finished_at}`);
@@ -69,14 +69,14 @@ const strangerFaucet = evidence.faucet?.stranger_tx;
 const modeBCreate = provision.create_tx;
 const modeBInit = provision.init_tx;
 const latencyProvision = step("agent_provision_metadata", run.latency_agent);
-push(`| Parent faucet | ${txLink(parentFaucet)} | — |`);
-push(`| Mode B agent create | ${txLink(modeBCreate)} | — |`);
-push(`| Mode B agent init | ${txLink(modeBInit)} | — |`);
+push(`| Parent faucet | ${txLink(parentFaucet)} |: |`);
+push(`| Mode B agent create | ${txLink(modeBCreate)} |: |`);
+push(`| Mode B agent init | ${txLink(modeBInit)} |: |`);
 push(
-  `| Latency agent create | ${txLink(latencyProvision?.create_tx)} | — |`,
+  `| Latency agent create | ${txLink(latencyProvision?.create_tx)} |: |`,
 );
 push(
-  `| Latency agent init | ${txLink(latencyProvision?.init_tx)} | — |`,
+  `| Latency agent init | ${txLink(latencyProvision?.init_tx)} |: |`,
 );
 push(
   `| Multisig deploy | ${txLink(txOf(evidence.multisig?.deployTx))} | ${evidence.multisig?.deployTx?.block_height ?? "—"} |`,
@@ -87,7 +87,7 @@ push(
 push(
   `| Bootstrap key delete | ${txLink(txOf(evidence.multisig?.deleteBootstrapTx))} | ${evidence.multisig?.deleteBootstrapTx?.block_height ?? "—"} |`,
 );
-push(`| Stranger faucet | ${txLink(strangerFaucet)} | — |`);
+push(`| Stranger faucet | ${txLink(strangerFaucet)} |: |`);
 push("");
 
 push("## Multisig state");
@@ -104,7 +104,7 @@ push(
   `- Parent access keys before bootstrap delete: ${evidence.multisig?.keysBefore}; after: ${evidence.multisig?.keysAfter}`,
 );
 push(
-  `- On-chain code hash: \`${evidence.multisig?.codeHash}\` — matches the built wasm`,
+  `- On-chain code hash: \`${evidence.multisig?.codeHash}\`: matches the built wasm`,
 );
 push("");
 

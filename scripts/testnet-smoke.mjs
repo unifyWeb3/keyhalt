@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FLEET v0.3 testnet smoke test.
+ * Keyhalt v0.3 testnet smoke test.
  *
  * Uses a faucet-funded throwaway parent and provisions one native sub-account
  * agent with the controller wasm. The managed agent is created with
@@ -19,12 +19,12 @@ import { dirname, join } from "node:path";
 
 const RPC = process.env.NEAR_RPC_URL || "https://rpc.testnet.near.org";
 if (/mainnet/i.test(RPC) || process.env.NEAR_MAINNET) {
-  throw new Error("FLEET is testnet-only; refusing mainnet");
+  throw new Error("Keyhalt is testnet-only; refusing mainnet");
 }
 
-const FUNDER = process.env.FLEET_PARENT || "fleet-v03-5cff9e99.testnet";
+const FUNDER = process.env.KEYHALT_PARENT || "fleet-v03-5cff9e99.testnet";
 const CREDENTIALS =
-  process.env.FLEET_PARENT_KEY ||
+  process.env.KEYHALT_PARENT_KEY ||
   `/root/.near-fallback-keys/fleet-v03-faucet/${FUNDER}.json`;
 const KEY_ROOT = "/root/.near-fallback-keys/fleet-v03";
 const WASM = new URL("../target/wasm32-unknown-unknown/release/fleet_controller.wasm", import.meta.url);
@@ -83,9 +83,9 @@ async function main() {
   const funderSecret = loadFunder();
   const parent = new Account(FUNDER, RPC, funderSecret);
   const suffix = tag();
-  const existingAgent = process.env.FLEET_AGENT;
+  const existingAgent = process.env.KEYHALT_AGENT;
   const agentId = existingAgent || `agent-smoke-${suffix}.${FUNDER}`;
-  console.log(`FLEET SMOKE: parent=${FUNDER} agent=${agentId}${existingAgent ? " (reuse)" : ""}`);
+  console.log(`Keyhalt SMOKE: parent=${FUNDER} agent=${agentId}${existingAgent ? " (reuse)" : ""}`);
 
   const wasmBytes = new Uint8Array(readFileSync(WASM));
   const wasmHash = createHash("sha256").update(wasmBytes).digest("hex");
@@ -175,12 +175,12 @@ async function main() {
     throw new Error("audit chain does not verify");
   }
 
-  console.log("FLEET SMOKE: PASS");
+  console.log("Keyhalt SMOKE: PASS");
   console.log(`SUMMARY: ${stringify({ agent: agentId, create_tx: createTx, init_tx: initTx, wasm_sha256: wasmHash, keys: summary.length, full_access: 0, operators: state.operators.length, provisioned: state.provisioned })}`);
 }
 
 main().catch((error) => {
-  console.error("FLEET SMOKE: FAIL");
+  console.error("Keyhalt SMOKE: FAIL");
   console.error(error instanceof Error ? error.stack : String(error));
   process.exit(1);
 });

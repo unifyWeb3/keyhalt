@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Secret scan for the FLEET repository.
+# Secret scan for the Keyhalt repository.
 #
 # Usage: ./scripts/secret-scan.sh [--staged]
 #
@@ -46,22 +46,22 @@ if grep -RInE \
   --exclude-dir=node_modules \
   --exclude-dir=target \
   --exclude-dir=dist \
-  -e "$PATTERNS" . >/tmp/fleet-secret-scan.$$ 2>/dev/null; then
-  cat /tmp/fleet-secret-scan.$$ >&2
-  rm -f /tmp/fleet-secret-scan.$$
+  -e "$PATTERNS" . >/tmp/keyhalt-secret-scan.$$ 2>/dev/null; then
+  cat /tmp/keyhalt-secret-scan.$$ >&2
+  rm -f /tmp/keyhalt-secret-scan.$$
   fail "private-key pattern found in the working tree"
 fi
-rm -f /tmp/fleet-secret-scan.$$
+rm -f /tmp/keyhalt-secret-scan.$$
 
 # 3. Staged diff scan, for the pre-commit hook.
 if [ "$MODE" = "--staged" ]; then
   if git diff --cached --unified=0 -- . ':(exclude)package-lock.json' \
-    | grep -E -e '^\+.*('"$PATTERNS"')' >/tmp/fleet-secret-staged.$$ 2>/dev/null; then
-    cat /tmp/fleet-secret-staged.$$ >&2
-    rm -f /tmp/fleet-secret-staged.$$
+    | grep -E -e '^\+.*('"$PATTERNS"')' >/tmp/keyhalt-secret-staged.$$ 2>/dev/null; then
+    cat /tmp/keyhalt-secret-staged.$$ >&2
+    rm -f /tmp/keyhalt-secret-staged.$$
     fail "private-key pattern found in the staged diff"
   fi
-  rm -f /tmp/fleet-secret-staged.$$
+  rm -f /tmp/keyhalt-secret-staged.$$
 fi
 
 # 4. Key directories outside the tree must be 700/600. These are host paths, not

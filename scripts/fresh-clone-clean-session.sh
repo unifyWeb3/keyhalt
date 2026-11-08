@@ -3,7 +3,7 @@
 # Clean-session fresh-clone test.
 #
 # This is the test a clean agent session must pass: a session that starts
-# with no FLEET_* or NEAR_* environment variables, no credentials in the
+# with no KEYHALT_* or NEAR_* environment variables, no credentials in the
 # environment, and no access to the private key store, must be able to clone
 # the repository, run one setup command, run one verification command, and
 # confirm that the safety rails still refuse a malformed claim, a mainnet
@@ -18,7 +18,7 @@ set -euo pipefail
 umask 077
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP="$(mktemp -d "${TMPDIR:-/tmp}/fleet-clean-session.XXXXXX")"
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/keyhalt-clean-session.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 
 if ! git -C "$ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
@@ -26,7 +26,7 @@ if ! git -C "$ROOT" rev-parse --verify HEAD >/dev/null 2>&1; then
   exit 1
 fi
 
-# A sanitized environment: no FLEET_*, NEAR_*, or credential variables, and no
+# A sanitized environment: no KEYHALT_*, NEAR_*, or credential variables, and no
 # inherited dotfile configuration.
 #
 # HOME points at an empty directory, so no ~/.netrc, ~/.npmrc, ~/.ssh or shell
@@ -52,9 +52,9 @@ clean() {
     "$@"
 }
 
-echo "== Clone into $TMP/fleet (outside the repository) =="
-git clone --quiet --no-hardlinks "$ROOT" "$TMP/fleet"
-cd "$TMP/fleet"
+echo "== Clone into $TMP/keyhalt (outside the repository) =="
+git clone --quiet --no-hardlinks "$ROOT" "$TMP/keyhalt"
+cd "$TMP/keyhalt"
 
 echo "== The clone starts clean =="
 if [ -n "$(git status --porcelain)" ]; then
@@ -63,8 +63,8 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
-echo "== The session inherits no FLEET_*, NEAR_* or credential variable =="
-if clean env | grep -E '^(FLEET_|NEAR_|AWS_|GITHUB_|GH_|GITLAB_|npm_)' ; then
+echo "== The session inherits no KEYHALT_*, NEAR_* or credential variable =="
+if clean env | grep -E '^(KEYHALT_|NEAR_|AWS_|GITHUB_|GH_|GITLAB_|npm_)' ; then
   echo "CLEAN SESSION: FAIL: a credential-like variable is set" >&2
   exit 1
 fi
@@ -88,7 +88,7 @@ echo "OK: wasm sha256 $CANONICAL_SHA"
 
 echo "== Negative control: a malformed VERIFIED row must be rejected =="
 cp CLAIMS.md CLAIMS.md.bak
-printf '| F-999 | Malformed row with no evidence | VERIFIED | — | 2026-11-03 |\n' >> CLAIMS.md
+printf '| F-999 | Malformed row with no evidence | VERIFIED |: | 2026-11-03 |\n' >> CLAIMS.md
 if clean node scripts/check-claims.mjs >/dev/null 2>&1; then
   echo "CLEAN SESSION: FAIL: the claims checker accepted a VERIFIED row without evidence" >&2
   exit 1
@@ -105,14 +105,14 @@ echo "OK: mainnet RPC refused"
 
 echo "== Negative control: the SDK must refuse a mainnet client =="
 if clean node -e '
-  import("./packages/sdk/dist/index.js").then(({ createFleetClient }) => {
-    createFleetClient({
+  import("./packages/sdk/dist/index.js").then(({ createKeyhaltClient }) => {
+    createKeyhaltClient({
       rpcUrl: "https://rpc.mainnet.near.org",
       accountId: "agent.testnet",
     });
     process.exit(0);
   }).catch((error) => {
-    if (error.code === "FLEET_E_MAINNET") process.exit(1);
+    if (error.code === "KEYHALT_E_MAINNET") process.exit(1);
     process.exit(0);
   });
 ' >/dev/null 2>&1; then
@@ -135,4 +135,4 @@ if find . -path ./.git -prune -o -type f \( -name '*.pem' -o -name '*.key' -o -n
 fi
 
 echo
-echo "FLEET clean-session fresh-clone test: PASS"
+echo "Keyhalt clean-session fresh-clone test: PASS"

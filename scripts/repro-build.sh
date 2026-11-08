@@ -13,7 +13,7 @@ if [ -d "$HOME/.cargo/bin" ]; then
   export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
-TMP="$(mktemp -d "${TMPDIR:-/tmp}/fleet-repro.XXXXXX")"
+TMP="$(mktemp -d "${TMPDIR:-/tmp}/keyhalt-repro.XXXXXX")"
 trap 'rm -rf "$TMP"' EXIT
 
 for label in a b; do

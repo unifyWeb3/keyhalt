@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Recapture the FLEET pixel-draft screenshots at 1920×1080.
+ * Recapture the Keyhalt pixel-draft screenshots at 1920×1080.
  *
  * The draft is a static prototype: it renders captured evidence/ data and a
  * ticking block counter, with no RPC calls. This script opens design/index.html
@@ -60,7 +60,7 @@ const shotsDir = resolve(here, "screenshots");
 mkdirSync(shotsDir, { recursive: true, mode: 0o755 });
 
 const SHOTS = [
-  { file: "fleet.png", hash: "", label: "Fleet" },
+  { file: "keyhalt.png", hash: "", label: "Keyhalt" },
   { file: "agent.png", hash: "#agent=agent-b1.fleet-modeb-748d4372.testnet", label: "Agent" },
   {
     file: "agent-sheet.png",

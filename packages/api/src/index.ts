@@ -1,5 +1,5 @@
 /**
- * FLEET read-only inventory and audit API — v0.3 scaffold.
+ * Keyhalt read-only inventory and audit API: v0.3 scaffold.
  *
  * The API is read-only by construction: no signing key, no write route, and no
  * private-key input. v0.3 implements only `/health`; the read routes are
@@ -7,7 +7,7 @@
  * the product interfaces until the console is designed and approved.
  */
 
-export const FLEET_API_VERSION = "0.3.0-phase1";
+export const KEYHALT_API_VERSION = "0.3.0-phase1";
 
 export type ReadOnlyMethod = "GET" | "HEAD";
 
@@ -21,7 +21,7 @@ export interface ApiResponse {
 export function assertReadOnly(method: string): asserts method is ReadOnlyMethod {
   const upper = method.toUpperCase();
   if (upper !== "GET" && upper !== "HEAD") {
-    throw new Error(`FLEET API is read-only; refused method ${method}`);
+    throw new Error(`Keyhalt API is read-only; refused method ${method}`);
   }
 }
 
@@ -36,7 +36,7 @@ export function createReadOnlyApi(): {
           status: 200,
           body: {
             status: "v03-scaffold",
-            version: FLEET_API_VERSION,
+            version: KEYHALT_API_VERSION,
             readOnly: true,
           },
         };

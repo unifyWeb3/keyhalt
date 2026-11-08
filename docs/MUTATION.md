@@ -1,4 +1,4 @@
-# FLEET controller mutation testing
+# Keyhalt controller mutation testing
 
 **Status:** final v0.3 score from the x64 CI run on commit `81325ed`,
 2026-11-06 UTC. This document is the written record of the automated mutation
@@ -42,11 +42,11 @@ mutant was actually compiled. That run is not used as evidence.
 score = caught / (generated - unviable - timeouts)
 ```
 
-- **generated** — every mutation cargo-mutants proposed in `contracts/fleet-controller`.
-- **caught** — at least one test failed against the mutant.
-- **missed** — every test passed against the mutant; the mutation survives.
-- **unviable** — the mutated crate did not compile; carries no signal about the tests.
-- **timeout** — the test run exceeded the timeout; counted as neither caught nor missed.
+- **generated**: every mutation cargo-mutants proposed in `contracts/fleet-controller`.
+- **caught**: at least one test failed against the mutant.
+- **missed**: every test passed against the mutant; the mutation survives.
+- **unviable**: the mutated crate did not compile; carries no signal about the tests.
+- **timeout**: the test run exceeded the timeout; counted as neither caught nor missed.
 
 ## Results
 

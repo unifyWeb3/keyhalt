@@ -293,9 +293,9 @@ table.events th:nth-child(4) { width: 36%; }
   tbody tr:first-child { border-top: 0; }
   tbody td { display: block; padding: 0; border: 0; }
   tbody td::before { display: none; }
-  .fleet-cell-name { grid-column: 1 / -1; margin-bottom: 2px; }
-  .fleet-cell-event { grid-column: 1 / -1; }
-  .fleet-cell-action { text-align: right; }
+  .keyhalt-cell-name { grid-column: 1 / -1; margin-bottom: 2px; }
+  .keyhalt-cell-event { grid-column: 1 / -1; }
+  .keyhalt-cell-action { text-align: right; }
   .chain-detail { padding-left: 6px; }
   .roles { gap: 12px; }
   .admin-rows { grid-template-columns: 88px 1fr; }

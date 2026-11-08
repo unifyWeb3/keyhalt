@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FLEET v0.3 — repeated 12-call, 3-agent concurrency measurement.
+ * Keyhalt v0.3: repeated 12-call, 3-agent concurrency measurement.
  *
  * Testnet only. No mainnet, no spend on anything but gas, no registration.
  *
@@ -22,10 +22,10 @@
  *   node scripts/testnet-concurrency-50x.mjs
  *
  * Environment:
- *   FLEET_RPC     RPC URL (default: https://rpc.testnet.fastnear.com)
- *   FLEET_ROUNDS  number of rounds (default: 50)
- *   FLEET_PACE_MS pause between rounds (default: 3000)
- *   FLEET_LONG_PAUSE_MS   longer pause every ten rounds (default: 60000)
+ *   KEYHALT_RPC     RPC URL (default: https://rpc.testnet.fastnear.com)
+ *   KEYHALT_ROUNDS  number of rounds (default: 50)
+ *   KEYHALT_PACE_MS pause between rounds (default: 3000)
+ *   KEYHALT_LONG_PAUSE_MS   longer pause every ten rounds (default: 60000)
  *
  * Evidence: evidence/sdk-v03/concurrency-50x.json
  */
@@ -33,18 +33,18 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 
-import { createFleetClient } from "../packages/sdk/dist/index.js";
+import { createKeyhaltClient } from "../packages/sdk/dist/index.js";
 
-const RPC = process.env.FLEET_RPC || "https://rpc.testnet.fastnear.com";
+const RPC = process.env.KEYHALT_RPC || "https://rpc.testnet.fastnear.com";
 if (/mainnet/i.test(RPC) || process.env.NEAR_MAINNET) {
   console.error("refusing to run against mainnet");
   process.exit(2);
 }
 
-const ROUNDS = Number(process.env.FLEET_ROUNDS ?? 50);
-const PACE_MS = Number(process.env.FLEET_PACE_MS ?? 3000);
-const LONG_PAUSE_MS = Number(process.env.FLEET_LONG_PAUSE_MS ?? 60000);
-const CALL_TIMEOUT_MS = Number(process.env.FLEET_CALL_TIMEOUT_MS ?? 90000);
+const ROUNDS = Number(process.env.KEYHALT_ROUNDS ?? 50);
+const PACE_MS = Number(process.env.KEYHALT_PACE_MS ?? 3000);
+const LONG_PAUSE_MS = Number(process.env.KEYHALT_LONG_PAUSE_MS ?? 60000);
+const CALL_TIMEOUT_MS = Number(process.env.KEYHALT_CALL_TIMEOUT_MS ?? 90000);
 const METHOD = "ping";
 const GAS_TGAS = 10;
 const EVIDENCE = resolve("evidence/sdk-v03/concurrency-50x.json");
@@ -106,7 +106,7 @@ async function main() {
     for (let operator = 0; operator < OPERATORS_PER_AGENT; operator += 1) {
       const secret = loadSecret(join(agent.dir, `${agent.base}__operator-${operator}.json`));
       entry.push(
-        createFleetClient({ rpcUrl: RPC, accountId: agent.id, signer: secret }),
+        createKeyhaltClient({ rpcUrl: RPC, accountId: agent.id, signer: secret }),
       );
     }
     clients.push({ agent, clients: entry });
@@ -237,7 +237,7 @@ async function main() {
     generated_at: new Date().toISOString(),
     network: "testnet",
     rpc: RPC,
-    path: "packages/sdk createFleetClient().execute()",
+    path: "packages/sdk createKeyhaltClient().execute()",
     scenario: "12 concurrent calls per round, 3 agents x 4 operator keys",
     agents: AGENTS.map((agent) => agent.id),
     rounds: ROUNDS,

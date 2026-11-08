@@ -5,7 +5,7 @@ which intentionally contained no product code. v0.3 product code was added after
 that tag; see `README.md` and `CLAIMS.md`. This page is not rewritten to pretend
 the baseline included the product.
 **Repository:** `fleet`. Private remote configured
-(`https://github.com/unifyWeb3/fleet-private.git`); commits have been pushed to
+(`https://github.com/unifyWeb3/keyhalt-private.git`); commits have been pushed to
 that private remote, and **nothing has been made public**. No public
 repository, no published tag, no X post, no submission.
 **Created:** 2026-11-03 UTC (Phase 1 was planned for 2026-10-30/31 and slipped; see `research/BUILD_STATUS.md` in the separate research workspace).
@@ -13,7 +13,7 @@ repository, no published tag, no X post, no submission.
 
 ## 1. What this repository is
 
-This is a **new, clean submission repository** for FLEET. It is not the research
+This is a **new, clean submission repository** for Keyhalt. It is not the research
 workspace and it does not contain QFO, VESSEL, or SCAN code. At the
 `pre-hackathon` tag it contains only:
 
@@ -41,10 +41,10 @@ require written human approval.
 
 | Material | Created | Where it lives | In this repo? |
 | --- | --- | --- | --- |
-| FLEET v0.2 controller research source (`fleet-controller-v2/0.2.0`) | 2026-10-28 | Separate research workspace: `research/evidence/fallback/spikes/fleet-v2/contract/` | **No** |
-| FLEET v0.1/v0.2 multisig prototype (`fleet-multisig-v2/0.1.0`) | 2026-10-28 | Separate research workspace: `research/evidence/fallback/spikes/fleet-v2/multisig/` | **No** |
-| S1–S8 testnet evidence, gas table, transaction receipts | 2026-10-29 | Separate research workspace: `research/evidence/fallback/spikes/fleet-v2/` | **No** |
-| Rules, demand, edge, architecture, spike records | 2026-10-26 – 2026-10-30 | Separate research workspace (`research/*.md`) | **No** |
+| Keyhalt v0.2 controller research source (`fleet-controller-v2/0.2.0`) | 2026-10-28 | Separate research workspace: `research/evidence/fallback/spikes/keyhalt-v2/contract/` | **No** |
+| Keyhalt v0.1/v0.2 multisig prototype (`keyhalt-multisig-v2/0.1.0`) | 2026-10-28 | Separate research workspace: `research/evidence/fallback/spikes/keyhalt-v2/multisig/` | **No** |
+| S1-S8 testnet evidence, gas table, transaction receipts | 2026-10-29 | Separate research workspace: `research/evidence/fallback/spikes/keyhalt-v2/` | **No** |
+| Rules, demand, edge, architecture, spike records | 2026-10-26 - 2026-10-30 | Separate research workspace (`research/*.md`) | **No** |
 | Research git baseline | 2026-10-28 | Research workspace commit `4ede3f6`, tag `research-baseline-2026-10-28` | **No** |
 
 The research workspace is **evidence**, not submission code. It is not a git
@@ -75,7 +75,7 @@ message. It is not a claim that the repository existed on 2026-10-31.
 The tag is a **plan**, not an action. Nothing below is executed without the
 human's explicit approval, in this order:
 
-1. **Precondition — all local gates pass on the final tree:**
+1. **Precondition: all local gates pass on the final tree:**
    `make verify`, `make claims`, `make repro`, and
    `./scripts/fresh-clone-clean-session.sh`. The clean-session log is saved as
    `evidence/fresh-clone-v03-clean-session.log` (F-037).
@@ -86,7 +86,7 @@ human's explicit approval, in this order:
    testnet chain ids used, and the fact that the tag marks the **testnet
    prototype** submitted to the `security` track.
 4. **Push the tag only to the private remote** `origin`
-   (`https://github.com/unifyWeb3/fleet-private.git`), if the human approves
+   (`https://github.com/unifyWeb3/keyhalt-private.git`), if the human approves
    even that. A tag push is a publication action on a remote that the human
    may later make public, so it waits for the same approval as the repository
    publication.

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import test from "node:test";
 
-import { FLEET_EXIT_CODES, fleetExitCode } from "../../sdk/dist/index.js";
+import { KEYHALT_EXIT_CODES, keyhaltExitCode } from "../../sdk/dist/index.js";
 
 const run = promisify(execFile);
 const cli = fileURLToPath(new URL("../dist/index.js", import.meta.url));
@@ -38,7 +38,7 @@ async function runJsonFailure(args, expectedCode) {
 
 test("CLI prints its version", async () => {
   const { stdout } = await run(process.execPath, [cli, "--version"]);
-  assert.equal(stdout, "fleet 0.3.0\n");
+  assert.equal(stdout, "keyhalt 0.3.0\n");
 });
 
 test("CLI version supports --json", async () => {
@@ -48,15 +48,15 @@ test("CLI version supports --json", async () => {
 
 test("CLI help lists implemented product commands", async () => {
   const { stdout } = await run(process.execPath, [cli, "--help"]);
-  assert.match(stdout, /fleet freeze <account>/);
-  assert.match(stdout, /fleet verify-audit <file>/);
+  assert.match(stdout, /keyhalt freeze <account>/);
+  assert.match(stdout, /keyhalt verify-audit <file>/);
   assert.doesNotMatch(stdout, /not implemented in Phase 1/);
 });
 
 test("CLI refuses an unknown command with exit code 2", async () => {
   const value = await runJsonFailure(["nope", "--json"], 2);
   assert.equal(value.ok, false);
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
 });
 
 test("CLI refuses a mainnet RPC with exit code 4", async () => {
@@ -70,16 +70,16 @@ test("CLI refuses a mainnet RPC with exit code 4", async () => {
     ],
     4,
   );
-  assert.equal(value.error.code, "FLEET_E_MAINNET");
+  assert.equal(value.error.code, "KEYHALT_E_MAINNET");
 });
 
 test("CLI refuses a write without a signer with exit code 3", async () => {
   const value = await runJsonFailure(["freeze", "agent.testnet", "--json"], 3);
-  assert.equal(value.error.code, "FLEET_E_NO_SIGNER");
+  assert.equal(value.error.code, "KEYHALT_E_NO_SIGNER");
 });
 
 test("CLI refuses a group-readable signer key file with exit code 2", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const directory = mkdtempSync(join(tmpdir(), "keyhalt-cli-test-"));
   const path = join(directory, "key.json");
   writeFileSync(
     path,
@@ -91,7 +91,7 @@ test("CLI refuses a group-readable signer key file with exit code 2", async () =
     ["freeze", "agent.testnet", "--signer-key-file", path, "--json"],
     2,
   );
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
   assert.match(value.error.message, /mode 600/);
 });
 
@@ -119,7 +119,7 @@ test("CLI rejects a tampered audit file with exit code 6", async () => {
 // Pre-signed freeze path
 // ---------------------------------------------------------------------------
 
-const SIGNED_TX_FORMAT = "fleet-signed-tx-v1";
+const SIGNED_TX_FORMAT = "keyhalt-signed-tx-v1";
 
 function signedFixture(overrides = {}) {
   return {
@@ -157,34 +157,34 @@ test("CLI freeze --pre-sign without --out fails with exit code 2", async () => {
     2,
   );
   assert.equal(value.ok, false);
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
   assert.match(value.error.message, /--out/);
 });
 
-test("CLI refuses a signed file without the FLEET format marker", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+test("CLI refuses a signed file without the Keyhalt format marker", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "keyhalt-cli-test-"));
   const path = writeSigned(directory, "signed.json", signedFixture({ format: "other" }));
   const value = await runJsonFailure(
     ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
     2,
   );
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
   assert.match(value.error.message, /format must be/);
 });
 
 test("CLI refuses a signed file whose method does not match the command", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const directory = mkdtempSync(join(tmpdir(), "keyhalt-cli-test-"));
   const path = writeSigned(directory, "signed.json", signedFixture({ method: "unfreeze" }));
   const value = await runJsonFailure(
     ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
     2,
   );
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
   assert.match(value.error.message, /unfreeze/);
 });
 
 test("CLI refuses a signed file for another account", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const directory = mkdtempSync(join(tmpdir(), "keyhalt-cli-test-"));
   const path = writeSigned(
     directory,
     "signed.json",
@@ -194,12 +194,12 @@ test("CLI refuses a signed file for another account", async () => {
     ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
     2,
   );
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
   assert.match(value.error.message, /other\.testnet/);
 });
 
 test("CLI refuses a signed file that carries key material", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const directory = mkdtempSync(join(tmpdir(), "keyhalt-cli-test-"));
   const path = writeSigned(
     directory,
     "signed.json",
@@ -209,19 +209,19 @@ test("CLI refuses a signed file that carries key material", async () => {
     ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
     2,
   );
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
   assert.match(value.error.message, /key material/);
 });
 
 test("CLI refuses an unreadable signed file with exit code 2", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "fleet-cli-test-"));
+  const directory = mkdtempSync(join(tmpdir(), "keyhalt-cli-test-"));
   const path = join(directory, "signed.json");
   writeFileSync(path, "not json", { mode: 0o600 });
   const value = await runJsonFailure(
     ["freeze", "agent.testnet", "--submit-signed", path, "--json"],
     2,
   );
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
   assert.match(value.error.message, /cannot read signed transaction file/);
 });
 
@@ -253,68 +253,68 @@ const PRODUCT_COMMANDS = [
 const PK = "ed25519:11111111111111111111111111111111";
 const PK2 = "ed25519:22222222222222222222222222222222";
 const FAILURE_INVOCATIONS = {
-  inventory: [["inventory", "--json"], "FLEET_E_BAD_ARGS", 2],
-  verify: [["verify", "--json"], "FLEET_E_BAD_ARGS", 2],
+  inventory: [["inventory", "--json"], "KEYHALT_E_BAD_ARGS", 2],
+  verify: [["verify", "--json"], "KEYHALT_E_BAD_ARGS", 2],
   "audit export": [
     ["audit", "export", "agent.testnet", "--json"],
-    "FLEET_E_BAD_ARGS",
+    "KEYHALT_E_BAD_ARGS",
     2,
   ],
   "audit verify": [
-    ["audit", "verify", "/nonexistent/fleet-audit.json", "--json"],
-    "FLEET_E_BAD_ARGS",
+    ["audit", "verify", "/nonexistent/keyhalt-audit.json", "--json"],
+    "KEYHALT_E_BAD_ARGS",
     2,
   ],
   "verify-audit": [
-    ["verify-audit", "/nonexistent/fleet-audit.json", "--json"],
-    "FLEET_E_BAD_ARGS",
+    ["verify-audit", "/nonexistent/keyhalt-audit.json", "--json"],
+    "KEYHALT_E_BAD_ARGS",
     2,
   ],
-  freeze: [["freeze", "agent.testnet", "--json"], "FLEET_E_NO_SIGNER", 3],
-  unfreeze: [["unfreeze", "agent.testnet", "--json"], "FLEET_E_NO_SIGNER", 3],
+  freeze: [["freeze", "agent.testnet", "--json"], "KEYHALT_E_NO_SIGNER", 3],
+  unfreeze: [["unfreeze", "agent.testnet", "--json"], "KEYHALT_E_NO_SIGNER", 3],
   grant: [
     ["grant", "agent.testnet", "--key", PK, "--tag", "ops", "--json"],
-    "FLEET_E_NO_SIGNER",
+    "KEYHALT_E_NO_SIGNER",
     3,
   ],
   rotate: [
     ["rotate", "agent.testnet", "--old", PK, "--new", PK2, "--tag", "ops", "--json"],
-    "FLEET_E_NO_SIGNER",
+    "KEYHALT_E_NO_SIGNER",
     3,
   ],
   revoke: [
     ["revoke", "agent.testnet", "--key", PK, "--json"],
-    "FLEET_E_NO_SIGNER",
+    "KEYHALT_E_NO_SIGNER",
     3,
   ],
   "revoke-tag": [
     ["revoke-tag", "agent.testnet", "--tag", "ops", "--json"],
-    "FLEET_E_NO_SIGNER",
+    "KEYHALT_E_NO_SIGNER",
     3,
   ],
   "propose-admin": [
     ["propose-admin", "agent.testnet", "--new-admin", PK, "--json"],
-    "FLEET_E_NO_SIGNER",
+    "KEYHALT_E_NO_SIGNER",
     3,
   ],
   "accept-admin": [
     ["accept-admin", "agent.testnet", "--json"],
-    "FLEET_E_NO_SIGNER",
+    "KEYHALT_E_NO_SIGNER",
     3,
   ],
   "cancel-admin": [
     ["cancel-admin", "agent.testnet", "--json"],
-    "FLEET_E_NO_SIGNER",
+    "KEYHALT_E_NO_SIGNER",
     3,
   ],
   recover: [
     ["recover", "agent.testnet", "--new-admin", PK, "--json"],
-    "FLEET_E_NO_SIGNER",
+    "KEYHALT_E_NO_SIGNER",
     3,
   ],
   execute: [
     ["execute", "agent.testnet", "--method", "ping", "--json"],
-    "FLEET_E_NO_SIGNER",
+    "KEYHALT_E_NO_SIGNER",
     3,
   ],
 };
@@ -336,7 +336,7 @@ test("every CLI product command accepts --json and returns its documented exit c
       `${name}: error envelope shape`,
     );
     assert.equal(
-      fleetExitCode(expectedCode),
+      keyhaltExitCode(expectedCode),
       expectedExit,
       `${name}: SDK mapping must agree with the observed exit code`,
     );
@@ -347,9 +347,9 @@ test("CLI help documents --json for every product command", async () => {
   const { stdout } = await run(process.execPath, [cli, "--help"]);
   const usageLines = stdout
     .split("\n")
-    .filter((line) => line.trimStart().startsWith("fleet "));
+    .filter((line) => line.trimStart().startsWith("keyhalt "));
   for (const name of PRODUCT_COMMANDS) {
-    const lines = usageLines.filter((line) => line.includes(`fleet ${name} `));
+    const lines = usageLines.filter((line) => line.includes(`keyhalt ${name} `));
     assert.ok(lines.length > 0, `help has no usage line for ${name}`);
     for (const line of lines) {
       assert.match(line, /--json/, `usage for ${name} must document --json`);
@@ -360,60 +360,60 @@ test("CLI help documents --json for every product command", async () => {
 test("the documented exit-code table matches the SDK mapping", () => {
   const text = readFileSync(interfacesDoc, "utf8");
   const documented = new Map();
-  for (const match of text.matchAll(/\| `(FLEET_E_[A-Z_]+)` \| (\d+) \|/g)) {
+  for (const match of text.matchAll(/\| `(KEYHALT_E_[A-Z_]+)` \| (\d+) \|/g)) {
     documented.set(match[1], Number(match[2]));
   }
   assert.ok(documented.size >= 8, "exit-code table must list every code");
   for (const [code, exit] of documented) {
     assert.equal(
-      fleetExitCode(code),
+      keyhaltExitCode(code),
       exit,
-      `${code} documented as ${exit} but the SDK returns ${fleetExitCode(code)}`,
+      `${code} documented as ${exit} but the SDK returns ${keyhaltExitCode(code)}`,
     );
   }
-  for (const code of Object.keys(FLEET_EXIT_CODES)) {
+  for (const code of Object.keys(KEYHALT_EXIT_CODES)) {
     assert.ok(documented.has(code), `${code} missing from docs/INTERFACES.md`);
   }
-  assert.equal(fleetExitCode("FLEET_E_NOT_A_CODE"), 2, "unknown codes fall back to 2");
+  assert.equal(keyhaltExitCode("KEYHALT_E_NOT_A_CODE"), 2, "unknown codes fall back to 2");
 });
 
 test("CLI help lists the Mode B multisig admin commands", async () => {
   const { stdout } = await run(process.execPath, [cli, "--help"]);
-  assert.match(stdout, /fleet admin request freeze <agent>/);
-  assert.match(stdout, /fleet admin confirm <agent> <request-id>/);
-  assert.match(stdout, /fleet admin status <agent>/);
+  assert.match(stdout, /keyhalt admin request freeze <agent>/);
+  assert.match(stdout, /keyhalt admin confirm <agent> <request-id>/);
+  assert.match(stdout, /keyhalt admin status <agent>/);
 });
 
-test("fleet admin request without an agent is a bad-args exit", async () => {
+test("keyhalt admin request without an agent is a bad-args exit", async () => {
   const value = await runJsonFailure(["admin", "request", "freeze", "--json"], 2);
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
 });
 
-test("fleet admin request without a member signer exits 3 before any RPC", async () => {
+test("keyhalt admin request without a member signer exits 3 before any RPC", async () => {
   const value = await runJsonFailure(
     ["admin", "request", "freeze", "agent.testnet", "--rpc-url", "http://127.0.0.1:9", "--json"],
     3,
   );
-  assert.equal(value.error.code, "FLEET_E_NO_SIGNER");
+  assert.equal(value.error.code, "KEYHALT_E_NO_SIGNER");
 });
 
-test("fleet admin confirm without a request-id is a bad-args exit", async () => {
+test("keyhalt admin confirm without a request-id is a bad-args exit", async () => {
   const value = await runJsonFailure(
     ["admin", "confirm", "agent.testnet", "--signer-key-file", "/tmp/does-not-exist.json", "--json"],
     2,
   );
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
 });
 
-test("fleet admin confirm requires a member signer before any RPC", async () => {
+test("keyhalt admin confirm requires a member signer before any RPC", async () => {
   const value = await runJsonFailure(
     ["admin", "confirm", "agent.testnet", "7", "--rpc-url", "http://127.0.0.1:9", "--json"],
     3,
   );
-  assert.equal(value.error.code, "FLEET_E_NO_SIGNER");
+  assert.equal(value.error.code, "KEYHALT_E_NO_SIGNER");
 });
 
-test("fleet admin with an unknown subcommand is a bad-args exit", async () => {
+test("keyhalt admin with an unknown subcommand is a bad-args exit", async () => {
   const value = await runJsonFailure(["admin", "bogus", "--json"], 2);
-  assert.equal(value.error.code, "FLEET_E_BAD_ARGS");
+  assert.equal(value.error.code, "KEYHALT_E_BAD_ARGS");
 });

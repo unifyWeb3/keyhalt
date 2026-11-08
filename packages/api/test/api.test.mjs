@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createReadOnlyApi, FLEET_API_VERSION } from "../dist/index.js";
+import { createReadOnlyApi, KEYHALT_API_VERSION } from "../dist/index.js";
 
 const api = createReadOnlyApi();
 
@@ -10,7 +10,7 @@ test("API health is read-only and explicit about the scaffold", () => {
   assert.equal(response.status, 200);
   assert.deepEqual(response.body, {
     status: "v03-scaffold",
-    version: FLEET_API_VERSION,
+    version: KEYHALT_API_VERSION,
     readOnly: true,
   });
 });

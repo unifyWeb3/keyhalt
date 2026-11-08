@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * FLEET v0.3 — twelve concurrent SDK calls on NEAR testnet.
+ * Keyhalt v0.3: twelve concurrent SDK calls on NEAR testnet.
  *
  * Testnet only. No mainnet, no spend, no registration.
  *
  * The script drives the published TypeScript SDK (packages/sdk), not the raw
- * RPC helper: every call goes through `createFleetClient(...).execute(...)`,
+ * RPC helper: every call goes through `createKeyhaltClient(...).execute(...)`,
  * signs locally with an operator key, and waits for a final receipt.
  *
  * The agent is the dedicated Mode A latency agent
@@ -18,10 +18,10 @@
  *   node scripts/testnet-sdk-concurrency.mjs
  *
  * Environment:
- *   FLEET_RPC           RPC URL (default: https://rpc.testnet.fastnear.com)
- *   FLEET_SDK_AGENT     agent account id
- *   FLEET_SDK_KEY_ROOT  directory with the agent key files
- *   FLEET_SDK_CALLS     number of concurrent calls (default: 12)
+ *   KEYHALT_RPC           RPC URL (default: https://rpc.testnet.fastnear.com)
+ *   KEYHALT_SDK_AGENT     agent account id
+ *   KEYHALT_SDK_KEY_ROOT  directory with the agent key files
+ *   KEYHALT_SDK_CALLS     number of concurrent calls (default: 12)
  *
  * Evidence: evidence/sdk-v03/concurrency.json
  */
@@ -30,19 +30,19 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { createFleetClient } from "../packages/sdk/dist/index.js";
+import { createKeyhaltClient } from "../packages/sdk/dist/index.js";
 
-const RPC = process.env.FLEET_RPC || "https://rpc.testnet.fastnear.com";
+const RPC = process.env.KEYHALT_RPC || "https://rpc.testnet.fastnear.com";
 if (/mainnet/i.test(RPC) || process.env.NEAR_MAINNET) {
   console.error("refusing to run against mainnet");
   process.exit(2);
 }
 
 const AGENT =
-  process.env.FLEET_SDK_AGENT || "agent-lat.fleet-lat-1a1a7db6741.testnet";
+  process.env.KEYHALT_SDK_AGENT || "agent-lat.fleet-lat-1a1a7db6741.testnet";
 const KEY_ROOT =
-  process.env.FLEET_SDK_KEY_ROOT || "/root/.near-fallback-keys/fleet-v03/modeb";
-const CALLS = Number(process.env.FLEET_SDK_CALLS ?? 12);
+  process.env.KEYHALT_SDK_KEY_ROOT || "/root/.near-fallback-keys/fleet-v03/modeb";
+const CALLS = Number(process.env.KEYHALT_SDK_CALLS ?? 12);
 const OPERATORS = 4;
 const RECEIVER_METHOD = "ping";
 const EVIDENCE = resolve("evidence/sdk-v03/concurrency.json");
@@ -82,7 +82,7 @@ async function main() {
   }
 
   const clients = secrets.map((secret) =>
-    createFleetClient({ rpcUrl: RPC, accountId: AGENT, signer: secret }),
+    createKeyhaltClient({ rpcUrl: RPC, accountId: AGENT, signer: secret }),
   );
 
   const state = await clients[0].getState();
@@ -152,7 +152,7 @@ async function main() {
     rpc: RPC,
     agent: AGENT,
     sdk_version: "0.3.0",
-    path: "packages/sdk createFleetClient().execute()",
+    path: "packages/sdk createKeyhaltClient().execute()",
     calls: CALLS,
     operators: OPERATORS,
     succeeded,

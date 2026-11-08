@@ -1,4 +1,4 @@
-# Pixel draft review (v0.3, DRAFT — awaiting approval)
+# Pixel draft review (v0.3, DRAFT: awaiting approval)
 
 **Status: DRAFT. No Figma file was provided, so no Figma work was done. No
 recording was made.** This companion collects the pixel draft for the human's
@@ -21,7 +21,7 @@ draft is a claim, and the draft still shows no "seconds" wording.
 
 | File | What |
 | --- | --- |
-| `../docs/DESIGN_SYSTEM.md` | Amended system (Inter + JetBrains Mono, three screens, fleet first) |
+| `../docs/DESIGN_SYSTEM.md` | Amended system (Inter + JetBrains Mono, three screens, keyhalt first) |
 | `../docs/CONSOLE_DRAFT.md` | Amended five→three-screen draft; Mode B folded into the admin row |
 | `DEVIATIONS.md` | D-01: actions without keys (command sheet, no signing) |
 | `index.html` | Pixel draft, one file, no live calls |
@@ -30,9 +30,9 @@ draft is a claim, and the draft still shows no "seconds" wording.
 
 ## Screens (screenshots)
 
-### Fleet (`#`)
+### Keyhalt (`#`)
 
-![Fleet](screenshots/fleet.png)
+![Keyhalt](screenshots/keyhalt.png)
 
 Three Mode A agents (`evidence/testnet-v03/run.json`): state, full-access key
 count (0 everywhere), last event with its block and verified tx link, and a
@@ -49,7 +49,7 @@ ticks as a labelled stand-in, because this static draft has no RPC.
 ![Agent](screenshots/agent.png)
 
 One agent at a time. Shown: `agent-b1.fleet-modeb-748d4372.testnet`
-(`evidence/modeb-v03/run.json`) — four operator keys (`native_keys`) with their
+(`evidence/modeb-v03/run.json`): four operator keys (`native_keys`) with their
 scope tags as chips, the admin row `2 of 2 confirmations · both owners operated
 by one operator in this demo`, and the 3-entry audit chain drawn as a chain
 spine: sequence, action, block, entry hash, `prev` hash and the verified mark,
@@ -103,7 +103,7 @@ lock in the danger colour. The panel header carries the real counts (`8 events �
   13,251 ms / p95 24,753 ms; Mode B is three transactions per transition.
   The draft repeats none of these as "seconds" and no draft metric is a
   claim; the numbers live in `README.md` and `CLAIMS.md`.
-- **Frozen fleet row.** The fleet screenshot shows three `Active` rows because
+- **Frozen keyhalt row.** The keyhalt screenshot shows three `Active` rows because
   the captured final states are all `Active`. A `Frozen` row will appear in
   live use the block it lands; there is no frozen-state screenshot today.
 - **Mainnet guard and tamper banner** are specified (plain language) but are
@@ -112,7 +112,7 @@ lock in the danger colour. The panel header carries the real counts (`8 events �
 - **unslop skill.** Reviewed and pinned on 2026-11-06 (`a6f121eee5f29c2f74976b754
   56feae8b66afb3a`, CC BY 4.0, © Damir Sokolovsky / `@heydamir`), then applied
   as an audit (`design/UNSLOP_AUDIT.md`). On 2026-11-07 the human approved
-  scope **B — polish plus direction**, and the draft now carries the nine
+  scope **B: polish plus direction**, and the draft now carries the nine
   passes: ink ramp and hairline borders, 4 px rhythm, one icon set, the copy
   fixes, `tabular-nums`, a viewport-filling shell, the chain spine, the lock
   marks and the scope-tag signature. The UI is still unapproved and nothing

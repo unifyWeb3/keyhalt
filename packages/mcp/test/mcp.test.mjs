@@ -169,36 +169,36 @@ async function withMcp(run, argv = []) {
   }
 }
 
-test("MCP initialize handshake answers with the fleet server info", async () => {
+test("MCP initialize handshake answers with the keyhalt server info", async () => {
   await withMcp(async ({ send, read }) => {
     send({ jsonrpc: "2.0", id: 1, method: "initialize" });
     const response = await read();
     assert.equal(response.id, 1);
-    assert.equal(response.result.serverInfo.name, "fleet-mcp");
+    assert.equal(response.result.serverInfo.name, "keyhalt-mcp");
     assert.equal(response.result.protocolVersion, "2025-06-18");
     assert.deepEqual(response.result.capabilities, { tools: {} });
   });
 });
 
-test("tools/list exposes the three read-only fleet tools", async () => {
+test("tools/list exposes the three read-only keyhalt tools", async () => {
   await withMcp(async ({ send, read }) => {
     send({ jsonrpc: "2.0", id: 1, method: "tools/list" });
     const response = await read();
     const names = response.result.tools.map((tool) => tool.name).sort();
-    assert.deepEqual(names, ["fleet_audit", "fleet_inventory", "fleet_verify"]);
+    assert.deepEqual(names, ["keyhalt_audit", "keyhalt_inventory", "keyhalt_verify"]);
     for (const tool of response.result.tools) {
       assert.equal(tool.inputSchema.additionalProperties, false);
     }
   });
 });
 
-test("fleet_inventory returns paused=false with one operator from the pinned chain read", async () => {
+test("keyhalt_inventory returns paused=false with one operator from the pinned chain read", async () => {
   await withMcp(async ({ send, read }) => {
     send({
       jsonrpc: "2.0",
       id: 5,
       method: "tools/call",
-      params: { name: "fleet_inventory", arguments: { account: "agent.testnet" } },
+      params: { name: "keyhalt_inventory", arguments: { account: "agent.testnet" } },
     });
     const response = await read();
     assert.equal(response.jsonrpc, "2.0");
@@ -212,13 +212,13 @@ test("fleet_inventory returns paused=false with one operator from the pinned cha
   });
 });
 
-test("fleet_audit returns the entries array from the controller", async () => {
+test("keyhalt_audit returns the entries array from the controller", async () => {
   await withMcp(async ({ send, read }) => {
     send({
       jsonrpc: "2.0",
       id: 6,
       method: "tools/call",
-      params: { name: "fleet_audit", arguments: { account: "agent.testnet" } },
+      params: { name: "keyhalt_audit", arguments: { account: "agent.testnet" } },
     });
     const response = await read();
     const payload = JSON.parse(response.result.content[0].text);
@@ -233,7 +233,7 @@ test("an unknown tool gets a -32601 JSON-RPC error", async () => {
       jsonrpc: "2.0",
       id: 7,
       method: "tools/call",
-      params: { name: "fleet_freeze", arguments: {} },
+      params: { name: "keyhalt_freeze", arguments: {} },
     });
     const response = await read();
     assert.equal(response.error.code, -32601);
@@ -246,7 +246,7 @@ test("a non-account fails request validation before any chain read", async () =>
       jsonrpc: "2.0",
       id: 8,
       method: "tools/call",
-      params: { name: "fleet_inventory", arguments: { account: "!!" } },
+      params: { name: "keyhalt_inventory", arguments: { account: "!!" } },
     });
     const response = await read();
     assert.equal(response.error.code, -32602);
@@ -255,18 +255,18 @@ test("a non-account fails request validation before any chain read", async () =>
 
 test("unknown methods are rejected", async () => {
   await withMcp(async ({ send, read }) => {
-    send({ jsonrpc: "2.0", id: 9, method: "fleet_freeze" });
+    send({ jsonrpc: "2.0", id: 9, method: "keyhalt_freeze" });
     const response = await read();
     assert.equal(response.error.code, -32601);
   });
 });
 
 test("the binary refuses a mainnet RPC URL at startup", async () => {
-  const temp = mkdtempSync(join(tmpdir(), "fleet-mcp-test-"));
+  const temp = mkdtempSync(join(tmpdir(), "keyhalt-mcp-test-"));
   try {
     const child = spawn(process.execPath, [cli, "--rpc-url", "https://rpc.mainnet.near.org"], {
       stdio: ["ignore", "pipe", "pipe"],
-      env: { ...process.env, FLEET_MCP_RPC_URL: "https://rpc.mainnet.near.org" },
+      env: { ...process.env, KEYHALT_MCP_RPC_URL: "https://rpc.mainnet.near.org" },
     });
     let stderr = "";
     child.stderr.setEncoding("utf8");

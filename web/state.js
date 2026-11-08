@@ -1,5 +1,5 @@
 /**
- * FLEET console UI state machines — pure, explicit, testable.
+ * Keyhalt console UI state machines: pure, explicit, testable.
  *
  * Every view in the console derives its render from these reducers. No DOM
  * access, no timers, no fetch. All state transitions live here and nowhere
@@ -206,7 +206,7 @@ export function actionForAgent(agent) {
   return [];
 }
 
-/* ---------- 8. banners — one decision, one place ---------- */
+/* ---------- 8. banners: one decision, one place ---------- */
 
 export function bannerOf(dataLoad, sse) {
   if (dataLoad.status === "stale" || dataLoad.status === "error") {

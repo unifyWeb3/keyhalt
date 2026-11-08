@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * FLEET console runner.
+ * Keyhalt console runner.
  *
  *   node packages/console/dist/cli.js
- *   FLEET_CONSOLE_ACCOUNTS= node packages/console/dist/cli.js
+ *   KEYHALT_CONSOLE_ACCOUNTS= node packages/console/dist/cli.js
  *
  * This process has no signer and no write route. It binds loopback by default.
  */
@@ -11,20 +11,20 @@
 import { loadConfig } from "./config.js";
 import { createConsoleServer } from "./server.js";
 
-const HELP = `FLEET console v0.3.0 — read-only testnet console
+const HELP = `Keyhalt console v0.3.0: read-only testnet console
 
 Usage:
-  fleet-console [--port N] [--host HOST] [--json]
+  keyhalt-console [--port N] [--host HOST] [--json]
 
 Environment:
-  FLEET_CONSOLE_ACCOUNTS       comma-separated controllers; empty string = empty state
-  FLEET_CONSOLE_PORT           default 4173
-  FLEET_CONSOLE_HOST           default 127.0.0.1 (loopback only unless explicitly overridden)
-  FLEET_CONSOLE_PROVIDERS      comma-separated read-only RPC URLs
-  FLEET_CONSOLE_WATCH_FILE     runtime tx watch list (default tmp/console-watch.json)
-  FLEET_CONSOLE_SEED_TXS       comma-separated receipts to seed the timeline
-  FLEET_CONSOLE_BLOCK_POLL_MS  default 1000
-  FLEET_CONSOLE_STALE_AFTER_MS default 12000
+  KEYHALT_CONSOLE_ACCOUNTS       comma-separated controllers; empty string = empty state
+  KEYHALT_CONSOLE_PORT           default 4173
+  KEYHALT_CONSOLE_HOST           default 127.0.0.1 (loopback only unless explicitly overridden)
+  KEYHALT_CONSOLE_PROVIDERS      comma-separated read-only RPC URLs
+  KEYHALT_CONSOLE_WATCH_FILE     runtime tx watch list (default tmp/console-watch.json)
+  KEYHALT_CONSOLE_SEED_TXS       comma-separated receipts to seed the timeline
+  KEYHALT_CONSOLE_BLOCK_POLL_MS  default 1000
+  KEYHALT_CONSOLE_STALE_AFTER_MS default 12000
 
 The console never signs, stores a key, or calls a write method.
 `;
@@ -96,11 +96,11 @@ async function main(): Promise<void> {
     } else {
       process.stdout.write(
         [
-          "FLEET console v0.3.0 — read-only testnet console",
+          "Keyhalt console v0.3.0: read-only testnet console",
           `  ${url}`,
           `  agents: ${
             config.agents.length === 0
-              ? "none (empty state; set FLEET_CONSOLE_ACCOUNTS to read agents)"
+              ? "none (empty state; set KEYHALT_CONSOLE_ACCOUNTS to read agents)"
               : config.agents.map((agent) => agent.accountId).join(", ")
           }`,
           `  rpc: ${config.providers.map((provider) => provider.name).join(" → ")} (failover; retry cap ${config.maxRetryMs} ms)`,
@@ -116,7 +116,7 @@ async function main(): Promise<void> {
     process.once("SIGINT", shutdown);
     process.once("SIGTERM", shutdown);
   } catch (error) {
-    console.error(`FLEET console failed to start: ${String((error as Error).message)}`);
+    console.error(`Keyhalt console failed to start: ${String((error as Error).message)}`);
     process.exit(1);
   }
 }

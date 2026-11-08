@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * FLEET Mode B 2-of-2 multisig testnet run.
+ * Keyhalt Mode B 2-of-2 multisig testnet run.
  *
  * Testnet only. This script proves the Mode B administration path with the
  * pinned `near/core-contracts/multisig2` v0.4.0 contract:
  *
  *   1. A fresh 10 NEAR faucet account becomes the multisig account (parent).
- *   2. A Mode B agent is provisioned as its sub-account with the FLEET
+ *   2. A Mode B agent is provisioned as its sub-account with the Keyhalt
  *      controller wasm and `admin_account = parent`.
  *   3. A Mode A latency agent is provisioned under the same parent so direct
  *      freeze latency can be measured without mutating the canonical agents.
@@ -50,9 +50,9 @@ setDefaultResultOrder("ipv4first");
 // or faucet call.
 installHttpsFetch();
 
-const RPC = process.env.FLEET_RPC || "https://rpc.testnet.near.org";
+const RPC = process.env.KEYHALT_RPC || "https://rpc.testnet.near.org";
 if (/mainnet/i.test(RPC) || process.env.NEAR_MAINNET) {
-  throw new Error("FLEET is testnet-only; refusing mainnet");
+  throw new Error("Keyhalt is testnet-only; refusing mainnet");
 }
 
 const KEY_ROOT = "/root/.near-fallback-keys/fleet-v03/modeb";
@@ -61,14 +61,14 @@ const CONTROLLER_WASM = resolve(
   "target/wasm32-unknown-unknown/release/fleet_controller.wasm",
 );
 const MULTISIG_WASM =
-  process.env.FLEET_MULTISIG_WASM || "/tmp/opencode/multisig2-built.wasm";
+  process.env.KEYHALT_MULTISIG_WASM || "/tmp/opencode/multisig2-built.wasm";
 const EVIDENCE_DIR = resolve("evidence/modeb-v03");
 const RUN_PATH = join(EVIDENCE_DIR, "run.json");
 const PARENT_PATH = join(EVIDENCE_DIR, "parent.json");
 const AGENT_BALANCE = 2_800_000_000_000_000_000_000_000n; // 2.8 NEAR
 const AGENT_COUNT_KEYS = 4;
-const OWNER1 = process.env.FLEET_OWNER1 || "fleet-v03-5cff9e99.testnet";
-const OWNER2 = process.env.FLEET_OWNER2 || "fleet-v03-fund2-8b91351d.testnet";
+const OWNER1 = process.env.KEYHALT_OWNER1 || "fleet-v03-5cff9e99.testnet";
+const OWNER2 = process.env.KEYHALT_OWNER2 || "fleet-v03-fund2-8b91351d.testnet";
 const MULTISIG_COMMIT = "1b0436c96379c63aee7d2429c6d5d24019031ab8";
 const MULTISIG_REPO = "https://github.com/near/core-contracts";
 const MULTISIG_VERSION = "0.4.0";
@@ -474,7 +474,7 @@ function makeRecorder() {
     check(name, ok, detail) {
       checks.push({ name, ok, detail });
       console.log(
-        `[check] ${ok ? "PASS" : "FAIL"} ${name}${detail ? ` — ${detail}` : ""}`,
+        `[check] ${ok ? "PASS" : "FAIL"} ${name}${detail ? `: ${detail}` : ""}`,
       );
       if (!ok) {
         throw new Error(`check failed: ${name}${detail ? `: ${detail}` : ""}`);
@@ -612,8 +612,8 @@ async function faucet(accountId, publicKey) {
 }
 
 async function ensureParent(recorder) {
-  const envParent = process.env.FLEET_MODEB_PARENT;
-  const fresh = process.env.FLEET_MODEB_FRESH === "1";
+  const envParent = process.env.KEYHALT_MODEB_PARENT;
+  const fresh = process.env.KEYHALT_MODEB_FRESH === "1";
   const previous = !fresh && existsSync(RUN_PATH) ? readJson(RUN_PATH) : null;
   const parentMeta =
     !fresh && existsSync(PARENT_PATH) ? readJson(PARENT_PATH) : null;
@@ -625,7 +625,7 @@ async function ensureParent(recorder) {
     const key = loadOrCreateKey(parentId, "parent");
     const meta = parentMeta?.account === parentId ? parentMeta : null;
     const faucetTx =
-      process.env.FLEET_MODEB_FAUCET_TX ?? meta?.faucet_tx ?? null;
+      process.env.KEYHALT_MODEB_FAUCET_TX ?? meta?.faucet_tx ?? null;
     const account = await viewAccount(accountFor(parentId, key).provider, parentId);
     console.log(
       `[parent] reuse ${parentId} balance=${Number(account.amount) / 1e24} NEAR tx=${faucetTx ?? "not recorded"}`,
@@ -725,7 +725,7 @@ async function ensureParent(recorder) {
 }
 
 async function ensureStranger(recorder) {
-  const envStranger = process.env.FLEET_MODEB_STRANGER;
+  const envStranger = process.env.KEYHALT_MODEB_STRANGER;
   if (envStranger && existsSync(keyPath(envStranger, "stranger"))) {
     const key = loadOrCreateKey(envStranger, "stranger");
     const provider = accountFor(envStranger, key).provider;
@@ -740,7 +740,7 @@ async function ensureStranger(recorder) {
       key,
       account: accountFor(envStranger, key),
       created: false,
-      faucetTx: process.env.FLEET_MODEB_STRANGER_TX ?? null,
+      faucetTx: process.env.KEYHALT_MODEB_STRANGER_TX ?? null,
     };
   }
   const key = KeyPair.fromRandom("ed25519");
@@ -1670,9 +1670,9 @@ async function main() {
 
   const parent = await ensureParent(recorder);
   const parentAccount = parent.account;
-  const agentId = process.env.FLEET_MODEB_AGENT || `agent-b1.${parent.id}`;
+  const agentId = process.env.KEYHALT_MODEB_AGENT || `agent-b1.${parent.id}`;
   const latencyAgentId =
-    process.env.FLEET_MODEB_LATENCY_AGENT || `agent-lat1.${parent.id}`;
+    process.env.KEYHALT_MODEB_LATENCY_AGENT || `agent-lat1.${parent.id}`;
 
   const modeBAgentKeys = {
     operators: Array.from({ length: AGENT_COUNT_KEYS }, (_value, index) =>
@@ -1685,8 +1685,8 @@ async function main() {
     mode: "B",
     operatorKeys: modeBAgentKeys.operators,
     operatorTags: modeBAgentKeys.operatorTags,
-    createTxOverride: process.env.FLEET_MODEB_AGENT_CREATE_TX ?? null,
-    initTxOverride: process.env.FLEET_MODEB_AGENT_INIT_TX ?? null,
+    createTxOverride: process.env.KEYHALT_MODEB_AGENT_CREATE_TX ?? null,
+    initTxOverride: process.env.KEYHALT_MODEB_AGENT_INIT_TX ?? null,
   });
   const modeBState = await viewStateBig(parentAccount.provider, agentId);
   recorder.check(

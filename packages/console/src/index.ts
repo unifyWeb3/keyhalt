@@ -6,6 +6,6 @@ export { ProviderPool, ProviderError } from "./providers.js";
 export { ReceiptWatcher, buildTimeline } from "./timeline.js";
 export type { ReceiptRecord, TimelineEvent, TimelineCounts } from "./timeline.js";
 export { SnapshotService } from "./snapshot.js";
-export type { AgentPayload, FleetPayload, TimelinePayload } from "./snapshot.js";
+export type { AgentPayload, KeyhaltPayload, TimelinePayload } from "./snapshot.js";
 export { createConsoleServer } from "./server.js";
 export type { ConsoleServer } from "./server.js";

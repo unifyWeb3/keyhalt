@@ -1,13 +1,13 @@
-# FLEET interfaces (v0.3)
+# Keyhalt interfaces (v0.3)
 
-**Status:** v0.3 — controller, TypeScript SDK, and CLI are implemented and have
-run on NEAR testnet. The read-only MCP server (`@fleet/mcp`) is built and
+**Status:** v0.3: controller, TypeScript SDK, and CLI are implemented and have
+run on NEAR testnet. The read-only MCP server (`@keyhalt/mcp`) is built and
 tested. Mode B 2-of-2 administration is implemented and verified on
 testnet both by the harness and through the product CLI
-(`fleet admin request freeze|unfreeze` / `fleet admin confirm` /
-`fleet admin status`; claim rows F-038…F-040). The read-only
+(`keyhalt admin request freeze|unfreeze` / `keyhalt admin confirm` /
+`keyhalt admin status`; claim rows F-038…F-040). The read-only
 API is still a **scaffold** (`/health` only). The console is **built and
-read-only** (`@fleet/console`): design system `docs/DESIGN_SYSTEM.md`, screen
+read-only** (`@keyhalt/console`): design system `docs/DESIGN_SYSTEM.md`, screen
 draft `docs/CONSOLE_DRAFT.md`; recording and public use remain approval-gated.
 **Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC).
 **Rule:** a private key never enters a browser, a server, a log, or the
@@ -35,12 +35,12 @@ repository. Writes are signed locally by the CLI/SDK; the API has no write route
 
 ## 2. TypeScript SDK
 
-Package: `@fleet/sdk` (`packages/sdk`), version `0.3.0`, private workspace.
+Package: `@keyhalt/sdk` (`packages/sdk`), version `0.3.0`, private workspace.
 
 ```ts
-import { createFleetClient, verifyAuditChain } from "@fleet/sdk";
+import { createKeyhaltClient, verifyAuditChain } from "@keyhalt/sdk";
 
-const fleet = createFleetClient({
+const keyhalt = createKeyhaltClient({
   rpcUrl: "https://rpc.testnet.fastnear.com", // default
   accountId: "agent-2.fleet-v03-5cff9e99.testnet",
   // optional: signer: { secretKey: "ed25519:..." }
@@ -50,7 +50,7 @@ const fleet = createFleetClient({
 ### 2.1 Types
 
 ```ts
-type FleetMode = "A" | "B";
+type KeyhaltMode = "A" | "B";
 
 interface OperatorKey {
   publicKey: string;
@@ -77,10 +77,10 @@ interface AuditEntry {
   entryHash: string;
 }
 
-interface FleetState {
+interface KeyhaltState {
   accountId: string;
   contractVersion: string;
-  mode: FleetMode;
+  mode: KeyhaltMode;
   paused: boolean;
   adminPublicKey: string | null;
   adminAccount: string | null;
@@ -106,7 +106,7 @@ interface NativeKey {
   methodNames: string[];
 }
 
-interface FleetTxResult {
+interface KeyhaltTxResult {
   txHash: string;
   blockHeight: number;
   gasBurnt: string;
@@ -121,7 +121,7 @@ Reads:
 
 | Method | Returns |
 | --- | --- |
-| `getState()` | `FleetState` |
+| `getState()` | `KeyhaltState` |
 | `getNativeKeys()` | `NativeKey[]` from `view_access_key_list` |
 | `getInventory()` | state + operators + native keys + `fullAccessKeys` count + audit head |
 | `getAudit(fromSeq, limit)` | up to 100 `AuditEntry` rows |
@@ -150,22 +150,22 @@ Utilities:
 - `buildAuditExport(accountId, state, entries)` → `fleet-audit-v1`
 - `parseBigJson(text)` → quotes 16+ digit integers before `JSON.parse`
 - `sha256Hex(bytesOrString)`
-- `fleetExitCode(code)`
+- `keyhaltExitCode(code)`
 
 ### 2.3 Error codes
 
 | Code | Exit | Meaning |
 | --- | --- | --- |
-| `FLEET_E_BAD_ARGS` | 2 | malformed or missing input |
-| `FLEET_E_UNSUPPORTED` | 2 | unknown command/operation |
-| `FLEET_E_NO_SIGNER` | 3 | write attempted without a signer |
-| `FLEET_E_MAINNET` | 4 | mainnet URL or non-testnet `chain_id` |
-| `FLEET_E_RPC` | 5 | network/RPC failure |
-| `FLEET_E_REJECTED` | 6 | transaction-level policy rejection |
-| `FLEET_E_RECEIPT` | 7 | failed action receipt |
-| `FLEET_E_AUDIT` | 6 | audit chain or export does not verify |
+| `KEYHALT_E_BAD_ARGS` | 2 | malformed or missing input |
+| `KEYHALT_E_UNSUPPORTED` | 2 | unknown command/operation |
+| `KEYHALT_E_NO_SIGNER` | 3 | write attempted without a signer |
+| `KEYHALT_E_MAINNET` | 4 | mainnet URL or non-testnet `chain_id` |
+| `KEYHALT_E_RPC` | 5 | network/RPC failure |
+| `KEYHALT_E_REJECTED` | 6 | transaction-level policy rejection |
+| `KEYHALT_E_RECEIPT` | 7 | failed action receipt |
+| `KEYHALT_E_AUDIT` | 6 | audit chain or export does not verify |
 
-`FleetError` carries `code`, `txHash`, `blockHeight`, and `refusal`; the CLI
+`KeyhaltError` carries `code`, `txHash`, `blockHeight`, and `refusal`; the CLI
 prints the same fields under `error`.
 
 ### 2.4 Audit export format
@@ -191,34 +191,34 @@ must equal the previous `entry_hash`; the first `prev_hash` is 64 zeros.
 
 ## 3. CLI
 
-Binary: `fleet` (`node_modules/.bin/fleet`), version `0.3.0`.
+Binary: `fleet` (`node_modules/.bin/keyhalt`), version `0.3.0`.
 
 ### 3.1 Commands
 
 ```text
-fleet inventory <account> [--rpc-url URL] [--json]
-fleet verify <account> [--rpc-url URL] [--json]
-fleet audit export <account> --out <file> [--json]
-fleet audit verify <file> [--json]
-fleet verify-audit <file> [--json]
+keyhalt inventory <account> [--rpc-url URL] [--json]
+keyhalt verify <account> [--rpc-url URL] [--json]
+keyhalt audit export <account> --out <file> [--json]
+keyhalt audit verify <file> [--json]
+keyhalt verify-audit <file> [--json]
 
-fleet freeze <account> --signer-key-file <path> [--json]
-fleet unfreeze <account> --signer-key-file <path> [--json]
-fleet grant <account> --key <public-key> --tag <tag> --signer-key-file <path> [--json]
-fleet rotate <account> --old <public-key> --new <public-key> --tag <tag> --signer-key-file <path> [--json]
-fleet revoke <account> --key <public-key> --signer-key-file <path> [--json]
-fleet revoke-tag <account> --tag <tag> --signer-key-file <path> [--json]
-fleet propose-admin <account> --new-admin <public-key> --signer-key-file <path> [--json]
-fleet accept-admin <account> --signer-key-file <path> [--json]
-fleet cancel-admin <account> --signer-key-file <path> [--json]
-fleet recover <account> --new-admin <public-key> --signer-key-file <path> [--json]
-fleet execute <account> --method <name> [--args '<json>'] [--gas <tgas>] [--receiver <account>] --signer-key-file <path> [--json]
+keyhalt freeze <account> --signer-key-file <path> [--json]
+keyhalt unfreeze <account> --signer-key-file <path> [--json]
+keyhalt grant <account> --key <public-key> --tag <tag> --signer-key-file <path> [--json]
+keyhalt rotate <account> --old <public-key> --new <public-key> --tag <tag> --signer-key-file <path> [--json]
+keyhalt revoke <account> --key <public-key> --signer-key-file <path> [--json]
+keyhalt revoke-tag <account> --tag <tag> --signer-key-file <path> [--json]
+keyhalt propose-admin <account> --new-admin <public-key> --signer-key-file <path> [--json]
+keyhalt accept-admin <account> --signer-key-file <path> [--json]
+keyhalt cancel-admin <account> --signer-key-file <path> [--json]
+keyhalt recover <account> --new-admin <public-key> --signer-key-file <path> [--json]
+keyhalt execute <account> --method <name> [--args '<json>'] [--gas <tgas>] [--receiver <account>] --signer-key-file <path> [--json]
 
 # Mode B multisig (agent admin is the deployed 2-of-2 multisig2 contract):
-fleet admin request freeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
-fleet admin request unfreeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
-fleet admin confirm <agent> <request-id> --signer-key-file <member.json> [--rpc-url URL] [--json]
-fleet admin status <agent> [--rpc-url URL] [--json]
+keyhalt admin request freeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
+keyhalt admin request unfreeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
+keyhalt admin confirm <agent> <request-id> --signer-key-file <member.json> [--rpc-url URL] [--json]
+keyhalt admin status <agent> [--rpc-url URL] [--json]
 ```
 
 `admin request` reads the agent's state, requires Mode B and a multisig
@@ -235,8 +235,8 @@ requests. The Mode B product path is verified on testnet (F-038…F-040).
 Membership enforcement is enforced locally **and** by the multisig itself
 (the pinned contract's predecessor check).
 
-`--rpc-url` defaults to `https://rpc.testnet.fastnear.com`; `FLEET_RPC_URL` is
-also accepted. `--signer-key-file` falls back to `FLEET_SIGNER_KEY_FILE`.
+`--rpc-url` defaults to `https://rpc.testnet.fastnear.com`; `KEYHALT_RPC_URL` is
+also accepted. `--signer-key-file` falls back to `KEYHALT_SIGNER_KEY_FILE`.
 
 ### 3.2 JSON envelopes
 
@@ -259,7 +259,7 @@ Writes:
 Errors:
 
 ```json
-{ "ok": false, "command": "execute", "accountId": "...", "error": { "code": "FLEET_E_REJECTED", "message": "controller is frozen", "txHash": "...", "blockHeight": 123, "refusal": "controller is frozen" } }
+{ "ok": false, "command": "execute", "accountId": "...", "error": { "code": "KEYHALT_E_REJECTED", "message": "controller is frozen", "txHash": "...", "blockHeight": 123, "refusal": "controller is frozen" } }
 ```
 
 With `--json`, stdout carries exactly one JSON object. Human output goes to
@@ -284,15 +284,15 @@ output.
 
 ### 4.1 Read-only API scaffold
 
-Package: `@fleet/api` (`packages/api`), version `0.3.0-phase1`.
+Package: `@keyhalt/api` (`packages/api`), version `0.3.0-phase1`.
 
 `createReadOnlyApi().handle(method, path)`:
 
 | Method | Path | Result |
 | --- | --- | --- |
 | GET/HEAD | `/health` | 200 `{status, version, readOnly: true}` |
-| any other route | — | 501 |
-| non-GET/HEAD | any | throws `FLEET API is read-only` |
+| any other route |: | 501 |
+| non-GET/HEAD | any | throws `Keyhalt API is read-only` |
 
 There is no HTTP server in this package and no write route in v0.3. The
 SDK/CLI are the write interfaces. The console (below) is the built read-only
@@ -300,28 +300,28 @@ surface.
 
 ### 4.2 Read-only console server
 
-Package: `@fleet/console` (`packages/console`), version `0.3.0`.
+Package: `@keyhalt/console` (`packages/console`), version `0.3.0`.
 
 The console serves the built interface in `web/` from the same origin and a
 small JSON/SSE API. It is **read-only and testnet-only**. The browser never
 calls an RPC and has no key; all reads go through the SDK, pinned to one
-finalized block per refresh (`blockId` in `FleetClientOptions`).
+finalized block per refresh (`blockId` in `KeyhaltClientOptions`).
 
 | Method | Path | Result |
 | --- | --- | --- |
 | GET/HEAD | `/api/health` | 200 aggregate: `headBlock`, `pinnedBlock`, `lastGoodBlock`, `stale`, retry cap, configured agents, claims count, provider stats, receipt watch |
-| GET/HEAD | `/api/fleet` | 200 Fleet snapshot: rows (state, operator keys, tags, full-access keys, audit length, last event), totals, providers, `CLAIMS.md` count |
+| GET/HEAD | `/api/keyhalt` | 200 Keyhalt snapshot: rows (state, operator keys, tags, full-access keys, audit length, last event), totals, providers, `CLAIMS.md` count |
 | GET/HEAD | `/api/agent?account=<id>` | 200 Agent snapshot: pinned state + SDK audit verification + on-chain `verify_audit`, operators, native keys (`null` while the key read is in flight), admin, recent events, commands |
 | GET/HEAD | `/api/timeline?limit=1..500&account=<id>?` | 200 merged audit + watched-receipt events, `counts { events, refused, blocks }` |
 | GET/HEAD | `/api/audit-export?account=<id>` | 200 `fleet-audit-v1` export (download) |
 | GET | `/api/stream` | SSE: `retry: 3000`, events `init`, `block`, `snapshot`, `timeline` |
 | GET/HEAD | `/` `/app.js` `/styles.css` `/favicon.svg` `/fonts/*` `/claims.md` `/threat-model.md` | static, same-origin, `Content-Security-Policy: default-src 'self'; script-src 'self'…` |
-| any other write method | any route | 405 `FLEET_CONSOLE_READ_ONLY`, `Allow: GET, HEAD` |
+| any other write method | any route | 405 `KEYHALT_CONSOLE_READ_ONLY`, `Allow: GET, HEAD` |
 
 Rules:
 
 - `readOnly: true` and `noSigner: true` on every payload; unknown accounts
-  return 404 `FLEET_CONSOLE_UNKNOWN_AGENT`, never a guess.
+  return 404 `KEYHALT_CONSOLE_UNKNOWN_AGENT`, never a guess.
 - One block per refresh. The header ticker is the live finalized block feed
   (poll `block { finality: "final" }`; free public RPC ships no block
   WebSocket). When reads fail, the console shows the last good block plus a
@@ -452,7 +452,7 @@ internal confirmation count; it only observes the executed predecessor call.
 
 ## 8. Read-only MCP server
 
-Package: `@fleet/mcp` (`packages/mcp`), version `0.3.0`. The server speaks
+Package: `@keyhalt/mcp` (`packages/mcp`), version `0.3.0`. The server speaks
 JSON-RPC 2.0 over stdio (newline-delimited), the Model Context Protocol. It
 has no signer, no write method, and no key input. It exists so agent systems
 can read the same inventory and audit data the CLI and SDK expose.
@@ -465,13 +465,13 @@ Tools:
 
 | Tool | Reads | Arguments |
 | --- | --- | --- |
-| `fleet_inventory` | agent mode, paused state, operators, native keys, audit length, audit head — one pinned finalized block | `account` (testnet id) |
-| `fleet_audit` | audit entries with seq/action/block/hashes; `limit` caps the return at 1..100, default 100 | `account`, optional `limit` |
-| `fleet_verify` | SDK re-verification of the audit chain plus on-chain `verify_audit` | `account` |
+| `keyhalt_inventory` | agent mode, paused state, operators, native keys, audit length, audit head: one pinned finalized block | `account` (testnet id) |
+| `keyhalt_audit` | audit entries with seq/action/block/hashes; `limit` caps the return at 1..100, default 100 | `account`, optional `limit` |
+| `keyhalt_verify` | SDK re-verification of the audit chain plus on-chain `verify_audit` | `account` |
 
 The server answers `initialize` with MCP protocol `2025-06-18`,
 `tools/list` with the three tools above, and refuses unknown methods with
 `-32601`. A mainnet-looking RPC URL is refused at startup, like everywhere
 else. Claim F-041 records what the test suite proves; the implementation
-adds no further claims. The inventory data is exactly what `fleet inventory`
+adds no further claims. The inventory data is exactly what `keyhalt inventory`
 and `getInventory()` return.

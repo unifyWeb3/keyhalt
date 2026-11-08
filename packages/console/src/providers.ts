@@ -78,10 +78,10 @@ function classify(error: unknown): {
   }
   const code = (error as { code?: unknown })?.code;
   const message = messageOf(error);
-  if (code === "FLEET_E_MAINNET") {
+  if (code === "KEYHALT_E_MAINNET") {
     return { retryable: false, cooldown: false, message };
   }
-  if (code === "FLEET_E_RPC") {
+  if (code === "KEYHALT_E_RPC") {
     return { retryable: true, cooldown: false, message };
   }
   return {
@@ -245,7 +245,7 @@ export class ProviderPool {
         response = await fetch(provider.url, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ jsonrpc: "2.0", id: "fleet-console", method, params }),
+          body: JSON.stringify({ jsonrpc: "2.0", id: "keyhalt-console", method, params }),
           signal: AbortSignal.timeout(9_000),
         });
       } catch (error) {

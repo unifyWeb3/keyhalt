@@ -1,4 +1,4 @@
-# FLEET threat model
+# Keyhalt threat model
 
 **Status:** v0.3 design document, revised with §10 on 2026-11-07 for the
 read-only console (built 2026-11-07). The controller, SDK, CLI, and Mode B
@@ -25,7 +25,7 @@ multisig admin).
 | A-7 | Claims and evidence | Determines what the submission is allowed to say | `CLAIMS.md`, `evidence/`, test logs |
 | A-8 | User/agent availability | A freeze is a denial of service by design; an attacker freeze is harm | Controller `paused` state |
 
-**Not assets in this design:** user funds held by FLEET (it holds none), private
+**Not assets in this design:** user funds held by Keyhalt (it holds none), private
 keys inside the repository (none), a mainnet account (none), a hosted server
 with signing authority (none).
 
@@ -75,7 +75,7 @@ with signing authority (none).
 
 ---
 
-## 4. What FLEET is designed to defend against
+## 4. What Keyhalt is designed to defend against
 
 | Threat | Design response | Residual risk |
 | --- | --- | --- |
@@ -91,7 +91,7 @@ with signing authority (none).
 
 ---
 
-## 5. What FLEET does **not** defend against
+## 5. What Keyhalt does **not** defend against
 
 State this plainly in the README and demo:
 
@@ -108,7 +108,7 @@ State this plainly in the README and demo:
 4. **An in-flight execution.** A freeze blocks new `execute` calls; a receipt
    already accepted by the chain can still land. The demo must not claim
    “freeze cancels in-flight receipts.”
-5. **A malicious allowlisted contract.** FLEET restricts *which* contract/method
+5. **A malicious allowlisted contract.** Keyhalt restricts *which* contract/method
    an operator may call, not what that contract does. A malicious or buggy
    receiver is outside the boundary.
 6. **Loss of both Mode B owner keys.** There is no tested recovery in
@@ -174,7 +174,7 @@ specified but not implemented in v0.3.
 - Mainnet, real funds, production incident response, insurance, KYC, payout.
 - Custody of user assets, token transfers, DeFi strategies, account recovery of
   third parties.
-- TEEs, secure enclaves, hardware wallets (they may hold keys, but FLEET does not
+- TEEs, secure enclaves, hardware wallets (they may hold keys, but Keyhalt does not
   integrate one in v0.3).
 - Policy engines, intent solvers, AI-agent orchestration, swarms.
 - Auditing `near-sdk`, `multisig2`, npm, or GitHub Actions.
@@ -192,7 +192,7 @@ specified but not implemented in v0.3.
 | Can the read API detect a stale RPC? | `HYPOTHESIS` | Block-height/finality test + multi-provider comparison |
 | Is any component audited? | **No** | Do not claim audit |
 
-## 10. Console server (read-only) — added 2026-11-07
+## 10. Console server (read-only): added 2026-11-07
 
 The console (`packages/console` + `web/`) serves the built interface and a
 small JSON/SSE API. It is read-only and testnet-only; it holds no signer and
@@ -205,7 +205,7 @@ its own section rather than retroactive "always covered" text.
 | Anyone on the loopback interface | Hit the API | 405 on every non-GET/HEAD; unknown accounts 404; no write path exists to abuse |
 | RPC provider (P-4, unchanged) | Lie about state, go stale, or partition | Failover with pacing and per-provider cooldown; retry cap 120 s; last-good block + stale banner; pinning per snapshot; never synth state |
 | Watch-file writer (repo working dir) | Add tx hashes | Bounded to 60 hashes, base58-validated; only effect is extra archival RPC reads; file inspected on every scan |
-| Server owner (`FLEET_CONSOLE_*`) | Reconfigure agents/providers/ports | Loopback by default; non-loopback refuses to start unless `FLEET_CONSOLE_ALLOW_REMOTE=1` is set explicitly |
+| Server owner (`KEYHALT_CONSOLE_*`) | Reconfigure agents/providers/ports | Loopback by default; non-loopback refuses to start unless `KEYHALT_CONSOLE_ALLOW_REMOTE=1` is set explicitly |
 | Server process | Crash / leak | No secrets in memory; provider stats contain URLs and counts only; no persistence beyond a mode-600 receipt cache in `cacheDir` (mode 700) |
 
 Attack surface notes:
@@ -217,13 +217,13 @@ Attack surface notes:
   export. Do not describe the console as proof.
 - **SSE read amplification.** Each open tab receives every block event.
   `/api/stream` is unauthenticated on purpose (data is public); loopback bind
-  keeps it off the network. If `FLEET_CONSOLE_ALLOW_REMOTE=1` is set, don't.
+  keeps it off the network. If `KEYHALT_CONSOLE_ALLOW_REMOTE=1` is set, don't.
 - **Watch file injection.** A local writer can make the watcher fetch
-  arbitrary base58 strings from the archival RPC — bounded, read-only, and
+  arbitrary base58 strings from the archival RPC: bounded, read-only, and
   rate-limited by pacing/cooldown. No execution follows from a receipt.
 - **Error text leaks.** Errors from providers are truncated to ~240 chars and
   carry URLs, never key material; the CLI output is the only place keys could
-  appear (they never do — the CLI expects key *files*).
+  appear (they never do: the CLI expects key *files*).
 
-This section extends, and does not replace, §3–§9. The controller findings
+This section extends, and does not replace, §3-§9. The controller findings
 above are unchanged.

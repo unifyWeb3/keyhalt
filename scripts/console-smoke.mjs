@@ -84,18 +84,18 @@ function freePort() {
 async function main() {
   const rpc = await fakeRpc();
   const port = await freePort();
-  const temp = mkdtempSync(join(tmpdir(), "fleet-console-smoke-"));
+  const temp = mkdtempSync(join(tmpdir(), "keyhalt-console-smoke-"));
   const child = spawn(process.execPath, [CLI, "--port", String(port), "--json"], {
     cwd: ROOT,
     env: {
       ...process.env,
-      FLEET_CONSOLE_ACCOUNTS: "",
-      FLEET_CONSOLE_PROVIDERS: rpc.url,
-      FLEET_CONSOLE_ARCHIVAL_PROVIDERS: rpc.url,
-      FLEET_CONSOLE_SEED_TXS: "",
-      FLEET_CONSOLE_WATCH_FILE: join(temp, "watch.json"),
-      FLEET_CONSOLE_CACHE_DIR: join(temp, "cache"),
-      FLEET_CONSOLE_BLOCK_POLL_MS: "250",
+      KEYHALT_CONSOLE_ACCOUNTS: "",
+      KEYHALT_CONSOLE_PROVIDERS: rpc.url,
+      KEYHALT_CONSOLE_ARCHIVAL_PROVIDERS: rpc.url,
+      KEYHALT_CONSOLE_SEED_TXS: "",
+      KEYHALT_CONSOLE_WATCH_FILE: join(temp, "watch.json"),
+      KEYHALT_CONSOLE_CACHE_DIR: join(temp, "cache"),
+      KEYHALT_CONSOLE_BLOCK_POLL_MS: "250",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -142,13 +142,13 @@ async function main() {
       throw new Error("console startup JSON is missing readOnly:true");
     }
 
-    const fleetResponse = await fetch(`${base}/api/fleet`);
-    const fleet = await fleetResponse.json();
-    if (fleetResponse.status !== 200 || fleet.status !== "empty") {
-      throw new Error(`empty fleet state failed: ${fleetResponse.status} ${fleet.status}`);
+    const keyhaltResponse = await fetch(`${base}/api/keyhalt`);
+    const keyhalt = await keyhaltResponse.json();
+    if (keyhaltResponse.status !== 200 || keyhalt.status !== "empty") {
+      throw new Error(`empty keyhalt state failed: ${keyhaltResponse.status} ${keyhalt.status}`);
     }
 
-    const write = await fetch(`${base}/api/fleet`, {
+    const write = await fetch(`${base}/api/keyhalt`, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: "{}",

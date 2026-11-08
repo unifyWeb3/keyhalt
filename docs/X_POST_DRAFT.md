@@ -1,4 +1,4 @@
-# X post — draft for human approval
+# X post: draft for human approval
 
 **Status: DRAFT. Not posted. Not scheduled. No account was created or claimed.**
 The human edits, approves, and posts from their own account.
@@ -11,7 +11,7 @@ screenshots. The same document now gives explicit guidance on the post, and
 this draft follows it:
 
 1. *Lead with the user problem.* The first line must make sense to someone
-   who has never heard of FLEET.
+   who has never heard of Keyhalt.
 2. *Show one complete moment.* From a real action to a visible result. No
    long intro, no architecture slides, no setup.
 3. *Explain NEAR's role concretely.* Not "powered by NEAR".
@@ -24,9 +24,9 @@ repository is public, and confirm the wording below against `CLAIMS.md`.
 
 ---
 
-## Post A — the single post (267 characters)
+## Post A: the single post (267 characters)
 
-> One compromised NEAR agent account? FLEET freezes it in one admin
+> One compromised NEAR agent account? Keyhalt freezes it in one admin
 > transaction and revokes its keys by tag, using NEAR native access keys. The
 > audit chain verifies on-chain and off-chain. Mode A is not non-custodial.
 > Testnet only. Built at #NEARHackathon @NEARProtocol
@@ -34,9 +34,9 @@ repository is public, and confirm the wording below against `CLAIMS.md`.
 **Character count:** 267. Fits one post. The repository URL goes in the first
 reply, or use Post A-short.
 
-## Post A-short — the single post with the repository URL inline (244 characters)
+## Post A-short: the single post with the repository URL inline (244 characters)
 
-> One compromised NEAR agent account? FLEET freezes it in one admin
+> One compromised NEAR agent account? Keyhalt freezes it in one admin
 > transaction and revokes its keys by tag, using NEAR native access keys. The
 > audit chain verifies on-chain. Mode A is not non-custodial. Testnet only.
 > #NEARHackathon @NEARProtocol
@@ -46,21 +46,21 @@ X shortens it to `t.co/…`) = **268**, inside the limit.
 
 ---
 
-## Post B — what NEAR specifically enables (272 characters)
+## Post B: what NEAR specifically enables (272 characters)
 
 Use as the first reply. This is the "explain NEAR's role concretely" reply.
 
 > What NEAR gave us: the account's own access-key list. An operator is a
 > FunctionCall key with a method ACL, so freezing is one admin transaction the
-> chain enforces — no separate custody contract. A revoked key stops working
+> chain enforces: no separate custody contract. A revoked key stops working
 > at the protocol level. #NEARHackathon @NEARProtocol
 
-## Post C — the complete moment, and a genuine question (two posts)
+## Post C: the complete moment, and a genuine question (two posts)
 
 **C1 (181 characters):**
 
-> We built FLEET at NEAR HACKATHON: a native key-lifecycle control plane for a
-> fleet of agent accounts. One transaction freezes an agent; a tag-based
+> We built Keyhalt at NEAR HACKATHON: a native key-lifecycle control plane for a
+> keyhalt of agent accounts. One transaction freezes an agent; a tag-based
 > revoke offboards a group of keys.
 
 **C2 (162 characters):**
@@ -73,42 +73,42 @@ Use as the first reply. This is the "explain NEAR's role concretely" reply.
 
 ## Optional replies (after the main post)
 
-Reply 1 — the evidence (**259 characters**):
+Reply 1: the evidence (**259 characters**):
 
 > Every claim maps to a row in CLAIMS.md and to a test or a public testnet tx
 > hash. 84 Rust tests, 41 TypeScript tests, 7/7 near-workspaces integration
 > tests, 248/252 viable mutants caught, and a clean-session fresh clone that
 > reproduces the deployed wasm hash.
 
-Reply 2 — the measured latency (**split into two posts**):
+Reply 2: the measured latency (**split into two posts**):
 
 > Measured on NEAR testnet, 20 runs per path:
 >
-> Mode A freeze (single admin transaction) — optimistic p50 5,567 ms / p95
+> Mode A freeze (single admin transaction): optimistic p50 5,567 ms / p95
 > 13,227 ms; final p50 13,251 ms / p95 24,753 ms.
 >
-> Mode B freeze (2-of-2 multisig, 3 transactions) — optimistic p50 10,038 ms /
+> Mode B freeze (2-of-2 multisig, 3 transactions): optimistic p50 10,038 ms /
 > p95 17,105 ms; final p50 13,682 ms, p95 32,946 ms.
 >
 > Submit-to-state, polling included. Measurements, not an SLA.
 >
 > #NEARHackathon @NEARProtocol
 
-Reply 3 — the concurrency measurement, stated exactly (**246 characters**):
+Reply 3: the concurrency measurement, stated exactly (**246 characters**):
 
 > The 12-call, 3-agent scenario was replayed 50 times on testnet: 572 of 600
 > calls completed (95.33%). 560 succeeded first try, 12 after one retry, 28
-> failed after three attempts — all public-RPC rate-limit or network errors,
+> failed after three attempts: all public-RPC rate-limit or network errors,
 > not policy rejections.
 
-Reply 4 — the limits, before a judge asks (**243 characters**):
+Reply 4: the limits, before a judge asks (**243 characters**):
 
 > What this is not: not mainnet, not audited, not non-custodial in Mode A.
 > Mode B reduces single-admin-key trust but is not independently custodied in
 > this evidence. A freeze blocks new executions; it does not cancel a receipt
 > already in flight.
 
-Reply 5 — the ask (**add the repository URL here**):
+Reply 5: the ask (**add the repository URL here**):
 
 > Repo and demo: <REPO_URL> · <DEMO_URL>
 
@@ -120,7 +120,7 @@ Reply 5 — the ask (**add the repository URL here**):
 | --- | --- |
 | Must tag `@NEARProtocol` | Present in Posts A, A-short, B, C2 and every reply |
 | Must tag `#NEARHackathon` | Present in Posts A, A-short, B, C2 and Reply 2 |
-| Must say it was built at NEAR HACKATHON | "Built at #NEARHackathon" in Post A; "We built FLEET at NEAR HACKATHON" in Post C1 |
+| Must say it was built at NEAR HACKATHON | "Built at #NEARHackathon" in Post A; "We built Keyhalt at NEAR HACKATHON" in Post C1 |
 | Must carry the demo video or screenshots | Human attaches; `design/screenshots/` holds the four recaptured screens |
 | Lead with the user problem | Post A opens on "One compromised NEAR agent account?" |
 | Show one complete moment | Post C1/C2: freeze → revoke → audit, in one thread |

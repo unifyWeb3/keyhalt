@@ -3,7 +3,7 @@
 Each entry records one decision where the console deliberately does less than
 the product could. The alternative is named, never hidden.
 
-## D-01 — Actions without keys
+## D-01: Actions without keys
 
 The console shows Freeze / Unfreeze buttons. Selecting one opens a command
 sheet with the exact CLI command and a copy button. The console never signs,

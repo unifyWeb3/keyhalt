@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex" />
-<title>FLEET</title>
+<title>Keyhalt</title>
 <style>
 @font-face {
   font-family: "Inter";
@@ -415,10 +415,10 @@ footer a { color: var(--text-2); }
 <header class="topbar">
   <a class="brand" href="#">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
-    <span class="wordmark">FLEET</span>
+    <span class="wordmark">Keyhalt</span>
   </a>
   <nav class="nav" aria-label="Screens">
-    <a href="#" data-nav="fleet">Fleet</a>
+    <a href="#" data-nav="keyhalt">Keyhalt</a>
     <a href="#timeline" data-nav="timeline">Timeline</a>
   </nav>
   <span class="net">
@@ -427,10 +427,10 @@ footer a { color: var(--text-2); }
   </span>
 </header>
 
-<main id="fleet">
-  <section class="panel" aria-labelledby="fleet-heading">
+<main id="keyhalt">
+  <section class="panel" aria-labelledby="keyhalt-heading">
     <div class="panel-head">
-      <h1 id="fleet-heading">Fleet</h1>
+      <h1 id="keyhalt-heading">Keyhalt</h1>
       <span class="meta mono">3 agents · 12 operator keys · 0 full-access keys</span>
     </div>
     <div class="table-wrap">
@@ -466,7 +466,7 @@ footer a { color: var(--text-2); }
 </main>
 
 <main id="agent" hidden>
-  <p class="back"><a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Fleet</a></p>
+  <p class="back"><a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Keyhalt</a></p>
   <section class="panel">
     <div class="panel-head">
       <h1 class="agent-id mono">agent-b1.fleet-modeb-748d4372.testnet</h1>
@@ -530,14 +530,14 @@ footer a { color: var(--text-2); }
       <button class="btn" type="button" id="freeze-btn">Freeze</button>
     </div>
     <div class="sheet" id="sheet" hidden>
-      <code id="cmd">fleet freeze agent-b1.fleet-modeb-748d4372.testnet --signer-key-file &lt;key-file&gt; --json</code>
+      <code id="cmd">keyhalt freeze agent-b1.fleet-modeb-748d4372.testnet --signer-key-file &lt;key-file&gt; --json</code>
       <div class="row"><button class="btn" type="button" id="copy">Copy</button><span class="copied" id="copied" hidden>Copied</span></div>
     </div>
   </section>
 </main>
 
 <main id="timeline" hidden>
-  <p class="back"><a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Fleet</a></p>
+  <p class="back"><a href="#"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Keyhalt</a></p>
   <section class="panel">
     <div class="panel-head">
       <h1>Timeline</h1>
@@ -619,7 +619,7 @@ footer a { color: var(--text-2); }
   setInterval(tick, 1200);
 
   var mains = {
-    fleet: document.getElementById("fleet"),
+    fleet: document.getElementById("keyhalt"),
     agent: document.getElementById("agent"),
     timeline: document.getElementById("timeline")
   };
@@ -629,7 +629,7 @@ footer a { color: var(--text-2); }
     for (var k in mains) mains[k].hidden = (k !== name);
     for (var i = 0; i < navLinks.length; i++) {
       var link = navLinks[i];
-      var active = link.getAttribute("data-nav") === (name === "agent" ? "fleet" : name);
+      var active = link.getAttribute("data-nav") === (name === "agent" ? "keyhalt" : name);
       if (active) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     }
@@ -638,7 +638,7 @@ footer a { color: var(--text-2); }
     var h = location.hash;
     if (h.indexOf("#agent=") === 0) show("agent");
     else if (h === "#timeline") show("timeline");
-    else show("fleet");
+    else show("keyhalt");
   }
   window.addEventListener("hashchange", route);
   route();

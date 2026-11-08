@@ -1,13 +1,13 @@
-# FLEET console design system (v0.3 draft, amended)
+# Keyhalt console design system (v0.3 draft, amended)
 
-**Status: BUILT (read-only) — not approved for recording or public use.** The
+**Status: BUILT (read-only): not approved for recording or public use.** The
 design system has been applied in `web/` + `packages/console/`; this document
 remains the authority for type, colour, layout and copy. No Figma file and no
 recording exist. Recording and public use happen only after written human
 approval of this build.
 **Date:** 2026-11-04 UTC (amended after the 2026-11-04 design review; type,
 colour, layout and copy amended 2026-11-07 after the human approved the
-`unslop` direction — see `design/UNSLOP_AUDIT.md`; console built and
+`unslop` direction: see `design/UNSLOP_AUDIT.md`; console built and
 rehearsed 2026-11-07, see `evidence/console-v03/` and
 `docs/CONSOLE_SHOT_LIST.md`).
 **Scope:** read-only console for NEAR **testnet** only. The console never signs,
@@ -16,7 +16,7 @@ SDK/CLI (local signing) per `docs/INTERFACES.md` §1.
 
 **Out of scope:** wallet-signed writes, hosted demo, paymaster.
 
-The console answers one question: is this fleet behaving the way the evidence
+The console answers one question: is this keyhalt behaving the way the evidence
 says it should? Everything else is secondary.
 
 ---
@@ -75,11 +75,11 @@ against `--bg` and, for cells, `--panel`.
 
 | Token | Hex | Contrast on `--bg` / `--panel` | Use |
 | --- | --- | --- | --- |
-| `--bg` | `#0b0d14` | — | page background, sheet |
-| `--panel` | `#11141c` | — | card surface |
-| `--raised` | `#1a1e28` | — | active nav, row hover |
-| `--hairline` | `rgba(238,240,245,0.08)` | — | borders, table rules |
-| `--hairline-strong` | `rgba(238,240,245,0.16)` | — | control borders, chain spine |
+| `--bg` | `#0b0d14` |: | page background, sheet |
+| `--panel` | `#11141c` |: | card surface |
+| `--raised` | `#1a1e28` |: | active nav, row hover |
+| `--hairline` | `rgba(238,240,245,0.08)` |: | borders, table rules |
+| `--hairline-strong` | `rgba(238,240,245,0.16)` |: | control borders, chain spine |
 | `--text` | `#eef0f5` | 17.0 : 1 / 16.2 : 1 | primary text |
 | `--text-2` | `#a3a9b8` | 8.3 : 1 / 7.8 : 1 | secondary text |
 | `--text-3` | `#828a9e` | 5.6 : 1 / 5.3 : 1 | meta, column headers |
@@ -101,8 +101,8 @@ Light mode is deferred.
   32 px (24 px at the bottom edge, 16 px under 900 px wide).
 - Panels: 20 px padding, 14 px radius. Controls: 8 px radius. Chips: 4 px.
   Borders are 1 px hairlines, never a solid mid-grey.
-- Top bar (56 px, pinned): `FLEET` wordmark with a key mark, the two routes
-  (`Fleet`, `Timeline`), and the testnet chip. Footer: 44 px.
+- Top bar (56 px, pinned): `Keyhalt` wordmark with a key mark, the two routes
+  (`Keyhalt`, `Timeline`), and the testnet chip. Footer: 44 px.
 - The layout fills the viewport width. It is never a narrow centred column.
 
 ---
@@ -111,26 +111,26 @@ Light mode is deferred.
 
 ### 4.1 Header
 
-Wordmark with a key mark, the routes `Fleet` and `Timeline`, and the chip
+Wordmark with a key mark, the routes `Keyhalt` and `Timeline`, and the chip
 `testnet · block 276454237`. The block number ticks as new blocks arrive; in
 the static draft the counter is a labelled stand-in (footer note and `title`),
 and the real console reads it from the RPC. The active route is a small
 surface step with a hairline, not a coloured pill. No other header content.
 
-### 4.2 Fleet
+### 4.2 Keyhalt
 
 One row per agent (three) and, on the Mode B demo fleet, the same row shape
 for its agent. Columns: name, state (`Active` or `Frozen`), full-access key
 count, and the last event with its block. Each name carries a second quiet
-line with the key material that makes the fleet a fleet: `4 operator keys ·
+line with the key material that makes the keyhalt a fleet: `4 operator keys ·
 2 ops-a · 2 ops-b`. The panel header carries the real aggregate: `3 agents ·
 12 operator keys · 0 full-access keys`. Selecting a name opens the agent
-screen. Fleet membership comes from a config file or a URL hash
+screen. Keyhalt membership comes from a config file or a URL hash
 (`#agent=agent-2.…`), never a text box.
 
 ### 4.3 Agent
 
-Close button to return to the fleet. Below it, three groups:
+Close button to return to the keyhalt. Below it, three groups:
 
 - Operator keys and scopes (table: key, scope tag, active). The scope tag is
   the signature detail: a small mono chip, the one accent on the row.
@@ -158,7 +158,7 @@ Each agent has Freeze or Unfreeze. Selecting it opens a sheet showing the exact
 CLI command and a copy button:
 
 ```text
-fleet freeze agent-b1.fleet-modeb-748d4372.testnet --signer-key-file <key-file>
+keyhalt freeze agent-b1.fleet-modeb-748d4372.testnet --signer-key-file <key-file>
 ```
 
 The console never signs, never stores a key, and never calls a write method.
@@ -180,7 +180,7 @@ that the block counter is a stand-in.
 | History was altered | "History was altered at entry 4." Export blocked. |
 | Contract refused | Red row with the plain-language refusal and its tx hash. |
 
-`FLEET_E_*` codes stay in the CLI and JSON only.
+`KEYHALT_E_*` codes stay in the CLI and JSON only.
 
 ---
 
@@ -189,11 +189,11 @@ that the block counter is a stand-in.
 Three screens. No other routes.
 
 ```
-Fleet → Agent → Timeline
+Keyhalt → Agent → Timeline
 ```
 
-- Fleet is the default screen. Agent opens from a fleet row. Timeline is the
-  fleet-wide event list, reachable from the fleet and from an agent.
+- Keyhalt is the default screen. Agent opens from a keyhalt row. Timeline is the
+  keyhalt-wide event list, reachable from the keyhalt and from an agent.
 - Live updates on every new block. The header block number ticks. A Frozen
   state appears in the block it lands. A refused call appears as an event row.
 - Demo format is a split screen: terminal command on one side, console on the
@@ -216,7 +216,7 @@ Fleet → Agent → Timeline
 
 - Status is conveyed by text, never color alone.
 - Tables are semantic tables; tx hashes are real links to NearBlocks.
-- Header + fleet visible without scroll at 1920×1080. The agent screen and its
+- Header + keyhalt visible without scroll at 1920×1080. The agent screen and its
   open command sheet also fit 1080 px without scrolling (verified 2026-11-07).
 - No private key, seed phrase, signer path, or wallet UI appears, even as a mock.
 - `web/` carries `<meta name="robots" content="noindex">` until the human
@@ -240,7 +240,7 @@ Fleet → Agent → Timeline
 4. Only then: demo recording and any Figma work.
 
 **This is the shipped direction.** The screens in `web/` implement it
-(Fleet, Agent, Timeline) and are the live product today together with the
+(Keyhalt, Agent, Timeline) and are the live product today together with the
 controller, SDK, and CLI. `design/index.html` remains the approval-gated
 pixel reference; recording and public use still require written human
 approval.

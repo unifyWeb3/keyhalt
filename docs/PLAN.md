@@ -1,4 +1,4 @@
-# FLEET day-by-day plan (Nov 1–14, 2026)
+# Keyhalt day-by-day plan (Nov 1-14, 2026)
 
 **Status:** v0.3 update, 2026-11-03. The original plan below is preserved. Phase
 1 closed late on 2026-11-03; the controller, SDK, CLI, and canonical testnet run
@@ -8,7 +8,7 @@ demo recording, and submission remain. The slip is disclosed in
 **Deadline:** submission **2026-11-14 12:00 UTC**; event closes
 **2026-11-14 23:59 UTC**. Judging starts 2026-11-16.
 **Track:** `security` only. Testnet only. $0. No mainnet.
-**Product line:** “FLEET is a native NEAR account-fleet key-lifecycle control
+**Product line:** “Keyhalt is a native NEAR account-fleet key-lifecycle control
 plane.” Not a wallet, TEE custodian, or policy engine. Mode A is not
 non-custodial.
 
@@ -29,19 +29,19 @@ non-custodial.
 | Date | Plan | Tier | Human action |
 | --- | --- | --- | --- |
 | Nov 1 | Core contract skeleton, state machine, unit tests | Minimum | Confirm Phase 1 baseline / Q-001 answer if available |
-| Nov 2 | Rotation, allowance refresh, audit chain | Minimum | — |
+| Nov 2 | Rotation, allowance refresh, audit chain | Minimum |: |
 | Nov 3 | **Checkpoint: core contract passing all invariant tests** | Minimum | Review core result |
-| Nov 4 | SDK reads/writes, CLI commands | Minimum | — |
-| Nov 5 | `near-workspaces` integration tests, Mode B reuse gate | Required | — |
-| Nov 6 | 3-agent E2E, 12 concurrent calls, freeze latency | Minimum | — |
+| Nov 4 | SDK reads/writes, CLI commands | Minimum |: |
+| Nov 5 | `near-workspaces` integration tests, Mode B reuse gate | Required |: |
+| Nov 6 | 3-agent E2E, 12 concurrent calls, freeze latency | Minimum |: |
 | Nov 7 | **Checkpoint: SDK, CLI, E2E passing fresh-clone test** | Minimum | Review E2E |
-| Nov 8 | Read-only console, audit export verifier | Required | — |
-| Nov 9 | Gas profiling, refusal matrix, claims pass | Required | — |
-| Nov 10 | **Feature freeze** | — | Approve feature set |
-| Nov 11 | Demo rehearsal, claims panel, screener run | Required | — |
+| Nov 8 | Read-only console, audit export verifier | Required |: |
+| Nov 9 | Gas profiling, refusal matrix, claims pass | Required |: |
+| Nov 10 | **Feature freeze** |: | Approve feature set |
+| Nov 11 | Demo rehearsal, claims panel, screener run | Required |: |
 | Nov 12 | **Demo recorded** | Required | Review video; approve public X post |
 | Nov 13 | **README final; fresh-clone green on a clean session**; re-fetch `HACKATHON.md` | Required | Confirm repo public / license / diff link |
-| Nov 14 | **Human review and submission by 12:00 UTC** | — | Submit, post X video, provide payout address |
+| Nov 14 | **Human review and submission by 12:00 UTC** |: | Submit, post X video, provide payout address |
 
 ---
 
@@ -57,17 +57,17 @@ lowered.
 | Date | Plan | Tier | Human action |
 | --- | --- | --- | --- |
 | **Nov 3 (today)** | Finish Phase 1: docs, scaffold, harness; `make verify` green; fresh-clone green; commit baseline; annotated `pre-hackathon` tag; update research status. **No product code.** | Phase 1 | **Approve Phase 2** and the Mode A/B default. Ask organizers about Q-001. |
-| Nov 4 | Controller skeleton: init, state, `execute`, freeze, grant/revoke, audit entry; unit tests. Deploy to a throwaway testnet account only after tests pass. Start Mode B reuse gate in parallel if time. | Minimum | — |
+| Nov 4 | Controller skeleton: init, state, `execute`, freeze, grant/revoke, audit entry; unit tests. Deploy to a throwaway testnet account only after tests pass. Start Mode B reuse gate in parallel if time. | Minimum |: |
 | Nov 5 | **Recovery checkpoint: core contract passing all invariant unit/property tests**; rotation and allowance refresh; audit hash chain. | Minimum | Review core evidence. |
-| Nov 6 | SDK reads/writes + CLI commands; local signer; no key in API/browser. `near-workspaces` tests on CI/x64; local arm64 fallback documented. | Minimum | — |
+| Nov 6 | SDK reads/writes + CLI commands; local signer; no key in API/browser. `near-workspaces` tests on CI/x64; local arm64 fallback documented. | Minimum |: |
 | Nov 7 | **Recovery checkpoint: SDK, CLI, 3-agent E2E, fresh-clone test green**; 12 concurrent calls. | Minimum | Review E2E hashes. |
-| Nov 8 | Mode B reuse gate: deploy pinned `multisig2`, 2-of-2, one-confirm refusal, two-confirm freeze; record tx hashes. If it fails, Mode A fallback with disclosure. | Required | — |
-| Nov 9 | Freeze latency 20-run test; gas table; audit export verifier; refusal matrix with positive controls. | Required | — |
+| Nov 8 | Mode B reuse gate: deploy pinned `multisig2`, 2-of-2, one-confirm refusal, two-confirm freeze; record tx hashes. If it fails, Mode A fallback with disclosure. | Required |: |
+| Nov 9 | Freeze latency 20-run test; gas table; audit export verifier; refusal matrix with positive controls. | Required |: |
 | Nov 10 | **Feature freeze.** No new features. Read-only console only if the API is green. | Required | Approve feature set. |
-| Nov 11 | Claims pass: every README/UI/demo line has a `VERIFIED` row or is removed. Screener dry run. Red-team cases 1–20. | Required | — |
+| Nov 11 | Claims pass: every README/UI/demo line has a `VERIFIED` row or is removed. Screener dry run. Red-team cases 1-20. | Required |: |
 | Nov 12 | **Demo recorded** (90 s), every step replayed; hosted read-only demo up. | Required | **Review video and approve the public X post.** |
 | Nov 13 | README final; diff link `pre-hackathon..hackathon-submission`; fresh-clone on a clean session; re-fetch `HACKATHON.md`; final secret/mode check. | Required | **Approve repository public + license + diff link.** |
-| Nov 14 | Final human review; tag `hackathon-submission`; submission JSON; X post; payout address if required. **Deadline 12:00 UTC.** | — | **Submit, post, provide payout address; no mainnet deployment.** |
+| Nov 14 | Final human review; tag `hackathon-submission`; submission JSON; X post; payout address if required. **Deadline 12:00 UTC.** |: | **Submit, post, provide payout address; no mainnet deployment.** |
 
 If Nov 5 or Nov 7 slips, cut in this order: optional console views → Mode B
 (use Mode A with disclosure) → extra concurrency (report the verified number) →
@@ -80,10 +80,10 @@ or the claims check.
 
 | Window | Work | Stop rule |
 | --- | --- | --- |
-| 09:00–12:00 UTC | Contract or SDK implementation | At 12:00, run the current tests and record status |
-| 12:00–12:15 UTC | `research/BUILD_STATUS.md` timestamp + blocker | Never skip the status line |
-| 12:15–17:00 UTC | Continue; integration/testnet | At 17:00, run `make verify` and secret scan |
-| 17:00–18:00 UTC | Evidence, claims rows, commit | No commit without secret scan and claims check |
+| 09:00-12:00 UTC | Contract or SDK implementation | At 12:00, run the current tests and record status |
+| 12:00-12:15 UTC | `research/BUILD_STATUS.md` timestamp + blocker | Never skip the status line |
+| 12:15-17:00 UTC | Continue; integration/testnet | At 17:00, run `make verify` and secret scan |
+| 17:00-18:00 UTC | Evidence, claims rows, commit | No commit without secret scan and claims check |
 
 If a timebox will slip, stop, write why, cut scope, and report. Do not silently
 extend.

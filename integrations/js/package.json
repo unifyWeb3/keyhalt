@@ -1,8 +1,8 @@
 {
-  "name": "fleet-integration-tests",
+  "name": "keyhalt-integration-tests",
   "version": "0.3.0",
   "private": true,
-  "description": "x64 near-workspaces integration tests for the FLEET controller (Sandbox only).",
+  "description": "x64 near-workspaces integration tests for the Keyhalt controller (Sandbox only).",
   "license": "MIT",
   "type": "module",
   "scripts": {

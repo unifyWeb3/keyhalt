@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FLEET mutation test.
+ * Keyhalt mutation test.
  *
  * Applies a small, fixed set of semantic mutants to the pure controller state
  * machine, runs one targeted test per mutant, and requires every mutant to be
@@ -239,7 +239,7 @@ writeFileSync(
 );
 
 const lines = [
-  "# FLEET mutation test report",
+  "# Keyhalt mutation test report",
   "",
   `Generated: ${report.generated_at}`,
   `Source: \`${report.source}\``,

@@ -9,14 +9,14 @@
 
 import {
   buildAuditExport,
-  createFleetClient,
+  createKeyhaltClient,
   verifyAuditChain,
   type AuditEntry,
-  type FleetAuditExport,
-  type FleetClient,
-  type FleetState,
+  type KeyhaltAuditExport,
+  type KeyhaltClient,
+  type KeyhaltState,
   type NativeKey,
-} from "@fleet/sdk";
+} from "@keyhalt/sdk";
 
 import type { AgentConfig, ClaimsCount, ConsoleConfig } from "./config.js";
 import type { BlockFeed, BlockInfo } from "./blockfeed.js";
@@ -26,7 +26,7 @@ import { buildTimeline, receiptEventLabel } from "./timeline.js";
 
 interface AgentRecord {
   config: AgentConfig;
-  state: FleetState | null;
+  state: KeyhaltState | null;
   nativeKeys: NativeKey[] | null;
   audit: AuditEntry[];
   stateBlock: number | null;
@@ -59,10 +59,10 @@ export interface AgentRow {
   href: string;
 }
 
-export interface FleetPayload {
+export interface KeyhaltPayload {
   ok: true;
   readOnly: true;
-  service: "fleet-console";
+  service: "keyhalt-console";
   version: string;
   status: "loading" | "live" | "stale" | "partial" | "empty";
   mode: "A";
@@ -92,7 +92,7 @@ export interface FleetPayload {
 export interface AgentPayload {
   ok: true;
   readOnly: true;
-  service: "fleet-console";
+  service: "keyhalt-console";
   accountId: string;
   label: string;
   mode: "A";
@@ -104,8 +104,8 @@ export interface AgentPayload {
   lastGoodAt: string | null;
   stale: boolean;
   updatedAt: string | null;
-  state: FleetState;
-  operators: FleetState["operators"];
+  state: KeyhaltState;
+  operators: KeyhaltState["operators"];
   /** Null while the pinned key read is still in flight or failed. */
   nativeKeys: NativeKey[] | null;
   fullAccessKeys: number | null;
@@ -132,7 +132,7 @@ export interface AgentPayload {
 export interface TimelinePayload {
   ok: true;
   readOnly: true;
-  service: "fleet-console";
+  service: "keyhalt-console";
   status: "loading" | "live" | "stale" | "partial" | "empty";
   headBlock: number | null;
   lastGoodBlock: number | null;
@@ -232,7 +232,7 @@ export class SnapshotService {
     return null;
   }
 
-  private status(): FleetPayload["status"] {
+  private status(): KeyhaltPayload["status"] {
     if (this.agents.size === 0) return "empty";
     if (this.head === null || this.lastGoodBlock === null) return "loading";
     if (this.stale) return "stale";
@@ -386,12 +386,12 @@ export class SnapshotService {
   private async withClient<T>(
     accountId: string,
     blockId: number,
-    fn: (client: FleetClient) => Promise<T>,
+    fn: (client: KeyhaltClient) => Promise<T>,
   ): Promise<T> {
     return this.pool.attempt(
       { deadlineMs: 22_000, attemptTimeoutMs: 10_000 },
       async (provider) => {
-        const client = createFleetClient({
+        const client = createKeyhaltClient({
           rpcUrl: provider.url,
           accountId,
           blockId,
@@ -421,7 +421,7 @@ export class SnapshotService {
     return { events: filtered, counts: built.counts };
   }
 
-  fleetPayload(): FleetPayload {
+  keyhaltPayload(): KeyhaltPayload {
     const allEvents = this.timeline(500).events;
     const rows: AgentRow[] = [...this.agents.values()].map((agent) => {
       const state = agent.state;
@@ -470,7 +470,7 @@ export class SnapshotService {
     return {
       ok: true,
       readOnly: true,
-      service: "fleet-console",
+      service: "keyhalt-console",
       version: "0.3.0",
       status: this.status(),
       mode: "A",
@@ -519,7 +519,7 @@ export class SnapshotService {
     return {
       ok: true,
       readOnly: true,
-      service: "fleet-console",
+      service: "keyhalt-console",
       accountId,
       label: agent.config.label,
       mode: "A",
@@ -557,8 +557,8 @@ export class SnapshotService {
       events,
       commands: {
         inventory: `node packages/cli/dist/index.js inventory ${accountId} --json`,
-        freeze: `node packages/cli/dist/index.js freeze ${accountId} --signer-key-file "$FLEET_ADMIN_KEY_FILE" --json`,
-        unfreeze: `node packages/cli/dist/index.js unfreeze ${accountId} --signer-key-file "$FLEET_ADMIN_KEY_FILE" --json`,
+        freeze: `node packages/cli/dist/index.js freeze ${accountId} --signer-key-file "$KEYHALT_ADMIN_KEY_FILE" --json`,
+        unfreeze: `node packages/cli/dist/index.js unfreeze ${accountId} --signer-key-file "$KEYHALT_ADMIN_KEY_FILE" --json`,
       },
       exportUrl: `/api/audit-export?account=${encodeURIComponent(accountId)}`,
     };
@@ -569,7 +569,7 @@ export class SnapshotService {
     return {
       ok: true,
       readOnly: true,
-      service: "fleet-console",
+      service: "keyhalt-console",
       status: this.status(),
       headBlock: this.head?.height ?? null,
       lastGoodBlock: this.lastGoodBlock,
@@ -581,7 +581,7 @@ export class SnapshotService {
     };
   }
 
-  async auditExport(accountId: string): Promise<FleetAuditExport | null> {
+  async auditExport(accountId: string): Promise<KeyhaltAuditExport | null> {
     const agent = this.agents.get(accountId);
     if (agent === undefined || agent.state === null) return null;
     const block = agent.stateBlock ?? this.head?.height ?? null;

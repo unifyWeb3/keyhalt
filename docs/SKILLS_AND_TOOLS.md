@@ -25,8 +25,8 @@ Skills live under `/root/arc-skills/collection/skills/` (source copies under
 `skill-installer`, Windows-only skills. No skill was installed or modified.
 
 **Harness skills:** the OpenCode `opencode` skill is available for OpenCode
-questions; it was not needed for FLEET product work. The harness `report`
-skill (for filing an OpenCode issue) was also not needed — no OpenCode defect
+questions; it was not needed for Keyhalt product work. The harness `report`
+skill (for filing an OpenCode issue) was also not needed: no OpenCode defect
 was found during this work.
 
 ---
@@ -70,7 +70,7 @@ The integration test plan (`docs/TEST_PLAN.md` §5) needs `near-workspaces`.
   `Unsupported platform: Linux arm64`.
 - `near-workspaces@5.0.0` depends on the same `near-sandbox@0.1.1`.
 - `near-sandbox@0.3.4` (latest) requires Node `>=22.22.2`; this host has
-  `22.22.1`. `near-sandbox@0.3.0`–`0.3.3` have the same engine requirement.
+  `22.22.1`. `near-sandbox@0.3.0`-`0.3.3` have the same engine requirement.
 - Therefore the sandbox integration tests are **not run locally** in v0.3.
   They will run on x64 GitHub Actions / a Node 22.22.2+ environment, or the
   testnet E2E path will be used locally.
@@ -127,7 +127,7 @@ control, a mainnet-RPC negative control, and a credential-file check.
 
 ---
 
-## 7. Final-work session report — 2026-11-06
+## 7. Final-work session report: 2026-11-06
 
 ### 7.1 The `unslop` skill: **not installed, not reviewed, not pinned**
 
@@ -137,19 +137,19 @@ This is the direct answer to the question asked, and it is a negative result.
 | --- | --- |
 | Does an `unslop` skill exist on this host? | **No.** |
 | Does one exist in `/root/arc-skills`? | **No.** |
-| Was it reviewed? | **No — there was nothing to review.** |
-| Was it pinned? | **No — nothing was pinned, because no such skill exists.** |
+| Was it reviewed? | **No: there was nothing to review.** |
+| Was it pinned? | **No: nothing was pinned, because no such skill exists.** |
 | Is there a commit hash for it? | **No. There is no commit hash, because the skill is not installed.** |
 
 **How that was verified** (read-only, 2026-11-06 UTC):
 
 - `find` for any path matching `*unslop*` under `/root/arc-skills`,
   `/root/.local/share/opencode`, `/root/.config/opencode`, `/root/.agents`,
-  `/root/.claude`, `/usr/local/share`, and `/opt` — **zero matches**.
+  `/root/.claude`, `/usr/local/share`, and `/opt`: **zero matches**.
 - Every installed skill manifest (`SKILL.md`) was located and grepped for
-  `unslop` — **zero matches**. The full set of installed manifests is listed in
+  `unslop`: **zero matches**. The full set of installed manifests is listed in
   §7.3.
-- A content grep across `/root/arc-skills` — **zero matches**.
+- A content grep across `/root/arc-skills`: **zero matches**.
 - The only occurrences of the string anywhere on the host are inside this
   project's own OpenCode session log and database, because the question
   itself was asked there. They are this conversation, not a skill.
@@ -160,8 +160,8 @@ them**, and the pinned set below is the complete set.
 ### 7.2 Which skills were used in this final work session
 
 **No skill file was loaded during the 2026-11-06 final-work session.** The
-working instructions for that session were the repository's own documents —
-`AGENTS.md`, `CLAIMS.md`, `docs/TEST_PLAN.md`, `docs/PROVENANCE.md` — plus the
+working instructions for that session were the repository's own documents:
+`AGENTS.md`, `CLAIMS.md`, `docs/TEST_PLAN.md`, `docs/PROVENANCE.md`: plus the
 harness tools (`read`, `edit`, `write`, `shell`, `webfetch`, `websearch`,
 `grep`, `glob`, and the `execute` code-mode runtime for parallel calls).
 
@@ -215,6 +215,6 @@ No paid tool, no hosted service, and no credentialed API was used.
 | Gap | Impact | Mitigation |
 | --- | --- | --- |
 | No Rust/NEAR-specific skill | More manual source reading | Read `near-sdk`/`multisig2` source; pin commits; test on testnet |
-| The `unslop` skill is not installed | Its guidance was not applied to the writing in this session | The repo's own `AGENTS.md` wording rules carry the same intent for the FLEET documents; if the human wants that skill's checks applied, it has to be installed and pinned first |
+| The `unslop` skill is not installed | Its guidance was not applied to the writing in this session | The repo's own `AGENTS.md` wording rules carry the same intent for the Keyhalt documents; if the human wants that skill's checks applied, it has to be installed and pinned first |
 | No video tool verified | Demo recording uncertain | Human records/posts; `docs/DEMO_SCRIPT.md` is the script |
 | Server restarts observed | Lost work/time | Commit often; detached runs with a log; re-run if a log ends mid-suite |

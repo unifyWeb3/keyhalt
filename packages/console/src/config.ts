@@ -143,10 +143,10 @@ function parseAccounts(raw: string | undefined): AgentConfig[] {
   const seen = new Set<string>();
   return ids.map((accountId) => {
     if (!/^[a-z0-9._-]+$/.test(accountId)) {
-      throw new Error(`invalid testnet account id in FLEET_CONSOLE_ACCOUNTS: ${accountId}`);
+      throw new Error(`invalid testnet account id in KEYHALT_CONSOLE_ACCOUNTS: ${accountId}`);
     }
     if (seen.has(accountId)) {
-      throw new Error(`duplicate account id in FLEET_CONSOLE_ACCOUNTS: ${accountId}`);
+      throw new Error(`duplicate account id in KEYHALT_CONSOLE_ACCOUNTS: ${accountId}`);
     }
     seen.add(accountId);
     const label = accountId.split(".")[0] ?? accountId;
@@ -162,7 +162,7 @@ function parseTxList(raw: string | undefined, fallback: string[]): string[] {
     .filter((tx) => tx.length > 0);
   for (const tx of list) {
     if (!/^[1-9A-HJ-NP-Za-km-z]{32,64}$/.test(tx)) {
-      throw new Error(`invalid transaction hash in FLEET_CONSOLE_SEED_TXS: ${tx}`);
+      throw new Error(`invalid transaction hash in KEYHALT_CONSOLE_SEED_TXS: ${tx}`);
     }
   }
   return list;
@@ -201,21 +201,21 @@ function parseProviders(
 }
 
 export function loadConfig(): ConsoleConfig {
-  const repoRoot = resolveRoot(env("FLEET_CONSOLE_ROOT"));
-  const port = envInt("FLEET_CONSOLE_PORT", 4173, 1, 65_535);
-  const host = env("FLEET_CONSOLE_HOST") ?? "127.0.0.1";
-  if (!/^(127\.0\.0\.1|localhost|::1)$/.test(host) && env("FLEET_CONSOLE_ALLOW_REMOTE") !== "1") {
+  const repoRoot = resolveRoot(env("KEYHALT_CONSOLE_ROOT"));
+  const port = envInt("KEYHALT_CONSOLE_PORT", 4173, 1, 65_535);
+  const host = env("KEYHALT_CONSOLE_HOST") ?? "127.0.0.1";
+  if (!/^(127\.0\.0\.1|localhost|::1)$/.test(host) && env("KEYHALT_CONSOLE_ALLOW_REMOTE") !== "1") {
     throw new Error(
-      `FLEET_CONSOLE_HOST=${host} is not loopback; set FLEET_CONSOLE_ALLOW_REMOTE=1 to override`,
+      `KEYHALT_CONSOLE_HOST=${host} is not loopback; set KEYHALT_CONSOLE_ALLOW_REMOTE=1 to override`,
     );
   }
   const providers = parseProviders(
-    env("FLEET_CONSOLE_PROVIDERS"),
+    env("KEYHALT_CONSOLE_PROVIDERS"),
     DEFAULT_PROVIDERS,
     false,
   );
   const archivalProviders = parseProviders(
-    env("FLEET_CONSOLE_ARCHIVAL_PROVIDERS"),
+    env("KEYHALT_CONSOLE_ARCHIVAL_PROVIDERS"),
     DEFAULT_ARCHIVAL_PROVIDERS,
     true,
   );
@@ -226,23 +226,23 @@ export function loadConfig(): ConsoleConfig {
     webRoot: resolve(repoRoot, "web"),
     fontsRoot: resolve(repoRoot, "design/fonts"),
     claimsPath: resolve(repoRoot, "CLAIMS.md"),
-    agents: parseAccounts(env("FLEET_CONSOLE_ACCOUNTS")),
+    agents: parseAccounts(env("KEYHALT_CONSOLE_ACCOUNTS")),
     providers,
     archivalProviders,
-    seedTxs: parseTxList(env("FLEET_CONSOLE_SEED_TXS"), SEED_TXS),
+    seedTxs: parseTxList(env("KEYHALT_CONSOLE_SEED_TXS"), SEED_TXS),
     watchFile:
-      env("FLEET_CONSOLE_WATCH_FILE") === undefined
+      env("KEYHALT_CONSOLE_WATCH_FILE") === undefined
         ? resolve(repoRoot, "tmp/console-watch.json")
-        : resolveRoot(env("FLEET_CONSOLE_WATCH_FILE")),
+        : resolveRoot(env("KEYHALT_CONSOLE_WATCH_FILE")),
     cacheDir:
-      env("FLEET_CONSOLE_CACHE_DIR") === undefined
+      env("KEYHALT_CONSOLE_CACHE_DIR") === undefined
         ? resolve(repoRoot, "tmp/console-cache")
-        : resolveRoot(env("FLEET_CONSOLE_CACHE_DIR")),
-    blockPollMs: envInt("FLEET_CONSOLE_BLOCK_POLL_MS", 1_000, 250, 60_000),
-    detailEveryBlocks: envInt("FLEET_CONSOLE_DETAIL_BLOCKS", 5, 1, 1_000),
-    watchPollMs: envInt("FLEET_CONSOLE_WATCH_POLL_MS", 2_000, 500, 60_000),
-    staleAfterMs: envInt("FLEET_CONSOLE_STALE_AFTER_MS", 12_000, 1_000, 600_000),
-    maxRetryMs: envInt("FLEET_CONSOLE_MAX_RETRY_MS", 120_000, 5_000, 120_000),
+        : resolveRoot(env("KEYHALT_CONSOLE_CACHE_DIR")),
+    blockPollMs: envInt("KEYHALT_CONSOLE_BLOCK_POLL_MS", 1_000, 250, 60_000),
+    detailEveryBlocks: envInt("KEYHALT_CONSOLE_DETAIL_BLOCKS", 5, 1, 1_000),
+    watchPollMs: envInt("KEYHALT_CONSOLE_WATCH_POLL_MS", 2_000, 500, 60_000),
+    staleAfterMs: envInt("KEYHALT_CONSOLE_STALE_AFTER_MS", 12_000, 1_000, 600_000),
+    maxRetryMs: envInt("KEYHALT_CONSOLE_MAX_RETRY_MS", 120_000, 5_000, 120_000),
     modeBAccountId: MODE_B_ACCOUNT,
     modeBUrl: MODE_B_URL,
   };

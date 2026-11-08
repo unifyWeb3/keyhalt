@@ -1,12 +1,12 @@
 /**
- * FLEET MCP server — exposes FLEET reads to agents over the
+ * Keyhalt MCP server: exposes Keyhalt reads to agents over the
  * Model Context Protocol (stdio transport, JSON-RPC 2.0).
  *
  * Read-only. No signer anywhere; agents get exactly what a human with
- * `fleet inventory`/`fleet audit` could read. Testnet only.
+ * `keyhalt inventory`/`keyhalt audit` could read. Testnet only.
  */
 
-import { createFleetClient, type FleetClient } from "@fleet/sdk";
+import { createKeyhaltClient, type KeyhaltClient } from "@keyhalt/sdk";
 
 export const MCP_SERVER_VERSION = "0.3.0";
 export const PROTOCOL_VERSION = "2025-06-18";
@@ -19,9 +19,9 @@ export interface McpTool {
 
 export const TOOLS: McpTool[] = [
   {
-    name: "fleet_inventory",
+    name: "keyhalt_inventory",
     description:
-      "Read the current state of a FLEET-managed NEAR testnet agent account: mode, paused state, operator keys, audit length. Pinned to the finalized block at call time.",
+      "Read the current state of a Keyhalt-managed NEAR testnet agent account: mode, paused state, operator keys, audit length. Pinned to the finalized block at call time.",
     inputSchema: {
       type: "object",
       properties: {
@@ -35,9 +35,9 @@ export const TOOLS: McpTool[] = [
     },
   },
   {
-    name: "fleet_audit",
+    name: "keyhalt_audit",
     description:
-      "Read the audit chain of a FLEET-managed agent: entries with seq, action, block height, and hashes. Optionally limit to the last N entries.",
+      "Read the audit chain of a Keyhalt-managed agent: entries with seq, action, block height, and hashes. Optionally limit to the last N entries.",
     inputSchema: {
       type: "object",
       properties: {
@@ -55,9 +55,9 @@ export const TOOLS: McpTool[] = [
     },
   },
   {
-    name: "fleet_verify",
+    name: "keyhalt_verify",
     description:
-      "Verify the audit chain of a FLEET-managed agent both in the SDK and on-chain (the contract's verify_audit view). Returns ok, onChain, and the verified entry count.",
+      "Verify the audit chain of a Keyhalt-managed agent both in the SDK and on-chain (the contract's verify_audit view). Returns ok, onChain, and the verified entry count.",
     inputSchema: {
       type: "object",
       properties: {
@@ -76,18 +76,18 @@ function isAccountId(value: unknown): value is string {
   return typeof value === "string" && /^[a-z0-9._-]{2,128}$/.test(value);
 }
 
-export class FleetMcpService {
+export class KeyhaltMcpService {
   readonly rpcUrl: string;
 
   constructor(options: { rpcUrl: string }) {
     if (/mainnet/i.test(options.rpcUrl)) {
-      throw new Error("FLEET is testnet-only; mainnet RPC URLs are refused");
+      throw new Error("Keyhalt is testnet-only; mainnet RPC URLs are refused");
     }
     this.rpcUrl = options.rpcUrl;
   }
 
-  private clientFor(accountId: string): FleetClient {
-    return createFleetClient({ rpcUrl: this.rpcUrl, accountId });
+  private clientFor(accountId: string): KeyhaltClient {
+    return createKeyhaltClient({ rpcUrl: this.rpcUrl, accountId });
   }
 
   async inventory(accountId: string) {
@@ -152,9 +152,9 @@ export class FleetMcpService {
 
   async callTool(name: string, args: unknown): Promise<unknown> {
     if (
-      name !== "fleet_inventory" &&
-      name !== "fleet_audit" &&
-      name !== "fleet_verify"
+      name !== "keyhalt_inventory" &&
+      name !== "keyhalt_audit" &&
+      name !== "keyhalt_verify"
     ) {
       throw new McpError(-32601, `unknown tool: ${String(name)}`);
     }
@@ -163,8 +163,8 @@ export class FleetMcpService {
     if (!isAccountId(account)) {
       throw new McpError(-32602, "account must be a testnet account id");
     }
-    if (name === "fleet_inventory") return this.inventory(account);
-    if (name === "fleet_audit") {
+    if (name === "keyhalt_inventory") return this.inventory(account);
+    if (name === "keyhalt_audit") {
       const limit = bag.limit;
       if (
         limit !== undefined &&
@@ -206,7 +206,7 @@ function fail(id: number | string | null | undefined, error: McpError) {
 }
 
 export function handleRpc(
-  service: FleetMcpService,
+  service: KeyhaltMcpService,
   request: JsonRpcRequest,
 ): Promise<unknown> | unknown {
   const id = request.id;
@@ -214,7 +214,7 @@ export function handleRpc(
     return ok(id, {
       protocolVersion: PROTOCOL_VERSION,
       capabilities: { tools: {} },
-      serverInfo: { name: "fleet-mcp", version: MCP_SERVER_VERSION },
+      serverInfo: { name: "keyhalt-mcp", version: MCP_SERVER_VERSION },
     });
   }
   if (request.method === "notifications/initialized") {

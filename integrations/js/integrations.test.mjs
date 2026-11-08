@@ -1,4 +1,4 @@
-// FLEET controller near-workspaces integration tests (Sandbox only).
+// Keyhalt controller near-workspaces integration tests (Sandbox only).
 //
 // These tests run in the GitHub Actions x64 runner. The local arm64 host
 // cannot run near-workspaces, so they are wired to the `integration` workflow
@@ -28,8 +28,8 @@ const PLAIN_WASM = fileURLToPath(
     import.meta.url,
   ),
 );
-const WASM = process.env.FLEET_INTEGRATION_WASM
-  ? process.env.FLEET_INTEGRATION_WASM
+const WASM = process.env.KEYHALT_INTEGRATION_WASM
+  ? process.env.KEYHALT_INTEGRATION_WASM
   : existsSync(SANDBOX_WASM)
     ? SANDBOX_WASM
     : PLAIN_WASM;

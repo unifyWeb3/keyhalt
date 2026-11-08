@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Rehearse the FLEET console demo against real testnet state.
+ * Rehearse the Keyhalt console demo against real testnet state.
  *
- *   FLEET_DEMO_ADMIN_KEY_FILE=... FLEET_DEMO_OPERATOR_KEY_FILE=... \
+ *   KEYHALT_DEMO_ADMIN_KEY_FILE=... KEYHALT_DEMO_OPERATOR_KEY_FILE=... \
  *     node scripts/console-demo.mjs --hold-frozen 30
  *
  * The script drives the CLI, never the console, for writes. It freezes the
@@ -28,17 +28,17 @@ function env(name, fallback) {
 
 function parseArgs(argv) {
   const options = {
-    account: env("FLEET_DEMO_ACCOUNT", "agent-1b.fleet-v03-5cff9e99.testnet"),
-    adminKeyFile: env("FLEET_DEMO_ADMIN_KEY_FILE", ""),
-    operatorKeyFile: env("FLEET_DEMO_OPERATOR_KEY_FILE", ""),
-    rpcUrl: env("FLEET_DEMO_RPC_URL", "https://near-testnet.drpc.org"),
-    consoleUrl: env("FLEET_CONSOLE_URL", "http://127.0.0.1:4173"),
-    watchFile: env("FLEET_CONSOLE_WATCH_FILE", resolve(REPO_ROOT, "tmp/console-watch.json")),
+    account: env("KEYHALT_DEMO_ACCOUNT", "agent-1b.fleet-v03-5cff9e99.testnet"),
+    adminKeyFile: env("KEYHALT_DEMO_ADMIN_KEY_FILE", ""),
+    operatorKeyFile: env("KEYHALT_DEMO_OPERATOR_KEY_FILE", ""),
+    rpcUrl: env("KEYHALT_DEMO_RPC_URL", "https://near-testnet.drpc.org"),
+    consoleUrl: env("KEYHALT_CONSOLE_URL", "http://127.0.0.1:4173"),
+    watchFile: env("KEYHALT_CONSOLE_WATCH_FILE", resolve(REPO_ROOT, "tmp/console-watch.json")),
     holdFrozen: 0,
     json: false,
     skipConsole: false,
     rescueRpcs: env(
-      "FLEET_DEMO_RESCUE_RPCS",
+      "KEYHALT_DEMO_RESCUE_RPCS",
       "https://near-testnet.drpc.org,https://testnet-rpc.intea.rs,https://rpc.testnet.near.org",
     )
       .split(",")
@@ -57,7 +57,7 @@ function parseArgs(argv) {
     else if (arg === "--json") options.json = true;
     else if (arg === "--skip-console") options.skipConsole = true;
     else if (arg === "--help" || arg === "-h") {
-      console.log(`FLEET console demo rehearsal
+      console.log(`Keyhalt console demo rehearsal
 
 Usage:
   node scripts/console-demo.mjs [options]
@@ -73,9 +73,9 @@ Options:
   --skip-console              Do not wait for console assertions
   --json                      Print one summary object on stdout
 
-Environment equivalents: FLEET_DEMO_ACCOUNT, FLEET_DEMO_ADMIN_KEY_FILE,
-FLEET_DEMO_OPERATOR_KEY_FILE, FLEET_DEMO_RPC_URL, FLEET_CONSOLE_URL,
-FLEET_CONSOLE_WATCH_FILE, FLEET_DEMO_RESCUE_RPCS.
+Environment equivalents: KEYHALT_DEMO_ACCOUNT, KEYHALT_DEMO_ADMIN_KEY_FILE,
+KEYHALT_DEMO_OPERATOR_KEY_FILE, KEYHALT_DEMO_RPC_URL, KEYHALT_CONSOLE_URL,
+KEYHALT_CONSOLE_WATCH_FILE, KEYHALT_DEMO_RESCUE_RPCS.
 
 Writes use dRPC by default so the console's read polling and the CLI writes do
 not share one free public rate limit. If a step fails after the freeze, the
@@ -208,7 +208,7 @@ async function runExecuteWithRetry(args, attempts = 3) {
     // transaction hash means no broadcast happened.
     if (
       result.parsed?.ok === false &&
-      error?.code === "FLEET_E_RPC" &&
+      error?.code === "KEYHALT_E_RPC" &&
       (error.txHash === null || error.txHash === undefined) &&
       attempt < attempts
     ) {
@@ -366,7 +366,7 @@ async function main() {
       "--signer-key-file",
       operatorKeyFile,
     ]);
-    if (refused.parsed?.ok !== false || refused.parsed.error?.code !== "FLEET_E_REJECTED") {
+    if (refused.parsed?.ok !== false || refused.parsed.error?.code !== "KEYHALT_E_REJECTED") {
       throw new Error(
         `execute was not refused as expected: ${refused.stdout.trim().slice(0, 500)}`,
       );
@@ -489,7 +489,7 @@ async function main() {
       process.stdout.write(`${JSON.stringify(clean, null, 2)}\n`);
     } else {
       const line = (label, value) => console.log(`${label.padEnd(16)} ${value}`);
-      console.log(`FLEET console demo — ${options.account}`);
+      console.log(`Keyhalt console demo: ${options.account}`);
       if (summary.freeze) {
         line("freeze", `${summary.freeze.txHash} @ ${summary.freeze.blockHeight}`);
       }
@@ -512,7 +512,7 @@ async function main() {
         );
       }
       line("watch file", `${summary.watched} tx hashes`);
-      line("result", summary.ok ? "PASS" : `FAIL — ${summary.error}`);
+      line("result", summary.ok ? "PASS" : `FAIL: ${summary.error}`);
     }
     process.exit(summary.ok ? 0 : 1);
   }

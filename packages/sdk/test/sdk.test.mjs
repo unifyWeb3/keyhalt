@@ -13,11 +13,11 @@ import {
 } from "near-api-js";
 
 import {
-  createFleetClient,
+  createKeyhaltClient,
   createMultisigAdminClient,
-  FLEET_SDK_VERSION,
-  FleetError,
-  fleetTransactionHash,
+  KEYHALT_SDK_VERSION,
+  KeyhaltError,
+  keyhaltTransactionHash,
   normalizeAuditEntry,
   parseBigJson,
   parseSignedTransaction,
@@ -35,21 +35,21 @@ function loadEntries(url) {
 }
 
 test("SDK exposes the v0.3 version", () => {
-  assert.equal(FLEET_SDK_VERSION, "0.3.0");
+  assert.equal(KEYHALT_SDK_VERSION, "0.3.0");
 });
 
 test("SDK rejects an invalid blockId before any network call", () => {
   for (const bad of [-1, 1.5, Number.NaN]) {
     assert.throws(
       () =>
-        createFleetClient({
+        createKeyhaltClient({
           rpcUrl: "https://rpc.testnet.fastnear.com",
           accountId: "agent.testnet",
           blockId: bad,
         }),
       (error) => {
-        assert.ok(error instanceof FleetError);
-        assert.equal(error.code, "FLEET_E_BAD_ARGS");
+        assert.ok(error instanceof KeyhaltError);
+        assert.equal(error.code, "KEYHALT_E_BAD_ARGS");
         return true;
       },
     );
@@ -78,14 +78,14 @@ test("SDK pins contract and key reads to the requested block", async () => {
     });
   };
   try {
-    const fleet = createFleetClient({
+    const keyhalt = createKeyhaltClient({
       rpcUrl: "https://rpc.testnet.fastnear.com",
       accountId: "agent.testnet",
       blockId: 4242,
     });
-    assert.equal(fleet.blockId, 4242);
-    await fleet.getAudit(0, 10);
-    await fleet.getNativeKeys();
+    assert.equal(keyhalt.blockId, 4242);
+    await keyhalt.getAudit(0, 10);
+    await keyhalt.getNativeKeys();
     const reads = calls.filter((call) => call.method === "query");
     assert.equal(reads.length, 2);
     for (const read of reads) {
@@ -116,12 +116,12 @@ test("SDK reads without a blockId use finality final", async () => {
     });
   };
   try {
-    const fleet = createFleetClient({
+    const keyhalt = createKeyhaltClient({
       rpcUrl: "https://rpc.testnet.fastnear.com",
       accountId: "agent.testnet",
     });
-    assert.equal(fleet.blockId, null);
-    await fleet.getNativeKeys();
+    assert.equal(keyhalt.blockId, null);
+    await keyhalt.getNativeKeys();
     const read = calls.find(
       (call) => call.params?.request_type === "view_access_key_list",
     );
@@ -135,28 +135,28 @@ test("SDK reads without a blockId use finality final", async () => {
 test("SDK refuses a mainnet RPC before any network call", () => {
   assert.throws(
     () =>
-      createFleetClient({
+      createKeyhaltClient({
         rpcUrl: "https://rpc.mainnet.near.org",
         accountId: "agent.testnet",
       }),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_MAINNET");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_MAINNET");
       return true;
     },
   );
 });
 
 test("SDK write path refuses a missing signer before any network call", async () => {
-  const client = createFleetClient({
+  const client = createKeyhaltClient({
     rpcUrl: "https://rpc.testnet.fastnear.com",
     accountId: "agent.testnet",
   });
   await assert.rejects(
     () => client.freeze(),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_NO_SIGNER");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_NO_SIGNER");
       return true;
     },
   );
@@ -195,12 +195,12 @@ test("SDK accepts a well-formed pre-signed transaction", () => {
   assert.equal(value.method, "freeze");
 });
 
-test("SDK rejects a pre-signed transaction without the FLEET format marker", () => {
+test("SDK rejects a pre-signed transaction without the Keyhalt format marker", () => {
   assert.throws(
     () => parseSignedTransaction(signedFixture({ format: "something-else" })),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_BAD_ARGS");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_BAD_ARGS");
       assert.match(error.message, /format must be/);
       return true;
     },
@@ -211,8 +211,8 @@ test("SDK rejects a pre-signed transaction that targets mainnet", () => {
   assert.throws(
     () => parseSignedTransaction(signedFixture({ network: "mainnet" })),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_MAINNET");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_MAINNET");
       return true;
     },
   );
@@ -234,8 +234,8 @@ test("SDK rejects a pre-signed transaction that is missing a field", () => {
     assert.throws(
       () => parseSignedTransaction(payload),
       (error) => {
-        assert.ok(error instanceof FleetError);
-        assert.equal(error.code, "FLEET_E_BAD_ARGS");
+        assert.ok(error instanceof KeyhaltError);
+        assert.equal(error.code, "KEYHALT_E_BAD_ARGS");
         assert.match(error.message, new RegExp(field));
         return true;
       },
@@ -251,8 +251,8 @@ test("SDK rejects a pre-signed transaction that carries key material", () => {
         signedFixture({ secret_key: "ed25519:11111111111111111111111111111111" }),
       ),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_BAD_ARGS");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_BAD_ARGS");
       assert.match(error.message, /must not contain key material/);
       return true;
     },
@@ -263,8 +263,8 @@ test("SDK rejects a pre-signed transaction with a malformed public key", () => {
   assert.throws(
     () => parseSignedTransaction(signedFixture({ public_key: "not-a-key" })),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_BAD_ARGS");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_BAD_ARGS");
       return true;
     },
   );
@@ -275,8 +275,8 @@ test("SDK rejects a pre-signed transaction that is not an object", () => {
     assert.throws(
       () => parseSignedTransaction(value),
       (error) => {
-        assert.ok(error instanceof FleetError);
-        assert.equal(error.code, "FLEET_E_BAD_ARGS");
+        assert.ok(error instanceof KeyhaltError);
+        assert.equal(error.code, "KEYHALT_E_BAD_ARGS");
         return true;
       },
     );
@@ -284,38 +284,38 @@ test("SDK rejects a pre-signed transaction that is not an object", () => {
 });
 
 test("SDK pre-sign path refuses a missing signer before any network call", async () => {
-  const client = createFleetClient({
+  const client = createKeyhaltClient({
     rpcUrl: "https://rpc.testnet.fastnear.com",
     accountId: "agent.testnet",
   });
   await assert.rejects(
     () => client.prepareFreeze(),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_NO_SIGNER");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_NO_SIGNER");
       return true;
     },
   );
   await assert.rejects(
     () => client.prepareUnfreeze(),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_NO_SIGNER");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_NO_SIGNER");
       return true;
     },
   );
 });
 
 test("SDK refuses to broadcast a pre-signed transaction for another account", async () => {
-  const client = createFleetClient({
+  const client = createKeyhaltClient({
     rpcUrl: "https://rpc.testnet.fastnear.com",
     accountId: "agent.testnet",
   });
   await assert.rejects(
     () => client.submitSigned(signedFixture({ account_id: "other.testnet" })),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_BAD_ARGS");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_BAD_ARGS");
       assert.match(error.message, /other\.testnet/);
       return true;
     },
@@ -345,7 +345,7 @@ test("SDK transaction hash covers the unsigned transaction, not the signed bytes
   const expected = baseEncode(
     createHash("sha256").update(transaction.encode()).digest(),
   );
-  assert.equal(fleetTransactionHash(signed), expected);
+  assert.equal(keyhaltTransactionHash(signed), expected);
 
   // Regression guard: hashing the signed transaction returns a different,
   // unusable identifier for the same transaction.
@@ -356,7 +356,7 @@ test("SDK transaction hash covers the unsigned transaction, not the signed bytes
   const wrong = baseEncode(
     createHash("sha256").update(signed.encode()).digest(),
   );
-  assert.notEqual(fleetTransactionHash(signed), wrong);
+  assert.notEqual(keyhaltTransactionHash(signed), wrong);
 });
 
 test("SDK verifies the canonical 19-entry testnet audit chain", () => {
@@ -399,8 +399,8 @@ test("multisig client rejects a mainnet RPC URL", () => {
         accountId: "multisig.testnet",
       }),
     (error) => {
-      assert.ok(error instanceof FleetError);
-      assert.equal(error.code, "FLEET_E_MAINNET");
+      assert.ok(error instanceof KeyhaltError);
+      assert.equal(error.code, "KEYHALT_E_MAINNET");
       return true;
     },
   );
@@ -531,8 +531,8 @@ test("multisig views reject an undeclared method before Broadcasting", async () 
     await assert.rejects(
       () => multisig.listRequestIds(),
       (error) => {
-        assert.ok(error instanceof FleetError);
-        assert.equal(error.code, "FLEET_E_RPC");
+        assert.ok(error instanceof KeyhaltError);
+        assert.equal(error.code, "KEYHALT_E_RPC");
         return true;
       },
     );

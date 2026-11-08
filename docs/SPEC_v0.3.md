@@ -1,15 +1,15 @@
-# FLEET controller specification v0.3
+# Keyhalt controller specification v0.3
 
 **Status:** design target, now implemented as the v0.3 controller. The contract,
 SDK, CLI, and Mode B 2-of-2 path exist and ran on testnet on 2026-11-03. The
 console is built read-only (`packages/console` + `web/`; live testnet reads,
-no writes, no signing) — see `docs/INTERFACES.md` §4.2 and `docs/DESIGN_SYSTEM.md`.
+no writes, no signing): see `docs/INTERFACES.md` §4.2 and `docs/DESIGN_SYSTEM.md`.
 Every `HYPOTHESIS` still needs a test before it is claimed; the current claim
 status is in `docs/TEST_PLAN.md`. This is not a security audit.
 **Date:** 2026-11-04 UTC (Mode B run executed 2026-11-03 UTC). Phase 1 target
 was 2026-10-31; the slip is disclosed in `research/BUILD_STATUS.md`.
 **Base evidence:** v0.2 controller `fleet-controller-v2/0.2.0` and multisig
-`fleet-multisig-v2/0.1.0`, tested on NEAR testnet 2026-10-29. Evidence lives in
+`keyhalt-multisig-v2/0.1.0`, tested on NEAR testnet 2026-10-29. Evidence lives in
 the separate research workspace, not in this repository.
 
 ---
@@ -46,7 +46,7 @@ Therefore a function can write state, delete a key, and return
 **VERIFIED:** S2 `accept_admin` produced top-level `SuccessValue` and a receipt
 failure `AddKeyAlreadyExists`; S6 `top_up_admin` did the same and left the
 allowance unchanged. Evidence:
-`research/evidence/fallback/spikes/fleet-v2/s2/accept_a_tx.json`,
+`research/evidence/fallback/spikes/keyhalt-v2/s2/accept_a_tx.json`,
 `.../s2/accept_d_tx.json`, `.../s6/topup_result.json`.
 
 ### 2.2 The three v0.2 manifestations
@@ -106,9 +106,9 @@ audit: Vec<AuditEntry>
 
 States:
 
-- **U** — uninitialized.
-- **A** — active admin; `admin_pk = Some`, `pending = None`.
-- **P(origin)** — rotation pending; `admin_pk` still active, `pending = Some`,
+- **U**: uninitialized.
+- **A**: active admin; `admin_pk = Some`, `pending = None`.
+- **P(origin)**: rotation pending; `admin_pk` still active, `pending = Some`,
   `origin ∈ {Admin, Recovery}`.
 
 Mode B has no `admin_pk`, no `recovery_pk`, no pending state; `admin_account` is
@@ -197,9 +197,9 @@ allowance pays gas for admin calls and cannot be topped up in place (S6).
 | **Multisig-paid calls (Mode B)** | A 2-of-2 multisig is `admin_account`; owners pay gas through the multisig's `FunctionCall` action. | Two confirmations per admin action; multisig contract risk. | Two owner keys + multisig; no admin allowance to exhaust. | **Chosen default for the demo and Mode B.** |
 | **Larger allowance with documented refill** | Set a larger finite allowance (e.g. 1 NEAR) and refill by rotation when low. | Simple, but still finite. | Same as Mode A; no unlimited allowance. | **Mitigation, not a fix.** Default 0.1 NEAR; maximum 1 NEAR. |
 
-**Numbers.** S6 measured lifecycle fees of roughly `0.00024–0.00030 NEAR` per
+**Numbers.** S6 measured lifecycle fees of roughly `0.00024-0.00030 NEAR` per
 call (research evidence, not yet reproduced in this repo). A 0.1 NEAR admin
-allowance is roughly 300–400 admin calls; 1 NEAR is roughly 3,000–4,000. The
+allowance is roughly 300-400 admin calls; 1 NEAR is roughly 3,000-4,000. The
 exact budget is asserted by a gas test before release.
 
 **Decision:**
@@ -323,7 +323,7 @@ The event is a convenience; the audit view is authoritative.
    no tested recovery. Document and use a throwaway testnet setup.
 
 **Decision: reuse, do not write a custom multisig.** Functional requirements
-B-1–B-6 are met; the audit absence is not fixed by writing another unaudited
+B-1-B-6 are met; the audit absence is not fixed by writing another unaudited
 contract. The known issues have documented workarounds. Custom code is allowed
 only if a stated requirement fails in the Phase 1 testnet reuse gate (e.g. the
 deployed contract cannot call the controller with the required gas, or 2-of-2
@@ -400,7 +400,7 @@ without blocking the freeze claim.
 | Question | Status | Gate |
 | --- | --- | --- |
 | Does the self-callback pattern fit NEAR gas/storage limits? | `HYPOTHESIS` | Unit + testnet test; gas profile. |
-| Does `multisig2` call the controller with enough gas and correct predecessor? | `HYPOTHESIS` | Reuse gate (Nov 4–5). |
+| Does `multisig2` call the controller with enough gas and correct predecessor? | `HYPOTHESIS` | Reuse gate (Nov 4-5). |
 | Is 0.1 NEAR enough for a demo? | `INFERRED` from S6 fees | Gas test; top up by rotation. |
 | Can p95 ≤5 s be met with pre-signed Mode A? | `UNKNOWN` | 20-run latency test. |
 | Does the audit hash chain verify after a failed action? | `HYPOTHESIS` | Unit + integration test. |

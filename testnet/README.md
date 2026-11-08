@@ -10,7 +10,7 @@ receipt summaries here. Signer key files stay outside the tracked tree under
 
 Files:
 
-- `run-v03.json` — canonical parent, three agents (`agent-1b`, `agent-2`,
+- `run-v03.json`: canonical parent, three agents (`agent-1b`, `agent-2`,
   `agent-3`), public keys, and create/init tx hashes. The earlier pilot
   `agent-1` is retained under `pilot_agents`.
 

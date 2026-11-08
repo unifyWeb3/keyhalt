@@ -1,5 +1,5 @@
 /**
- * FLEET TypeScript SDK v0.3.
+ * Keyhalt TypeScript SDK v0.3.
  *
  * Reads use raw JSON-RPC `query` calls so u64 audit timestamps are preserved as
  * decimal strings instead of being rounded by JSON.parse. Writes are signed
@@ -28,41 +28,41 @@ try {
   // Older Node versions may not expose this; leave the platform default.
 }
 
-export const FLEET_SDK_VERSION = "0.3.0";
+export const KEYHALT_SDK_VERSION = "0.3.0";
 export const DEFAULT_TESTNET_RPC = "https://rpc.testnet.fastnear.com";
 export const AUDIT_EXPORT_FORMAT = "fleet-audit-v1";
-export const SIGNED_TX_FORMAT = "fleet-signed-tx-v1";
+export const SIGNED_TX_FORMAT = "keyhalt-signed-tx-v1";
 
-export type FleetMode = "A" | "B";
-export type FleetErrorCode =
-  | "FLEET_E_NO_SIGNER"
-  | "FLEET_E_MAINNET"
-  | "FLEET_E_RPC"
-  | "FLEET_E_REJECTED"
-  | "FLEET_E_RECEIPT"
-  | "FLEET_E_AUDIT"
-  | "FLEET_E_BAD_ARGS"
-  | "FLEET_E_UNSUPPORTED";
+export type KeyhaltMode = "A" | "B";
+export type KeyhaltErrorCode =
+  | "KEYHALT_E_NO_SIGNER"
+  | "KEYHALT_E_MAINNET"
+  | "KEYHALT_E_RPC"
+  | "KEYHALT_E_REJECTED"
+  | "KEYHALT_E_RECEIPT"
+  | "KEYHALT_E_AUDIT"
+  | "KEYHALT_E_BAD_ARGS"
+  | "KEYHALT_E_UNSUPPORTED";
 
-export const FLEET_EXIT_CODES: Record<FleetErrorCode, number> = {
-  FLEET_E_NO_SIGNER: 3,
-  FLEET_E_MAINNET: 4,
-  FLEET_E_RPC: 5,
-  FLEET_E_REJECTED: 6,
-  FLEET_E_RECEIPT: 7,
-  FLEET_E_AUDIT: 6,
-  FLEET_E_BAD_ARGS: 2,
-  FLEET_E_UNSUPPORTED: 2,
+export const KEYHALT_EXIT_CODES: Record<KeyhaltErrorCode, number> = {
+  KEYHALT_E_NO_SIGNER: 3,
+  KEYHALT_E_MAINNET: 4,
+  KEYHALT_E_RPC: 5,
+  KEYHALT_E_REJECTED: 6,
+  KEYHALT_E_RECEIPT: 7,
+  KEYHALT_E_AUDIT: 6,
+  KEYHALT_E_BAD_ARGS: 2,
+  KEYHALT_E_UNSUPPORTED: 2,
 };
 
-export class FleetError extends Error {
-  readonly code: FleetErrorCode;
+export class KeyhaltError extends Error {
+  readonly code: KeyhaltErrorCode;
   readonly txHash: string | null;
   readonly blockHeight: number | null;
   readonly refusal: string | null;
 
   constructor(
-    code: FleetErrorCode,
+    code: KeyhaltErrorCode,
     message: string,
     detail: {
       txHash?: string;
@@ -72,7 +72,7 @@ export class FleetError extends Error {
     } = {},
   ) {
     super(message, detail.cause === undefined ? undefined : { cause: detail.cause });
-    this.name = "FleetError";
+    this.name = "KeyhaltError";
     this.code = code;
     this.txHash = detail.txHash ?? null;
     this.blockHeight = detail.blockHeight ?? null;
@@ -80,8 +80,8 @@ export class FleetError extends Error {
   }
 }
 
-export function fleetExitCode(code: string): number {
-  return FLEET_EXIT_CODES[code as FleetErrorCode] ?? 2;
+export function keyhaltExitCode(code: string): number {
+  return KEYHALT_EXIT_CODES[code as KeyhaltErrorCode] ?? 2;
 }
 
 export interface OperatorKey {
@@ -97,10 +97,10 @@ export interface AuditHead {
   blockTimestampNs: string;
 }
 
-export interface FleetState {
+export interface KeyhaltState {
   accountId: string;
   contractVersion: string;
-  mode: FleetMode;
+  mode: KeyhaltMode;
   paused: boolean;
   adminPublicKey: string | null;
   adminAccount: string | null;
@@ -138,16 +138,16 @@ export interface NativeKey {
   methodNames: string[];
 }
 
-export interface FleetInventory {
+export interface KeyhaltInventory {
   accountId: string;
-  state: FleetState;
+  state: KeyhaltState;
   operators: OperatorKey[];
   nativeKeys: NativeKey[];
   fullAccessKeys: number;
   auditHead: AuditHead;
 }
 
-export interface FleetTxResult {
+export interface KeyhaltTxResult {
   txHash: string;
   blockHeight: number;
   gasBurnt: string;
@@ -161,7 +161,7 @@ export interface FleetTxResult {
  * The payload carries the signed transaction bytes and the signature. It never
  * carries a secret key: the signer stays in the signing process.
  */
-export interface FleetSignedTransaction {
+export interface KeyhaltSignedTransaction {
   format: typeof SIGNED_TX_FORMAT;
   network: "testnet";
   account_id: string;
@@ -183,7 +183,7 @@ export interface AuditVerification {
   head: string;
 }
 
-export interface FleetAuditExport {
+export interface KeyhaltAuditExport {
   format: typeof AUDIT_EXPORT_FORMAT;
   accountId: string;
   exportedAt: string;
@@ -193,7 +193,7 @@ export interface FleetAuditExport {
   verified: boolean;
 }
 
-export interface FleetClientOptions {
+export interface KeyhaltClientOptions {
   rpcUrl: string;
   accountId: string;
   /**
@@ -209,53 +209,53 @@ export interface FleetClientOptions {
   signer?: string | { secretKey: string };
 }
 
-export interface FleetClient {
+export interface KeyhaltClient {
   readonly rpcUrl: string;
   readonly accountId: string;
   readonly blockId: number | null;
-  getState(): Promise<FleetState>;
+  getState(): Promise<KeyhaltState>;
   getNativeKeys(): Promise<NativeKey[]>;
-  getInventory(): Promise<FleetInventory>;
+  getInventory(): Promise<KeyhaltInventory>;
   getAudit(fromSeq: number, limit: number): Promise<AuditEntry[]>;
   getAuditAll(): Promise<AuditEntry[]>;
   getAuditHead(): Promise<AuditHead>;
   verifyAuditOnChain(): Promise<boolean>;
 
-  freeze(): Promise<FleetTxResult>;
-  unfreeze(): Promise<FleetTxResult>;
+  freeze(): Promise<KeyhaltTxResult>;
+  unfreeze(): Promise<KeyhaltTxResult>;
   /**
    * Sign a freeze locally without broadcasting it. The RPC is only read
    * (account nonce, latest block hash); no transaction is sent.
    */
-  prepareFreeze(): Promise<FleetSignedTransaction>;
+  prepareFreeze(): Promise<KeyhaltSignedTransaction>;
   /**
    * Sign an unfreeze locally without broadcasting it. The RPC is only read
    * (account nonce, latest block hash); no transaction is sent.
    */
-  prepareUnfreeze(): Promise<FleetSignedTransaction>;
+  prepareUnfreeze(): Promise<KeyhaltSignedTransaction>;
   /**
    * Broadcast a transaction that was signed earlier by `prepareFreeze` or
    * `prepareUnfreeze`.
    */
-  submitSigned(signed: FleetSignedTransaction): Promise<FleetTxResult>;
-  grantOperator(publicKey: string, tag: string): Promise<FleetTxResult>;
+  submitSigned(signed: KeyhaltSignedTransaction): Promise<KeyhaltTxResult>;
+  grantOperator(publicKey: string, tag: string): Promise<KeyhaltTxResult>;
   rotateOperator(
     oldPublicKey: string,
     newPublicKey: string,
     tag: string,
-  ): Promise<FleetTxResult>;
-  revokeOperator(publicKey: string): Promise<FleetTxResult>;
-  revokeTag(tag: string): Promise<FleetTxResult>;
-  proposeAdmin(newPublicKey: string): Promise<FleetTxResult>;
-  acceptAdmin(): Promise<FleetTxResult>;
-  cancelAdmin(): Promise<FleetTxResult>;
-  recoverAdmin(newPublicKey: string): Promise<FleetTxResult>;
+  ): Promise<KeyhaltTxResult>;
+  revokeOperator(publicKey: string): Promise<KeyhaltTxResult>;
+  revokeTag(tag: string): Promise<KeyhaltTxResult>;
+  proposeAdmin(newPublicKey: string): Promise<KeyhaltTxResult>;
+  acceptAdmin(): Promise<KeyhaltTxResult>;
+  cancelAdmin(): Promise<KeyhaltTxResult>;
+  recoverAdmin(newPublicKey: string): Promise<KeyhaltTxResult>;
   execute(
     receiverId: string,
     methodName: string,
     args?: string,
     gasTgas?: number,
-  ): Promise<FleetTxResult>;
+  ): Promise<KeyhaltTxResult>;
 }
 
 interface RawQueryResult {
@@ -320,8 +320,8 @@ function toNumber(value: unknown, field: string): number {
     const parsed = Number(value);
     if (Number.isSafeInteger(parsed)) return parsed;
   }
-  throw new FleetError(
-    "FLEET_E_RPC",
+  throw new KeyhaltError(
+    "KEYHALT_E_RPC",
     `invalid ${field} in controller view: ${String(value)}`,
   );
 }
@@ -329,8 +329,8 @@ function toNumber(value: unknown, field: string): number {
 function toDecimalString(value: unknown, field: string): string {
   if (typeof value === "string" && /^\d+$/.test(value)) return value;
   if (typeof value === "number" && Number.isSafeInteger(value)) return String(value);
-  throw new FleetError(
-    "FLEET_E_RPC",
+  throw new KeyhaltError(
+    "KEYHALT_E_RPC",
     `invalid ${field} in controller view: ${String(value)}`,
   );
 }
@@ -349,26 +349,26 @@ export function parseBigJson(text: string): unknown {
 }
 
 /**
- * Validate a signed-transaction payload. The payload must carry the FLEET
+ * Validate a signed-transaction payload. The payload must carry the Keyhalt
  * format marker, must target testnet, and must never contain key material.
  */
-export function parseSignedTransaction(value: unknown): FleetSignedTransaction {
+export function parseSignedTransaction(value: unknown): KeyhaltSignedTransaction {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signed transaction must be a JSON object",
     );
   }
   const raw = value as Record<string, unknown>;
   if (raw.format !== SIGNED_TX_FORMAT) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       `signed transaction format must be ${SIGNED_TX_FORMAT}`,
     );
   }
   if (raw.network !== "testnet") {
-    throw new FleetError(
-      "FLEET_E_MAINNET",
+    throw new KeyhaltError(
+      "KEYHALT_E_MAINNET",
       "signed transaction network must be testnet",
     );
   }
@@ -385,8 +385,8 @@ export function parseSignedTransaction(value: unknown): FleetSignedTransaction {
   for (const key of required) {
     const field = raw[key];
     if (typeof field !== "string" || field.length === 0) {
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
         `signed transaction is missing ${key}`,
       );
     }
@@ -396,24 +396,24 @@ export function parseSignedTransaction(value: unknown): FleetSignedTransaction {
     raw.args === null ||
     Array.isArray(raw.args)
   ) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signed transaction args must be a JSON object",
     );
   }
   if (!/^(ed25519|secp256k1):/.test(raw.public_key as string)) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signed transaction public_key is not a NEAR public key",
     );
   }
   if (/"(secret_key|private_key|seed_phrase|mnemonic)"\s*:/i.test(JSON.stringify(raw))) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signed transaction must not contain key material",
     );
   }
-  return raw as unknown as FleetSignedTransaction;
+  return raw as unknown as KeyhaltSignedTransaction;
 }
 
 export function sha256Hex(bytes: Uint8Array | string): string {
@@ -431,7 +431,7 @@ export function sha256Hex(bytes: Uint8Array | string): string {
  * the signed payload is broadcast. Hashing the signed bytes instead would
  * produce a different, unusable identifier for the same transaction.
  */
-export function fleetTransactionHash(signed: SignedTransaction): string {
+export function keyhaltTransactionHash(signed: SignedTransaction): string {
   const digest = createHash("sha256")
     .update(signed.transaction.encode())
     .digest();
@@ -517,10 +517,10 @@ function mapAuditHead(raw: Record<string, unknown>, where: string): AuditHead {
   };
 }
 
-function mapState(rawValue: unknown, fallbackAccountId: string): FleetState {
+function mapState(rawValue: unknown, fallbackAccountId: string): KeyhaltState {
   const raw = rawValue as Record<string, unknown>;
   if (!raw || typeof raw !== "object") {
-    throw new FleetError("FLEET_E_RPC", "controller get_state returned no state");
+    throw new KeyhaltError("KEYHALT_E_RPC", "controller get_state returned no state");
   }
   const operatorsRaw = Array.isArray(raw.operators) ? raw.operators : [];
   const operators: OperatorKey[] = operatorsRaw.map((value) => {
@@ -645,16 +645,16 @@ function isRpcFailure(error: unknown): boolean {
   );
 }
 
-function wrapError(error: unknown, fallback: FleetErrorCode): FleetError {
-  if (error instanceof FleetError) return error;
-  return new FleetError(
-    isRpcFailure(error) ? "FLEET_E_RPC" : fallback,
+function wrapError(error: unknown, fallback: KeyhaltErrorCode): KeyhaltError {
+  if (error instanceof KeyhaltError) return error;
+  return new KeyhaltError(
+    isRpcFailure(error) ? "KEYHALT_E_RPC" : fallback,
     String((error as { message?: string })?.message ?? error),
     { cause: error },
   );
 }
 
-class FleetClientImpl implements FleetClient {
+class KeyhaltClientImpl implements KeyhaltClient {
   readonly rpcUrl: string;
   readonly accountId: string;
   readonly blockId: number | null;
@@ -662,25 +662,25 @@ class FleetClientImpl implements FleetClient {
   private readonly account: Account | null;
   private readonly blockQuery: { block_id: number } | { finality: "final" };
 
-  constructor(options: FleetClientOptions) {
+  constructor(options: KeyhaltClientOptions) {
     if (!options.accountId || !/^[a-z0-9._-]+$/.test(options.accountId)) {
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
         `invalid testnet account id: ${options.accountId}`,
       );
     }
     if (/mainnet/i.test(options.rpcUrl)) {
-      throw new FleetError(
-        "FLEET_E_MAINNET",
-        "FLEET is testnet-only; mainnet RPC URLs are refused",
+      throw new KeyhaltError(
+        "KEYHALT_E_MAINNET",
+        "Keyhalt is testnet-only; mainnet RPC URLs are refused",
       );
     }
     if (
       options.blockId !== undefined &&
       (!Number.isSafeInteger(options.blockId) || options.blockId < 0)
     ) {
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
         `blockId must be a non-negative integer, got ${String(options.blockId)}`,
       );
     }
@@ -699,8 +699,8 @@ class FleetClientImpl implements FleetClient {
       const secret =
         typeof signer === "string" ? signer : signer.secretKey;
       if (!/^(ed25519|secp256k1):[1-9A-HJ-NP-Za-km-z]+$/.test(secret)) {
-        throw new FleetError(
-          "FLEET_E_BAD_ARGS",
+        throw new KeyhaltError(
+          "KEYHALT_E_BAD_ARGS",
           "signer must be a NEAR secret key string",
         );
       }
@@ -720,14 +720,14 @@ class FleetClientImpl implements FleetClient {
         chain_id?: string;
       };
       if (status.chain_id !== "testnet") {
-        throw new FleetError(
-          "FLEET_E_MAINNET",
+        throw new KeyhaltError(
+          "KEYHALT_E_MAINNET",
           `refusing non-testnet chain: ${String(status.chain_id)}`,
         );
       }
     })().catch((error: unknown) => {
       TESTNET_CHECKS.delete(this.rpcUrl);
-      throw wrapError(error, "FLEET_E_RPC");
+      throw wrapError(error, "KEYHALT_E_RPC");
     });
     TESTNET_CHECKS.set(this.rpcUrl, check);
     return check;
@@ -748,11 +748,11 @@ class FleetClientImpl implements FleetClient {
       })) as unknown as RawQueryResult;
       return Buffer.from(response.result).toString("utf8");
     } catch (error) {
-      throw wrapError(error, "FLEET_E_RPC");
+      throw wrapError(error, "KEYHALT_E_RPC");
     }
   }
 
-  async getState(): Promise<FleetState> {
+  async getState(): Promise<KeyhaltState> {
     const text = await this.viewRaw("get_state", {});
     return mapState(parseBigJson(text), this.accountId);
   }
@@ -773,11 +773,11 @@ class FleetClientImpl implements FleetClient {
         return { ...mapped, publicKey: entry.public_key };
       });
     } catch (error) {
-      throw wrapError(error, "FLEET_E_RPC");
+      throw wrapError(error, "KEYHALT_E_RPC");
     }
   }
 
-  async getInventory(): Promise<FleetInventory> {
+  async getInventory(): Promise<KeyhaltInventory> {
     const [state, nativeKeys] = await Promise.all([
       this.getState(),
       this.getNativeKeys(),
@@ -795,10 +795,10 @@ class FleetClientImpl implements FleetClient {
 
   async getAudit(fromSeq: number, limit: number): Promise<AuditEntry[]> {
     if (!Number.isSafeInteger(fromSeq) || fromSeq < 0) {
-      throw new FleetError("FLEET_E_BAD_ARGS", "fromSeq must be a non-negative integer");
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "fromSeq must be a non-negative integer");
     }
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > 100) {
-      throw new FleetError("FLEET_E_BAD_ARGS", "limit must be 1..100");
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "limit must be 1..100");
     }
     const text = await this.viewRaw("get_audit", {
       from_seq: fromSeq,
@@ -806,7 +806,7 @@ class FleetClientImpl implements FleetClient {
     });
     const raw = parseBigJson(text);
     if (!Array.isArray(raw)) {
-      throw new FleetError("FLEET_E_RPC", "get_audit did not return an array");
+      throw new KeyhaltError("KEYHALT_E_RPC", "get_audit did not return an array");
     }
     return raw.map((entry) => normalizeAuditEntry(entry as RawAuditEntry));
   }
@@ -837,11 +837,11 @@ class FleetClientImpl implements FleetClient {
     method: string,
     args: Record<string, unknown>,
     gasTgas: number,
-  ): Promise<FleetTxResult> {
+  ): Promise<KeyhaltTxResult> {
     if (this.account === null) {
-      throw new FleetError(
-        "FLEET_E_NO_SIGNER",
-        `fleet ${method} requires a local signer key file`,
+      throw new KeyhaltError(
+        "KEYHALT_E_NO_SIGNER",
+        `keyhalt ${method} requires a local signer key file`,
       );
     }
     await this.ensureTestnet();
@@ -856,7 +856,7 @@ class FleetClientImpl implements FleetClient {
         throwOnFailure: false,
       });
     } catch (error) {
-      throw wrapError(error, "FLEET_E_REJECTED");
+      throw wrapError(error, "KEYHALT_E_REJECTED");
     }
     return this.toTxResult(outcome as RawOutcome, method);
   }
@@ -864,7 +864,7 @@ class FleetClientImpl implements FleetClient {
   private async toTxResult(
     outcome: RawOutcome,
     method: string,
-  ): Promise<FleetTxResult> {
+  ): Promise<KeyhaltTxResult> {
     const txHash = outcome.transaction_outcome?.id ?? "";
     const blockHash = outcome.transaction_outcome?.block_hash;
     let blockHeight = 0;
@@ -884,8 +884,8 @@ class FleetClientImpl implements FleetClient {
     );
     if (top === "failure" || failedReceipt !== undefined) {
       const code =
-        top === "failure" ? "FLEET_E_REJECTED" : "FLEET_E_RECEIPT";
-      throw new FleetError(
+        top === "failure" ? "KEYHALT_E_REJECTED" : "KEYHALT_E_RECEIPT";
+      throw new KeyhaltError(
         code,
         refusal ??
           `${method} failed: ${JSON.stringify(outcome.status).slice(0, 400)}`,
@@ -901,11 +901,11 @@ class FleetClientImpl implements FleetClient {
     };
   }
 
-  freeze(): Promise<FleetTxResult> {
+  freeze(): Promise<KeyhaltTxResult> {
     return this.write("freeze", {}, 30);
   }
 
-  unfreeze(): Promise<FleetTxResult> {
+  unfreeze(): Promise<KeyhaltTxResult> {
     return this.write("unfreeze", {}, 30);
   }
 
@@ -918,18 +918,18 @@ class FleetClientImpl implements FleetClient {
     method: string,
     args: Record<string, unknown>,
     gasTgas: number,
-  ): Promise<FleetSignedTransaction> {
+  ): Promise<KeyhaltSignedTransaction> {
     if (this.account === null) {
-      throw new FleetError(
-        "FLEET_E_NO_SIGNER",
-        `fleet ${method} requires a local signer key file`,
+      throw new KeyhaltError(
+        "KEYHALT_E_NO_SIGNER",
+        `keyhalt ${method} requires a local signer key file`,
       );
     }
     const signer = this.account.getSigner();
     if (signer === undefined) {
-      throw new FleetError(
-        "FLEET_E_NO_SIGNER",
-        `fleet ${method} requires a local signer key file`,
+      throw new KeyhaltError(
+        "KEYHALT_E_NO_SIGNER",
+        `keyhalt ${method} requires a local signer key file`,
       );
     }
     let signed: SignedTransaction;
@@ -940,7 +940,7 @@ class FleetClientImpl implements FleetClient {
         signer,
       });
     } catch (error) {
-      throw wrapError(error, "FLEET_E_REJECTED");
+      throw wrapError(error, "KEYHALT_E_REJECTED");
     }
     const bytes = signed.encode();
     return {
@@ -953,25 +953,25 @@ class FleetClientImpl implements FleetClient {
       gas_tgas: gasTgas,
       public_key: signed.transaction.publicKey.toString(),
       nonce: signed.transaction.nonce.toString(),
-      tx_hash: fleetTransactionHash(signed),
+      tx_hash: keyhaltTransactionHash(signed),
       signed_transaction: Buffer.from(bytes).toString("base64"),
       created_at: new Date().toISOString(),
     };
   }
 
-  prepareFreeze(): Promise<FleetSignedTransaction> {
+  prepareFreeze(): Promise<KeyhaltSignedTransaction> {
     return this.prepare("freeze", {}, 30);
   }
 
-  prepareUnfreeze(): Promise<FleetSignedTransaction> {
+  prepareUnfreeze(): Promise<KeyhaltSignedTransaction> {
     return this.prepare("unfreeze", {}, 30);
   }
 
-  async submitSigned(signed: FleetSignedTransaction): Promise<FleetTxResult> {
+  async submitSigned(signed: KeyhaltSignedTransaction): Promise<KeyhaltTxResult> {
     const payload = parseSignedTransaction(signed);
     if (payload.account_id !== this.accountId) {
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
         `signed transaction is for ${payload.account_id}, not ${this.accountId}`,
       );
     }
@@ -984,12 +984,12 @@ class FleetClientImpl implements FleetClient {
       const decoded = SignedTransaction.decode(bytes);
       outcome = await this.provider.sendTransactionUntil(decoded, "FINAL");
     } catch (error) {
-      throw wrapError(error, "FLEET_E_REJECTED");
+      throw wrapError(error, "KEYHALT_E_REJECTED");
     }
     return this.toTxResult(outcome as RawOutcome, payload.method);
   }
 
-  grantOperator(publicKey: string, tag: string): Promise<FleetTxResult> {
+  grantOperator(publicKey: string, tag: string): Promise<KeyhaltTxResult> {
     return this.write("grant_operator", { public_key: publicKey, tag }, 100);
   }
 
@@ -997,7 +997,7 @@ class FleetClientImpl implements FleetClient {
     oldPublicKey: string,
     newPublicKey: string,
     tag: string,
-  ): Promise<FleetTxResult> {
+  ): Promise<KeyhaltTxResult> {
     return this.write(
       "rotate_operator",
       {
@@ -1009,27 +1009,27 @@ class FleetClientImpl implements FleetClient {
     );
   }
 
-  revokeOperator(publicKey: string): Promise<FleetTxResult> {
+  revokeOperator(publicKey: string): Promise<KeyhaltTxResult> {
     return this.write("revoke_operator", { public_key: publicKey }, 100);
   }
 
-  revokeTag(tag: string): Promise<FleetTxResult> {
+  revokeTag(tag: string): Promise<KeyhaltTxResult> {
     return this.write("revoke_tag", { tag }, 100);
   }
 
-  proposeAdmin(newPublicKey: string): Promise<FleetTxResult> {
+  proposeAdmin(newPublicKey: string): Promise<KeyhaltTxResult> {
     return this.write("propose_admin", { new_admin_pk: newPublicKey }, 100);
   }
 
-  acceptAdmin(): Promise<FleetTxResult> {
+  acceptAdmin(): Promise<KeyhaltTxResult> {
     return this.write("accept_admin", {}, 30);
   }
 
-  cancelAdmin(): Promise<FleetTxResult> {
+  cancelAdmin(): Promise<KeyhaltTxResult> {
     return this.write("cancel_admin", {}, 100);
   }
 
-  recoverAdmin(newPublicKey: string): Promise<FleetTxResult> {
+  recoverAdmin(newPublicKey: string): Promise<KeyhaltTxResult> {
     return this.write("recover_admin", { new_admin_pk: newPublicKey }, 100);
   }
 
@@ -1038,7 +1038,7 @@ class FleetClientImpl implements FleetClient {
     methodName: string,
     args = "{}",
     gasTgas = 10,
-  ): Promise<FleetTxResult> {
+  ): Promise<KeyhaltTxResult> {
     return this.write(
       "execute",
       {
@@ -1052,8 +1052,8 @@ class FleetClientImpl implements FleetClient {
   }
 }
 
-export function createFleetClient(options: FleetClientOptions): FleetClient {
-  return new FleetClientImpl(options);
+export function createKeyhaltClient(options: KeyhaltClientOptions): KeyhaltClient {
+  return new KeyhaltClientImpl(options);
 }
 
 /**
@@ -1106,9 +1106,9 @@ export function verifyAuditExport(value: unknown): AuditVerification {
 
 export function buildAuditExport(
   accountId: string,
-  state: FleetState,
+  state: KeyhaltState,
   entries: AuditEntry[],
-): FleetAuditExport {
+): KeyhaltAuditExport {
   const verification = verifyAuditChain(entries);
   return {
     format: AUDIT_EXPORT_FORMAT,
@@ -1122,7 +1122,7 @@ export function buildAuditExport(
 }
 
 // ============================================================
-// Mode B — 2-of-2 multisig administration
+// Mode B: 2-of-2 multisig administration
 //
 // The Mode B controller's admin is the pinned `near/core-contracts`
 // `multisig2` contract (v0.4.0), not a key. Calls to `add_request` propose an
@@ -1156,12 +1156,12 @@ export interface MultisigRequestInfo {
   required: number;
 }
 
-export interface MultisigProposeResult extends FleetTxResult {
+export interface MultisigProposeResult extends KeyhaltTxResult {
   requestId: number;
   multisigId: string;
 }
 
-export interface MultisigConfirmResult extends FleetTxResult {
+export interface MultisigConfirmResult extends KeyhaltTxResult {
   requestId: number;
   executed: boolean;
   confirmations: string[];
@@ -1171,7 +1171,7 @@ export interface MultisigConfirmResult extends FleetTxResult {
 
 export interface MultisigAdminClientOptions {
   rpcUrl: string;
-  /** The multisig contract account — the agent's `adminAccount`. */
+  /** The multisig contract account: the agent's `adminAccount`. */
   accountId: string;
   /**
    * Optional member signer. Writes sign with the member's account id, never
@@ -1259,8 +1259,8 @@ function normalizeMultisigMember(raw: unknown): MultisigMemberInfo {
   if (typeof member.public_key === "string") {
     return { kind: "accessKey", accountId: null, publicKey: member.public_key };
   }
-  throw new FleetError(
-    "FLEET_E_RPC",
+  throw new KeyhaltError(
+    "KEYHALT_E_RPC",
     `unexpected multisig member encoding: ${JSON.stringify(raw).slice(0, 200)}`,
   );
 }
@@ -1273,8 +1273,8 @@ function parseMultisigRequest(
 ): MultisigRequestInfo {
   const request = (raw ?? {}) as MultisigRawRequest;
   if (typeof request.receiver_id !== "string") {
-    throw new FleetError(
-      "FLEET_E_RPC",
+    throw new KeyhaltError(
+      "KEYHALT_E_RPC",
       `multisig request ${requestId} has no receiver_id`,
     );
   }
@@ -1318,15 +1318,15 @@ class MultisigClientImpl implements MultisigAdminClient {
 
   constructor(options: MultisigAdminClientOptions) {
     if (!options.accountId || !/^[a-z0-9._-]+$/.test(options.accountId)) {
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
         `invalid testnet account id: ${options.accountId}`,
       );
     }
     if (/mainnet/i.test(options.rpcUrl)) {
-      throw new FleetError(
-        "FLEET_E_MAINNET",
-        "FLEET is testnet-only; mainnet RPC URLs are refused",
+      throw new KeyhaltError(
+        "KEYHALT_E_MAINNET",
+        "Keyhalt is testnet-only; mainnet RPC URLs are refused",
       );
     }
     this.rpcUrl = options.rpcUrl;
@@ -1346,8 +1346,8 @@ class MultisigClientImpl implements MultisigAdminClient {
     } else {
       const secret = signer.secretKey;
       if (!/^(ed25519|secp256k1):[1-9A-HJ-NP-Za-km-z]+$/.test(secret)) {
-        throw new FleetError(
-          "FLEET_E_BAD_ARGS",
+        throw new KeyhaltError(
+          "KEYHALT_E_BAD_ARGS",
           "signer must be a NEAR secret key string",
         );
       }
@@ -1375,14 +1375,14 @@ class MultisigClientImpl implements MultisigAdminClient {
         chain_id?: string;
       };
       if (status.chain_id !== "testnet") {
-        throw new FleetError(
-          "FLEET_E_MAINNET",
+        throw new KeyhaltError(
+          "KEYHALT_E_MAINNET",
           `refusing non-testnet chain: ${String(status.chain_id)}`,
         );
       }
     })().catch((error: unknown) => {
       TESTNET_CHECKS.delete(this.rpcUrl);
-      throw wrapError(error, "FLEET_E_RPC");
+      throw wrapError(error, "KEYHALT_E_RPC");
     });
     TESTNET_CHECKS.set(this.rpcUrl, check);
     return check;
@@ -1403,22 +1403,22 @@ class MultisigClientImpl implements MultisigAdminClient {
       })) as unknown as RawQueryResult;
       const text = Buffer.from(response.result).toString("utf8");
       if (text.length === 0) {
-        throw new FleetError(
-          "FLEET_E_RPC",
+        throw new KeyhaltError(
+          "KEYHALT_E_RPC",
           `multisig view ${method} returned an empty result`,
         );
       }
       return JSON.parse(text) as T;
     } catch (error) {
-      if (error instanceof FleetError) throw error;
-      throw wrapError(error, "FLEET_E_RPC");
+      if (error instanceof KeyhaltError) throw error;
+      throw wrapError(error, "KEYHALT_E_RPC");
     }
   }
 
   async getMembers(): Promise<MultisigMemberInfo[]> {
     const raw = await this.viewJson<unknown[]>("get_members", {});
     if (!Array.isArray(raw)) {
-      throw new FleetError("FLEET_E_RPC", "get_members did not return an array");
+      throw new KeyhaltError("KEYHALT_E_RPC", "get_members did not return an array");
     }
     return raw.map(normalizeMultisigMember);
   }
@@ -1434,7 +1434,7 @@ class MultisigClientImpl implements MultisigAdminClient {
   async listRequestIds(): Promise<number[]> {
     const raw = await this.viewJson<unknown[]>("list_request_ids", {});
     if (!Array.isArray(raw)) {
-      throw new FleetError("FLEET_E_RPC", "list_request_ids did not return an array");
+      throw new KeyhaltError("KEYHALT_E_RPC", "list_request_ids did not return an array");
     }
     return raw.map((value) => toNumber(value, "list_request_ids id"));
   }
@@ -1444,8 +1444,8 @@ class MultisigClientImpl implements MultisigAdminClient {
       request_id: requestId,
     });
     if (!Array.isArray(raw)) {
-      throw new FleetError(
-        "FLEET_E_RPC",
+      throw new KeyhaltError(
+        "KEYHALT_E_RPC",
         `get_confirmations did not return an array for request ${requestId}`,
       );
     }
@@ -1458,8 +1458,8 @@ class MultisigClientImpl implements MultisigAdminClient {
       requestId < 0 ||
       requestId > MULTISIG_MAX_REQUEST_ID
     ) {
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
         `requestId must be an integer 0..${MULTISIG_MAX_REQUEST_ID}`,
       );
     }
@@ -1482,15 +1482,15 @@ class MultisigClientImpl implements MultisigAdminClient {
     gasTgas: number,
   ): Promise<MultisigRawOutcome> {
     if (this.signerBlocked) {
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
         "a Mode B admin write needs the member account id; the signer file must contain account_id (the NEAR default key-file format does)",
       );
     }
     if (this.account === null) {
-      throw new FleetError(
-        "FLEET_E_NO_SIGNER",
-        `fleet ${method} requires a member signer key file`,
+      throw new KeyhaltError(
+        "KEYHALT_E_NO_SIGNER",
+        `keyhalt ${method} requires a member signer key file`,
       );
     }
     await this.ensureTestnet();
@@ -1505,7 +1505,7 @@ class MultisigClientImpl implements MultisigAdminClient {
       });
       return outcome as MultisigRawOutcome;
     } catch (error) {
-      throw wrapError(error, "FLEET_E_REJECTED");
+      throw wrapError(error, "KEYHALT_E_REJECTED");
     }
   }
 
@@ -1560,8 +1560,8 @@ class MultisigClientImpl implements MultisigAdminClient {
       typeof valueBytes === "string" ? utf8OfBase64(valueBytes) : null;
     if (top === "failure" || failedReceipt !== undefined) {
       const failure = this.failureText(outcome);
-      throw new FleetError(
-        "FLEET_E_REJECTED",
+      throw new KeyhaltError(
+        "KEYHALT_E_REJECTED",
         refusal ?? `${method} failed: ${failure.slice(0, 400)}`,
         { txHash, blockHeight, refusal },
       );
@@ -1583,19 +1583,19 @@ class MultisigClientImpl implements MultisigAdminClient {
     gasTgas = 50,
   ): Promise<MultisigProposeResult> {
     if (this.account === null) {
-      throw new FleetError(
-        "FLEET_E_NO_SIGNER",
-        "fleet admin request requires a member signer key file",
+      throw new KeyhaltError(
+        "KEYHALT_E_NO_SIGNER",
+        "keyhalt admin request requires a member signer key file",
       );
     }
     if (!/^[a-z0-9._-]+$/.test(receiverId)) {
-      throw new FleetError("FLEET_E_BAD_ARGS", `invalid receiver: ${receiverId}`);
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", `invalid receiver: ${receiverId}`);
     }
     if (!/^[a-zA-Z_][a-zA-Z0-9_]{0,127}$/.test(methodName)) {
-      throw new FleetError("FLEET_E_BAD_ARGS", `invalid method: ${methodName}`);
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", `invalid method: ${methodName}`);
     }
     if (!Number.isSafeInteger(gasTgas) || gasTgas < 5 || gasTgas > 200) {
-      throw new FleetError("FLEET_E_BAD_ARGS", "gasTgas must be 5..200");
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "gasTgas must be 5..200");
     }
     // The args payload is base64 of raw bytes; freeze/unfreeze take none.
     const hexGas = String(gasTgas * 1e12);
@@ -1620,8 +1620,8 @@ class MultisigClientImpl implements MultisigAdminClient {
     const requestId =
       result.valueText === null ? NaN : Number(result.valueText);
     if (!Number.isSafeInteger(requestId) || requestId < 0) {
-      throw new FleetError(
-        "FLEET_E_RPC",
+      throw new KeyhaltError(
+        "KEYHALT_E_RPC",
         `add_request did not return a request id (raw: ${String(
           result.valueText,
         ).slice(0, 120)})`,
@@ -1643,19 +1643,19 @@ class MultisigClientImpl implements MultisigAdminClient {
     gasTgas = 100,
   ): Promise<MultisigConfirmResult> {
     if (this.account === null) {
-      throw new FleetError(
-        "FLEET_E_NO_SIGNER",
-        "fleet admin confirm requires a member signer key file",
+      throw new KeyhaltError(
+        "KEYHALT_E_NO_SIGNER",
+        "keyhalt admin confirm requires a member signer key file",
       );
     }
     if (!Number.isSafeInteger(requestId) || requestId < 0 || requestId > 1_000_000) {
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
         `requestId must be an integer 0..1000000`,
       );
     }
     if (!Number.isSafeInteger(gasTgas) || gasTgas < 20 || gasTgas > 200) {
-      throw new FleetError("FLEET_E_BAD_ARGS", "gasTgas must be 20..200");
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "gasTgas must be 20..200");
     }
     const outcome = await this.multisigCall(
       "confirm",

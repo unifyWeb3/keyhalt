@@ -120,26 +120,26 @@ function fakeRpc() {
 
 async function withConsole(run) {
   const rpc = await fakeRpc();
-  const temp = mkdtempSync(join(tmpdir(), "fleet-console-test-"));
+  const temp = mkdtempSync(join(tmpdir(), "keyhalt-console-test-"));
   const previous = {};
   for (const key of [
-    "FLEET_CONSOLE_ACCOUNTS",
-    "FLEET_CONSOLE_PROVIDERS",
-    "FLEET_CONSOLE_ARCHIVAL_PROVIDERS",
-    "FLEET_CONSOLE_SEED_TXS",
-    "FLEET_CONSOLE_WATCH_FILE",
-    "FLEET_CONSOLE_CACHE_DIR",
-    "FLEET_CONSOLE_ROOT",
+    "KEYHALT_CONSOLE_ACCOUNTS",
+    "KEYHALT_CONSOLE_PROVIDERS",
+    "KEYHALT_CONSOLE_ARCHIVAL_PROVIDERS",
+    "KEYHALT_CONSOLE_SEED_TXS",
+    "KEYHALT_CONSOLE_WATCH_FILE",
+    "KEYHALT_CONSOLE_CACHE_DIR",
+    "KEYHALT_CONSOLE_ROOT",
   ]) {
     previous[key] = process.env[key];
   }
-  process.env.FLEET_CONSOLE_ACCOUNTS = "agent.testnet";
-  process.env.FLEET_CONSOLE_PROVIDERS = rpc.url;
-  process.env.FLEET_CONSOLE_ARCHIVAL_PROVIDERS = rpc.url;
-  process.env.FLEET_CONSOLE_SEED_TXS = "";
-  process.env.FLEET_CONSOLE_WATCH_FILE = join(temp, "watch.json");
-  process.env.FLEET_CONSOLE_CACHE_DIR = join(temp, "cache");
-  process.env.FLEET_CONSOLE_ROOT = process.cwd();
+  process.env.KEYHALT_CONSOLE_ACCOUNTS = "agent.testnet";
+  process.env.KEYHALT_CONSOLE_PROVIDERS = rpc.url;
+  process.env.KEYHALT_CONSOLE_ARCHIVAL_PROVIDERS = rpc.url;
+  process.env.KEYHALT_CONSOLE_SEED_TXS = "";
+  process.env.KEYHALT_CONSOLE_WATCH_FILE = join(temp, "watch.json");
+  process.env.KEYHALT_CONSOLE_CACHE_DIR = join(temp, "cache");
+  process.env.KEYHALT_CONSOLE_ROOT = process.cwd();
   const config = loadConfig();
   const running = createConsoleServer(config);
   const address = await running.start(0, "127.0.0.1");
@@ -167,22 +167,22 @@ test("console health is read-only, testnet, and block-fed", async () => {
   await withConsole(async ({ base }) => {
     // Health is meant to answer immediately; the block height appears once
     // the feed has completed its first poll and the snapshot can pin a read.
-    await getJson(base, "/api/fleet");
+    await getJson(base, "/api/keyhalt");
     const { response, body } = await getJson(base, "/api/health");
     assert.equal(response.status, 200);
     assert.equal(body.readOnly, true);
     assert.equal(body.noSigner, true);
     assert.equal(body.chainId, "testnet");
-    assert.equal(body.service, "fleet-console");
+    assert.equal(body.service, "keyhalt-console");
     assert.equal(typeof body.headBlock, "number");
     assert.equal(body.agents.length, 1);
     assert.ok(body.claims.total > 0);
   });
 });
 
-test("console fleet reads pinned controller state through the SDK", async () => {
+test("console keyhalt reads pinned controller state through the SDK", async () => {
   await withConsole(async ({ base }) => {
-    const { response, body } = await getJson(base, "/api/fleet");
+    const { response, body } = await getJson(base, "/api/keyhalt");
     assert.equal(response.status, 200);
     assert.equal(body.status, "live");
     assert.equal(body.agents.length, 1);
@@ -206,7 +206,7 @@ test("console refuses every write method", async () => {
       assert.equal(response.headers.get("allow"), "GET, HEAD");
       const body = await response.json();
       assert.equal(body.readOnly, true);
-      assert.equal(body.code, "FLEET_CONSOLE_READ_ONLY");
+      assert.equal(body.code, "KEYHALT_CONSOLE_READ_ONLY");
     }
   });
 });
@@ -254,16 +254,16 @@ test("console agent reads expose keys, audit verification, and commands", async 
 
     const unknown = await getJson(base, "/api/agent?account=nope.testnet");
     assert.equal(unknown.response.status, 404);
-    assert.equal(unknown.body.code, "FLEET_CONSOLE_UNKNOWN_AGENT");
+    assert.equal(unknown.body.code, "KEYHALT_CONSOLE_UNKNOWN_AGENT");
   });
 });
 
 test("console audit export is the portable fleet-audit-v1 format", async () => {
   await withConsole(async ({ base }) => {
-    // The export route waits for a snapshot; call /api/fleet first so the
+    // The export route waits for a snapshot; call /api/keyhalt first so the
     // agent state exists by the time the route is probed (this is what the
     // route waits for, exercised under full CPU contention in CI clones).
-    await getJson(base, "/api/fleet");
+    await getJson(base, "/api/keyhalt");
     const { response, body } = await getJson(
       base,
       "/api/audit-export?account=agent.testnet",
@@ -398,7 +398,7 @@ test("sse: connecting -> live -> reconnecting -> live", () => {
 test("commandSheet: open, copy, copied resets; impossible transitions are refused", () => {
   let s = INITIAL_SHEET;
   assert.equal(s.status, "closed");
-  // copy without open is refused — stays closed, no fake "copied"
+  // copy without open is refused: stays closed, no fake "copied"
   s = sheetReducer(s, { type: "copy-success" });
   assert.equal(s.status, "closed");
   s = sheetReducer(s, { type: "open", commandId: "freeze" });

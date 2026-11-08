@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FLEET gas profile.
+ * Keyhalt gas profile.
  *
  * Re-reads the canonical testnet evidence, fetches create/init outcomes from
  * the public RPC, and writes per-operation gas statistics. Gas is reported in
@@ -29,7 +29,7 @@ async function rpc(method, params) {
       const response = await fetch(RPC, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ jsonrpc: "2.0", id: "fleet-gas", method, params }),
+        body: JSON.stringify({ jsonrpc: "2.0", id: "keyhalt-gas", method, params }),
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const body = await response.json();
@@ -174,10 +174,10 @@ const report = {
 writeFileSync(outJson, `${JSON.stringify(report, null, 2)}\n`);
 
 const lines = [
-  "# FLEET gas profile (testnet)",
+  "# Keyhalt gas profile (testnet)",
   "",
   `Generated: ${report.generated_at}`,
-  `Source run: \`${report.source_run}\` (${run.run.started_at} — ${run.run.finished_at})`,
+  `Source run: \`${report.source_run}\` (${run.run.started_at}: ${run.run.finished_at})`,
   `Wasm: \`${report.wasm_sha256}\``,
   `RPC: ${RPC}`,
   "",

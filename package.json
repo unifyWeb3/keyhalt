@@ -1,8 +1,8 @@
 {
-  "name": "fleet",
+  "name": "keyhalt",
   "version": "0.3.0",
   "private": true,
-  "description": "FLEET \u2014 native NEAR account-fleet key-lifecycle control plane (testnet, unaudited)",
+  "description": "Keyhalt \u2014 native NEAR account-fleet key-lifecycle control plane (testnet, unaudited)",
   "license": "MIT",
   "type": "module",
   "workspaces": [

@@ -1,4 +1,4 @@
-# FLEET test plan (v0.3 final)
+# Keyhalt test plan (v0.3 final)
 
 **Status:** v0.3 controller, SDK, CLI, canonical Mode A testnet run, Mode B
 2-of-2 testnet run, automated mutation score, integration suite, latency,
@@ -21,7 +21,7 @@ proving test. This document is the test-plan overview; where the two overlap,
 | Layer | Tool | What it proves | Result |
 | --- | --- | --- | --- |
 | Unit | `cargo test --workspace` | state machine, permission checks, audit hashing, callbacks | **84/84 pass** (707.12 s local) |
-| Property/differential | deterministic xorshift sequences vs `reference_model.rs` | state/reference equivalence after every step + audit verification | **pass** — 3 seeds × 5,000 steps = 15,000 comparisons |
+| Property/differential | deterministic xorshift sequences vs `reference_model.rs` | state/reference equivalence after every step + audit verification | **pass**: 3 seeds × 5,000 steps = 15,000 comparisons |
 | Mutation (automated) | `cargo-mutants` on x64 CI | every proposed mutation is killed or provably equivalent | **248/252 viable = 98.41%**; 0 timeouts; F-036 |
 | Mutation (hand-written) | `scripts/mutation-test.mjs` | targeted regression set for eight critical branches | **8/8 killed**; F-017 |
 | Testnet E2E (Mode A) | `scripts/testnet-e2e.mjs` | deployed wasm, real keys, receipts, gas, callbacks | **63/63 checks**, 2026-11-03 |
@@ -161,10 +161,10 @@ Evidence: `evidence/testnet-v03/run.json` (63 checks), `RUN.md`,
 | T-E-04 | Admin recovery through the recovery key | **PASS** |
 | T-E-05 | Admin rotation: propose, accept, old admin rejected | **PASS** |
 | T-E-06 | Audit export + independent JS recompute + tamper rejection | **PASS** |
-| T-E-07 | Replay the 90-second demo script | **PLANNED** — no recording |
+| T-E-07 | Replay the 90-second demo script | **PLANNED**: no recording |
 | T-I-01 | 3 native accounts, zero FullAccess | **PASS** |
 | T-I-02 | Admin rotation with a fresh key; accept adds no key | **PASS** |
-| T-I-03 | Allowance refresh by rotation | **PLANNED** — no explicit measurement |
+| T-I-03 | Allowance refresh by rotation | **PLANNED**: no explicit measurement |
 | T-I-04 | Cross-agent isolation (A key on B fails, on A succeeds) | **PASS** both directions; `modeb-v03/run.json` isolation |
 | T-I-05 | Freeze/unfreeze with audit entries | **PASS** |
 | T-I-06 | Mode B 2-of-2 multisig | **PASS**; `modeb-v03/run.json`, 52 checks |
@@ -203,7 +203,7 @@ independent custody.
 | T-R-06 | Unauthorized account proposes admin | Active admin proposes | **PARTIAL** (Mode B non-member request refusal only) |
 | T-R-07 | One Mode B confirmation | Second confirmation executes | **PASS**; freeze/unfreeze both confirmed by two account members |
 | T-R-08 | Mainnet RPC configured | Testnet RPC succeeds | **PASS** (CLI/SDK/RPC script) |
-| T-R-09 | Stale or replayed pre-signed freeze | Fresh pre-signed freeze lands | **PARTIAL** — the fresh pre-signed path, mode-600 file, format/method/account/key-material refusals, and hash equality are tested (F-034); a consumed-nonce replay is not recorded |
+| T-R-09 | Stale or replayed pre-signed freeze | Fresh pre-signed freeze lands | **PARTIAL**: the fresh pre-signed path, mode-600 file, format/method/account/key-material refusals, and hash equality are tested (F-034); a consumed-nonce replay is not recorded |
 | T-R-10 | Grant a key that already has a role | Grant a fresh key | **PASS** (unit + testnet) |
 
 Testnet refusal reasons are captured from `FLEET_REFUSAL:` receipt logs:
@@ -232,8 +232,8 @@ Source: `evidence/testnet-v03/gas-profile.md`.
 | ID | Measurement | Status |
 | --- | --- | --- |
 | T-G-01 | Per-method gas, min/mean/median/max | **PASS** for sampled methods |
-| T-G-02 | Admin allowance budget (calls per 0.1/0.5/1 NEAR) | **PARTIAL** — derived from the measured mean tokens burnt; not an exhaustion test |
-| T-G-03 | Storage growth per audit entry/operator | **PASS** — 1,713 bytes for 6 added entries (285.5 bytes/entry including vector growth) |
+| T-G-02 | Admin allowance budget (calls per 0.1/0.5/1 NEAR) | **PARTIAL**: derived from the measured mean tokens burnt; not an exhaustion test |
+| T-G-03 | Storage growth per audit entry/operator | **PASS**: 1,713 bytes for 6 added entries (285.5 bytes/entry including vector growth) |
 
 The measured Mode A admin allowance was 0.0986856 NEAR after the latency run;
 at the measured mean of `217287439890900000000` yocto burnt per freeze, the
@@ -258,14 +258,14 @@ measurements, not an SLA.
 
 | ID | Test | Status |
 | --- | --- | --- |
-| T-L-01 | 20 independent Mode A freezes (and 20 unfreezes); p50/p95 wall/block | **PASS** — F-029, F-030 |
-| T-L-02 | Freeze during an in-flight execute | **PARTIAL** — no cancellation is claimed |
-| T-L-03 | Nonce-lane reservation / stale-hash refresh | **PARTIAL** — per-operator keys used for concurrency; the pre-sign path tests one signed payload, not a refresh race |
-| T-L-04 | Three historical Mode A cycles; submit → observed state | **PASS** (historical) — mean 22,716 ms / 21,997 ms on `rpc.testnet.near.org`; superseded by T-L-01 |
-| T-L-05 | Mode B 2-of-2 freeze/unfreeze wall time | **PASS** (historical) — 20,884 ms / 27,064 ms; superseded by F-031/F-032 |
-| T-L-06 | 12 concurrent SDK `execute` calls | **PASS** — one run 11/12 (`fetch failed`), saved run 12/12 first attempt, 6,486 ms; F-033 |
-| T-L-06b | The same 12-call, 3-agent scenario replayed 50 times (600 calls) | **PASS** — 572/600 = 95.33% completed; 28 failures, all public-RPC rate-limit/network errors; F-033 |
-| T-L-07 | Pre-signed freeze hash equals the submitted/on-chain hash | **PASS** — F-034 |
+| T-L-01 | 20 independent Mode A freezes (and 20 unfreezes); p50/p95 wall/block | **PASS**: F-029, F-030 |
+| T-L-02 | Freeze during an in-flight execute | **PARTIAL**: no cancellation is claimed |
+| T-L-03 | Nonce-lane reservation / stale-hash refresh | **PARTIAL**: per-operator keys used for concurrency; the pre-sign path tests one signed payload, not a refresh race |
+| T-L-04 | Three historical Mode A cycles; submit → observed state | **PASS** (historical): mean 22,716 ms / 21,997 ms on `rpc.testnet.near.org`; superseded by T-L-01 |
+| T-L-05 | Mode B 2-of-2 freeze/unfreeze wall time | **PASS** (historical): 20,884 ms / 27,064 ms; superseded by F-031/F-032 |
+| T-L-06 | 12 concurrent SDK `execute` calls | **PASS**: one run 11/12 (`fetch failed`), saved run 12/12 first attempt, 6,486 ms; F-033 |
+| T-L-06b | The same 12-call, 3-agent scenario replayed 50 times (600 calls) | **PASS**: 572/600 = 95.33% completed; 28 failures, all public-RPC rate-limit/network errors; F-033 |
+| T-L-07 | Pre-signed freeze hash equals the submitted/on-chain hash | **PASS**: F-034 |
 
 The 12-way concurrency result is a throughput observation, not a latency
 percentile. Mode B is three transactions per transition and both owners were
@@ -275,7 +275,7 @@ independent custody.
 ### 8.1 The 50-round concurrency replay (T-L-06b)
 
 `scripts/testnet-concurrency-50x.mjs` replays the 12-call, 3-agent scenario
-(3 agents x 4 operator keys = 12 concurrent `createFleetClient().execute()`
+(3 agents x 4 operator keys = 12 concurrent `createKeyhaltClient().execute()`
 calls per round) 50 times. Every attempt of every call is written to the
 evidence file, including the error text, so the success rate and every
 failure cause can be checked afterwards. Three runs are saved:
@@ -284,7 +284,7 @@ failure cause can be checked afterwards. Three runs are saved:
 | --- | --- | --- | --- | --- |
 | 1 | `evidence/sdk-v03/concurrency-50x-attempt1-unpaced.json` | none | 331/600 | HTTP 429 `Rate limits exceeded` from `rpc.testnet.fastnear.com` |
 | 2 | `evidence/sdk-v03/concurrency-50x-attempt2-paced-unfunded.json` | 12 s between rounds, 60 s every 10 rounds | 447/600 | HTTP 429, plus `agent-2` and `agent-3` dropping below the testnet storage-stake balance floor (`lacks balance … yoctoNear for state`) |
-| 3 | `evidence/sdk-v03/concurrency-50x.json` | same pacing, after a 2.4 NEAR top-up to each of `agent-2` and `agent-3` | **572/600 = 95.33%** | 83 HTTP 429 responses and one transient `fetch failed`; no balance failure and no FLEET policy rejection |
+| 3 | `evidence/sdk-v03/concurrency-50x.json` | same pacing, after a 2.4 NEAR top-up to each of `agent-2` and `agent-3` | **572/600 = 95.33%** | 83 HTTP 429 responses and one transient `fetch failed`; no balance failure and no Keyhalt policy rejection |
 
 Run 3 is the measured run quoted in F-033: 560 calls succeeded on the first
 attempt, 12 succeeded after one retry, and 28 failed after three attempts.
@@ -348,7 +348,7 @@ and `evidence/sdk-v03/presign.json`.
 | T-SC-02 | Claims checker rejects malformed/unsupported rows | **PASS** (clean-session negative control) |
 | T-SC-03 | README "do X, see Y" matches reality | **PASS** in the fresh-clone run |
 | T-SC-04 | No key/credential in clone or history | **PASS** working tree + history scan |
-| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL** — 40 rows, tx hashes public; not one re-run script |
+| T-SC-05 | Every `VERIFIED` claim reproduces against testnet | **PARTIAL**: 40 rows, tx hashes public; not one re-run script |
 | T-S-001…T-S-007 | Setup, verify, claims, secret scan, mainnet refusal, static web check | **PASS** (v0.3 verify + fresh clone) |
 
 ### 10.1 Automated mutation survivors (4 of 252) and their disposition
@@ -358,7 +358,7 @@ caught, 23 did not compile, and **4 survived**. All four are **provably
 equivalent**: for every possible input the mutated function returns exactly
 the same value as the original, so no test can distinguish them. They cannot
 be killed without editing production code, and production code is frozen
-because the deployed wasm embeds panic-location line numbers — any edit
+because the deployed wasm embeds panic-location line numbers: any edit
 changes the deployed bytes and invalidates the artifact-hash evidence
 (F-012/F-019). The disposition is therefore a written justification, per
 `docs/MUTATION.md`.
@@ -437,7 +437,7 @@ Open gaps, in priority order:
 | --- | --- | --- |
 | Core contract | invariant/unit/property green; no AddKey on existing keys; audit verifies | **MET 2026-11-03** |
 | SDK/CLI/E2E | 3-agent E2E; SDK/CLI tests; every claim has evidence | **MET 2026-11-03** including fresh clone |
-| Backend hardening | mutation ≥85%; differential model; invariant map; integration in CI; 20-run latency; pre-sign path; clean session | **MET 2026-11-06** — 98.41%, 3×5,000, I-01…I-14, 7/7, F-029…F-034, F-037 |
+| Backend hardening | mutation ≥85%; differential model; invariant map; integration in CI; 20-run latency; pre-sign path; clean session | **MET 2026-11-06**: 98.41%, 3×5,000, I-01…I-14, 7/7, F-029…F-034, F-037 |
 | Feature freeze (Nov 10) | no new features; gas/latency tables complete | Gas and latency tables done; no new features planned |
 | Demo (Nov 12) | every step replayed; no untested claim | **PENDING** |
 | README final (Nov 13) | fresh clone green; claims checker green; diff link | **PENDING** |

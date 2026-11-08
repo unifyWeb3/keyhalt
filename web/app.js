@@ -1,5 +1,5 @@
 /**
- * Console frontend — derives every frame from the machines in state.js.
+ * Console frontend: derives every frame from the machines in state.js.
  * No fetches to RPCs. No keys. No writes. The command sheet only shows a
  * pre-filled CLI command for the user's own shell; nothing here signs.
  */
@@ -48,7 +48,7 @@ const accountUrl = (id) => `https://testnet.nearblocks.io/account/${encodeURICom
 const icon = (name) => {
   switch (name) {
     case "lock": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
-    case "unlock": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>';
+    case "openlock": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>';
     case "check": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
     case "alert": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
     case "copy": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
@@ -57,7 +57,7 @@ const icon = (name) => {
 };
 
 const state = {
-  route: { name: "fleet", account: null },
+  route: { name: "keyhalt", account: null },
   fleet: null,
   agent: null,
   timeline: null,
@@ -152,11 +152,11 @@ function fullTxn(hash) {
   return `<a href="${esc(txUrl(hash))}" class="mono" rel="noopener noreferrer" target="_blank">${esc(trunc8_6(hash))}</a>`;
 }
 
-/* ---------- fleet ---------- */
+/* ---------- keyhalt ---------- */
 
-function renderFleet(data, changedIds) {
-  const body = $("fleet-body");
-  const meta = $("fleet-meta");
+function renderKeyhalt(data, changedIds) {
+  const body = $("keyhalt-body");
+  const meta = $("keyhalt-meta");
   meta.textContent =
     data.status === "loading"
       ? "reading…"
@@ -170,7 +170,7 @@ function renderFleet(data, changedIds) {
 
   const agents = Array.isArray(data.agents) ? data.agents : [];
   if (data.status === "empty" || agents.length === 0) {
-    body.innerHTML = `<div class="state-flat"><h2>No agents</h2><p>Set <code>FLEET_CONSOLE_ACCOUNTS</code> and restart.</p></div>`;
+    body.innerHTML = `<div class="state-flat"><h2>No agents</h2><p>Set <code>KEYHALT_CONSOLE_ACCOUNTS</code> and restart.</p></div>`;
     body.setAttribute("aria-busy", "false");
     return;
   }
@@ -193,15 +193,15 @@ function renderFleet(data, changedIds) {
       ? `<span class="mono">${esc(last.event)}</span> · ${last.refused ? `<span class="result refused">refused</span>` : `<span class="result ok">ok</span>`} · ${esc(last.blockHeight)}`
       : '<span class="dim">—</span>';
     return `<tr data-row="${esc(agent.accountId)}">
-      <td class="fleet-cell-name"><a class="mono" href="#/agent/${encodeURIComponent(agent.accountId)}">${esc(agent.accountId)}</a>
+      <td class="keyhalt-cell-name"><a class="mono" href="#/agent/${encodeURIComponent(agent.accountId)}">${esc(agent.accountId)}</a>
         <span class="key-meta">${fmtInt(agent.operatorKeys)} operators · ${fmtInt(agent.fullAccessKeys)} full-access</span></td>
-      <td class="fleet-cell-state">${stateCell}</td>
-      <td class="fleet-cell-event result ${last?.refused ? "refused" : "ok"}">${lastEvent}</td>
-      <td class="fleet-cell-action">${actionCell}</td>
+      <td class="keyhalt-cell-state">${stateCell}</td>
+      <td class="keyhalt-cell-event result ${last?.refused ? "refused" : "ok"}">${lastEvent}</td>
+      <td class="keyhalt-cell-action">${actionCell}</td>
     </tr>`;
   }).join("");
 
-  body.innerHTML = `<div class="table-wrap"><table class="fleet-table"><thead><tr><th scope="col">Name</th><th scope="col">State</th><th scope="col">Last event</th><th scope="col" class="num">Action</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  body.innerHTML = `<div class="table-wrap"><table class="keyhalt-table"><thead><tr><th scope="col">Name</th><th scope="col">State</th><th scope="col">Last event</th><th scope="col" class="num">Action</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   body.setAttribute("aria-busy", "false");
   if (changedIds?.length) {
     for (const id of changedIds) {
@@ -211,29 +211,29 @@ function renderFleet(data, changedIds) {
   }
 }
 
-async function loadFleet(silent = false) {
+async function loadKeyhalt(silent = false) {
   if (state.loadGuard.fleet) return;
-  state.loadGuard.fleet = true;
+  state.loadGuard.keyhalt = true;
   try {
-    const data = await getJSON("/api/fleet");
-    if (state.route.name !== "fleet") return;
+    const data = await getJSON("/api/keyhalt");
+    if (state.route.name !== "keyhalt") return;
     const previous = state.fleetFingerprint;
     const fingerprint = (data.agents ?? []).map((a) => `${a.accountId}:${a.state}`).join("|");
-    state.fleet = data;
+    state.keyhalt = data;
     state.fleetFingerprint = fingerprint;
     const changed = previous === null ? [] : diffFingerprint(previous, fingerprint);
     updateNet(data.headBlock);
     applyBanner();
-    $("fleet-meta").textContent =
+    $("keyhalt-meta").textContent =
       data.status === "loading"
         ? "reading…"
         : `${fmtInt(data.totals?.agents)} agents · ${data.totals?.operatorKeys == null ? "—" : fmtInt(data.totals.operatorKeys)} operators · ${data.totals?.fullAccessKeys == null ? "—" : fmtInt(data.totals.fullAccessKeys)} full-access`;
     if (data.status === "loading") {
-      renderFleet(data);
-      if (!silent) scheduleRetry(loadFleet);
+      renderKeyhalt(data);
+      if (!silent) scheduleRetry(loadKeyhalt);
       return;
     }
-    renderFleet(data, changed);
+    renderKeyhalt(data, changed);
     const hasAgents = Array.isArray(data.agents) && data.agents.length > 0;
     state.dataLoad = dataLoadReducer(state.dataLoad, {
       type: "fetch-ok",
@@ -243,20 +243,20 @@ async function loadFleet(silent = false) {
     });
     applyBanner();
   } catch (error) {
-    if (state.route.name !== "fleet") return;
+    if (state.route.name !== "keyhalt") return;
     state.dataLoad = dataLoadReducer(state.dataLoad, {
       type: "fetch-fail",
     });
     applyBanner();
-    if (state.fleet !== null) {
-      renderFleet(state.fleet);
+    if (state.keyhalt !== null) {
+      renderKeyhalt(state.fleet);
       return;
     }
-    $("fleet-meta").textContent = "read failed";
-    $("fleet-body").innerHTML = `<div class="state-flat"><h2>Could not read the fleet</h2><p>${esc(error.message ?? "RPC read failed.")}</p><div style="margin-top:10px"><button class="btn" type="button" data-retry="fleet">Retry</button></div></div>`;
-    $("fleet-body").setAttribute("aria-busy", "false");
+    $("keyhalt-meta").textContent = "read failed";
+    $("keyhalt-body").innerHTML = `<div class="state-flat"><h2>Could not read the fleet</h2><p>${esc(error.message ?? "RPC read failed.")}</p><div style="margin-top:10px"><button class="btn" type="button" data-retry="keyhalt">Retry</button></div></div>`;
+    $("keyhalt-body").setAttribute("aria-busy", "false");
   } finally {
-    state.loadGuard.fleet = false;
+    state.loadGuard.keyhalt = false;
   }
 }
 function diffFingerprint(prev, next) {
@@ -274,10 +274,10 @@ function renderAgent(data, changed) {
   const paused = agent.state.paused === true;
   const action = actionForAgent({ mode: agent.mode ?? "A", paused: agent.paused });
   const strip = $("agent-status");
-  const freezeCmd = `node packages/cli/dist/index.js ${paused ? "unfreeze" : "freeze"} ${agent.accountId} --signer-key-file "$FLEET_ADMIN_KEY_FILE" --json`;
-  const modeBFreeze = `node packages/cli/dist/index.js admin request freeze ${agent.accountId} --signer-key-file "$FLEET_OWNER_KEY_FILE" --json`;
-  const modeBUnfreeze = `node packages/cli/dist/index.js admin request unfreeze ${agent.accountId} --signer-key-file "$FLEET_OWNER_KEY_FILE" --json`;
-  const modeBConfirmFreeze = `node packages/cli/dist/index.js admin confirm ${agent.accountId} <request-id> --signer-key-file "$FLEET_OWNER_KEY_FILE" --json`;
+  const freezeCmd = `node packages/cli/dist/index.js ${paused ? "unfreeze" : "freeze"} ${agent.accountId} --signer-key-file "$KEYHALT_ADMIN_KEY_FILE" --json`;
+  const modeBFreeze = `node packages/cli/dist/index.js admin request freeze ${agent.accountId} --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json`;
+  const modeBUnfreeze = `node packages/cli/dist/index.js admin request unfreeze ${agent.accountId} --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json`;
+  const modeBConfirmFreeze = `node packages/cli/dist/index.js admin confirm ${agent.accountId} <request-id> --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json`;
   const modeBConfirmUnfreeze = modeBConfirmFreeze;
   const modeBStatus = `node packages/cli/dist/index.js admin status ${agent.accountId} --json`;
 
@@ -312,7 +312,7 @@ function renderAgent(data, changed) {
   // roles as data
   const adminCount = agent.admin.publicKey || agent.admin.adminAccount ? 1 : 0;
   const adminLine = adminCount === 0
-    ? "admin 0 · recovery — · full-access 0"
+    ? "admin 0 · recovery none · full-access 0"
     : `admin ${adminCount} · recovery ${agent.admin.recoveryPublicKey ? 1 : 0} · full-access ${fmtInt(agent.fullAccessKeys)} · mode ${esc(agent.mode ?? "A")}`;
   $("roles").innerHTML = `<span><b>${fmtInt(agent.operators.filter(o => o.active).length)}</b>operators</span><span><b>${adminCount}</b>admin</span><span><b>${agent.admin.recoveryPublicKey ? 1 : 0}</b>recovery</span><span><b>${fmtInt(agent.fullAccessKeys)}</b>full-access</span><span><b>${fmtInt(agent.state.auditLength)}</b>audit entries</span>`;
 
@@ -340,7 +340,7 @@ function renderAgent(data, changed) {
      <div class="chain-detail" id="audit-detail-${entry.seq}" hidden><div class="mono">${esc(entry.entryHash)}</div><div class="mono dim">prev ${esc(entry.prevHash)}</div></div>
    </li>`).join("");
 
-  // events — latest 6 rows, one link to all
+  // events: latest 6 rows, one link to all
   const eventsBox = $("agent-events");
   const events = (agent.events ?? []).slice(0, 6);
   eventsBox.innerHTML = events.length === 0 ? '<p class="dim" style="margin:0">—</p>' : eventsTable(events, { compact: true });
@@ -357,7 +357,7 @@ function eventsTable(events, { compact = false } = {}) {
 }
 function eventIcon(event) {
   if (event.action === "freeze") return icon("lock");
-  if (event.action === "unfreeze") return icon("unlock");
+  if (event.action === "unfreeze") return icon("openlock");
   return "";
 }
 function eventVerifiedMark(event) {
@@ -452,7 +452,7 @@ async function loadTimeline(silent = false) {
       renderTimeline(state.timeline);
       return;
     }
-    $("timeline-body").innerHTML = `<div class="state-flat"><h2>Could not read the timeline</h2><p>${esc(error.code ?? "FLEET_ERR")} — retry below.</p><div style="margin-top:10px"><button class="btn" type="button" data-retry="timeline">Retry</button></div></div>`;
+    $("timeline-body").innerHTML = `<div class="state-flat"><h2>Could not read the timeline</h2><p>${esc(error.code ?? "KEYHALT_ERR")}: retry below.</p><div style="margin-top:10px"><button class="btn" type="button" data-retry="timeline">Retry</button></div></div>`;
     $("timeline-body").setAttribute("aria-busy", "false");
   } finally {
     state.loadGuard.timeline = false;
@@ -463,13 +463,13 @@ async function loadTimeline(silent = false) {
 
 function currentCommandFor(action, mode, agent) {
   if (mode === "B") {
-    if (action === "request-freeze") return { id: "request-freeze", text: () => `node packages/cli/dist/index.js admin request freeze ${agent} --signer-key-file "$FLEET_OWNER_KEY_FILE" --json` };
-    if (action === "request-unfreeze") return { id: "request-unfreeze", text: () => `node packages/cli/dist/index.js admin request unfreeze ${agent} --signer-key-file "$FLEET_OWNER_KEY_FILE" --json` };
-    if (action === "confirm-freeze" || action === "confirm-freeze-both" || action === "confirm") return { id: "confirm", text: () => `node packages/cli/dist/index.js admin confirm ${agent} <request-id> --signer-key-file "$FLEET_OWNER_KEY_FILE" --json` };
+    if (action === "request-freeze") return { id: "request-freeze", text: () => `node packages/cli/dist/index.js admin request freeze ${agent} --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json` };
+    if (action === "request-unfreeze") return { id: "request-unfreeze", text: () => `node packages/cli/dist/index.js admin request unfreeze ${agent} --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json` };
+    if (action === "confirm-freeze" || action === "confirm-freeze-both" || action === "confirm") return { id: "confirm", text: () => `node packages/cli/dist/index.js admin confirm ${agent} <request-id> --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json` };
     return { id: "status", text: () => `node packages/cli/dist/index.js admin status ${agent} --json` };
   }
   const method = action === "unfreeze" ? "unfreeze" : "freeze";
-  return { id: method, text: () => `node packages/cli/dist/index.js ${method} ${agent} --signer-key-file "$FLEET_ADMIN_KEY_FILE" --json` };
+  return { id: method, text: () => `node packages/cli/dist/index.js ${method} ${agent} --signer-key-file "$KEYHALT_ADMIN_KEY_FILE" --json` };
 }
 function renderSheet() {
   const sheet = $("command-sheet");
@@ -481,7 +481,7 @@ function renderSheet() {
   $("copy-status").hidden = state.sheet.status !== "copied" && state.sheet.status !== "copy-failed";
   const statusEl = $("copy-status");
   if (state.sheet.status === "copied") { statusEl.textContent = "Copied"; statusEl.className = "copied"; }
-  else if (state.sheet.status === "copy-failed") { statusEl.textContent = "Copy failed — select the command"; statusEl.className = "copy-failed"; }
+  else if (state.sheet.status === "copy-failed") { statusEl.textContent = "Copy failed: select the command"; statusEl.className = "copy-failed"; }
   else { statusEl.textContent = ""; statusEl.className = "copied"; }
 }
 function openSheetFor(action, mode, agent) {
@@ -526,16 +526,16 @@ function parseRoute() {
   const raw = location.hash.replace(/^#\/?/, "");
   if (raw.startsWith("agent/")) return { name: "agent", account: decodeURIComponent(raw.slice("agent/".length)) };
   if (raw.startsWith("timeline")) return { name: "timeline", account: null };
-  return { name: "fleet", account: null };
+  return { name: "keyhalt", account: null };
 }
 function setView() {
-  const views = { fleet: $("view-fleet"), agent: $("view-agent"), timeline: $("view-timeline") };
+  const views = { fleet: $("view-keyhalt"), agent: $("view-agent"), timeline: $("view-timeline") };
   for (const [name, element] of Object.entries(views)) element.hidden = name !== state.route.name;
   $("brand-mark").textContent = "KEYHALT";
   $("brand-home").setAttribute("aria-label", BRAND_LABEL);
-  document.title = state.route.name === "fleet" ? "Keyhalt · Fleet" : state.route.name === "agent" ? "Keyhalt · Agent" : "Keyhalt · Timeline";
+  document.title = state.route.name === "keyhalt" ? "Keyhalt · Keyhalt" : state.route.name === "agent" ? "Keyhalt · Agent" : "Keyhalt · Timeline";
   document.querySelectorAll(".nav a[data-nav]").forEach((link) => {
-    const active = (state.route.name === "agent" ? "fleet" : state.route.name) === link.dataset.nav;
+    const active = (state.route.name === "agent" ? "keyhalt" : state.route.name) === link.dataset.nav;
     if (active) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current");
   });
 }
@@ -543,7 +543,7 @@ function route() {
   state.route = parseRoute();
   showView();
   updateNet(state.fleet?.headBlock ?? state.lastBlock);
-  if (state.route.name === "fleet") loadFleet();
+  if (state.route.name === "keyhalt") loadKeyhalt();
   else if (state.route.name === "agent") {
     const account = state.route.account;
     if (!account) {
@@ -556,10 +556,10 @@ function route() {
   }
 }
 function showView() {
-  const views = { fleet: $("view-fleet"), agent: $("view-agent"), timeline: $("view-timeline") };
+  const views = { fleet: $("view-keyhalt"), agent: $("view-agent"), timeline: $("view-timeline") };
   for (const [name, element] of Object.entries(views)) element.hidden = name !== state.route.name;
   $("brand-mark").textContent = "KEYHALT";
-  document.title = state.route.name === "fleet" ? `${BRAND} · Fleet` : state.route.name === "agent" ? `${BRAND} · Agent` : `${BRAND} · Timeline`;
+  document.title = state.route.name === "keyhalt" ? `${BRAND} · Keyhalt` : state.route.name === "agent" ? `${BRAND} · Agent` : `${BRAND} · Timeline`;
 }
 
 /* ---------- sse & polling ---------- */
@@ -570,7 +570,7 @@ function scheduleRouteRefresh(kind) {
   if (state.timers.has(key)) return;
   state.timers.set(key, setTimeout(() => {
     state.timers.delete(key);
-    if (kind === "fleet" && state.route.name === "fleet") loadFleet(true);
+    if (kind === "keyhalt" && state.route.name === "keyhalt") loadKeyhalt(true);
     else if (kind === "agent" && state.route.name === "agent") loadAgent(state.route.account, true);
     else if (kind === "timeline" && state.route.name === "timeline") loadTimeline(true);
   }, 1400));
@@ -590,7 +590,7 @@ function connectStream() {
     try { data = JSON.parse(message.data); } catch { return; }
     state.sse = sseReducer(state.sse, { type: "message" }, Date.now());
     updateNet(data.height);
-    const kind = state.route.name === "fleet" ? "fleet" : state.route.name === "agent" ? "agent" : "timeline";
+    const kind = state.route.name === "keyhalt" ? "keyhalt" : state.route.name === "agent" ? "agent" : "timeline";
     scheduleRouteRefresh(kind);
   });
   streamSrc.addEventListener("snapshot", () => { state.sse = sseReducer(state.sse, { type: "message" }, Date.now()); });
@@ -604,7 +604,7 @@ document.addEventListener("click", (event) => {
   const t = event.target;
   if (!(t instanceof Element)) return;
   const retry = t.closest("[data-retry]");
-  if (retry) { if (retry.dataset.retry === "fleet") loadFleet(); else if (retry.dataset.retry === "agent") loadAgent(state.route.account); else loadTimeline(); return; }
+  if (retry) { if (retry.dataset.retry === "keyhalt") loadKeyhalt(); else if (retry.dataset.retry === "agent") loadAgent(state.route.account); else loadTimeline(); return; }
   const copyEl = t.closest("[data-copy]");
   if (copyEl) { copyText(copyEl.getAttribute("data-copy") ?? ""); return; }
   const expandRow = t.closest(".chain-row");

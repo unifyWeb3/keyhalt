@@ -6,7 +6,7 @@
  *
  * A public RPC can be transiently unavailable. The check retries three times;
  * if it still fails, it is a SKIP by default so local reproduction does not
- * depend on a third-party service. Set FLEET_REQUIRE_RPC=1 to make it fatal.
+ * depend on a third-party service. Set KEYHALT_REQUIRE_RPC=1 to make it fatal.
  */
 
 import { setDefaultResultOrder } from "node:dns";
@@ -15,10 +15,10 @@ import { setDefaultResultOrder } from "node:dns";
 setDefaultResultOrder("ipv4first");
 
 const url = process.env.NEAR_RPC_URL || "https://rpc.testnet.fastnear.com";
-const required = process.env.FLEET_REQUIRE_RPC === "1";
+const required = process.env.KEYHALT_REQUIRE_RPC === "1";
 
 if (process.env.NEAR_MAINNET) {
-  console.error("RPC CHECK: FAIL: NEAR_MAINNET is set; FLEET is testnet-only");
+  console.error("RPC CHECK: FAIL: NEAR_MAINNET is set; Keyhalt is testnet-only");
   process.exit(1);
 }
 if (/mainnet/i.test(url)) {
@@ -66,4 +66,4 @@ if (required) {
   process.exit(1);
 }
 console.log(`RPC CHECK: SKIP (testnet RPC unavailable after 3 attempts: ${lastError})`);
-console.log("Set FLEET_REQUIRE_RPC=1 to make this failure fatal.");
+console.log("Set KEYHALT_REQUIRE_RPC=1 to make this failure fatal.");

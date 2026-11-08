@@ -10,7 +10,7 @@
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import type { AuditEntry } from "@fleet/sdk";
+import type { AuditEntry } from "@keyhalt/sdk";
 
 import type { ProviderPool } from "./providers.js";
 

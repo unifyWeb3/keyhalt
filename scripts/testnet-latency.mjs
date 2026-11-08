@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FLEET v0.3 latency measurement.
+ * Keyhalt v0.3 latency measurement.
  *
  * Testnet only. Measures freeze and unfreeze from submit to visible state,
  * both with optimistic inclusion and with final inclusion, for:
@@ -21,7 +21,7 @@
  *   - blocks_*         = inclusive block counts (submit block .. effect block).
  *
  * Samples are appended to the evidence file after every cycle, so an
- * interrupted run can be resumed with FLEET_LATENCY_RESUME=1. Secret keys
+ * interrupted run can be resumed with KEYHALT_LATENCY_RESUME=1. Secret keys
  * live outside the repository and are never printed; the evidence contains
  * only public data.
  */
@@ -34,32 +34,32 @@ import { installHttpsFetch } from "./lib/https-fetch.mjs";
 setDefaultResultOrder("ipv4first");
 installHttpsFetch();
 
-const RPC = process.env.FLEET_RPC || "https://rpc.testnet.fastnear.com";
+const RPC = process.env.KEYHALT_RPC || "https://rpc.testnet.fastnear.com";
 if (/mainnet/i.test(RPC) || process.env.NEAR_MAINNET) {
-  throw new Error("FLEET is testnet-only; refusing mainnet");
+  throw new Error("Keyhalt is testnet-only; refusing mainnet");
 }
-const SAMPLES = Number(process.env.FLEET_LATENCY_SAMPLES ?? 20);
+const SAMPLES = Number(process.env.KEYHALT_LATENCY_SAMPLES ?? 20);
 if (!Number.isInteger(SAMPLES) || SAMPLES < 1) {
-  throw new Error("FLEET_LATENCY_SAMPLES must be an integer >= 1");
+  throw new Error("KEYHALT_LATENCY_SAMPLES must be an integer >= 1");
 }
-const MODES = (process.env.FLEET_LATENCY_MODES ?? "mode_a,mode_b")
+const MODES = (process.env.KEYHALT_LATENCY_MODES ?? "mode_a,mode_b")
   .split(",")
   .map((value) => value.trim())
   .filter(Boolean);
 for (const mode of MODES) {
   if (!["mode_a", "mode_b"].includes(mode)) {
-    throw new Error(`unknown FLEET_LATENCY_MODES entry: ${mode}`);
+    throw new Error(`unknown KEYHALT_LATENCY_MODES entry: ${mode}`);
   }
 }
-const RESUME = process.env.FLEET_LATENCY_RESUME === "1";
+const RESUME = process.env.KEYHALT_LATENCY_RESUME === "1";
 
 const KEY_ROOT = "/root/.near-fallback-keys/fleet-v03/modeb";
 const FAUCET_KEY_ROOT = "/root/.near-fallback-keys/fleet-v03-faucet";
-const PARENT = process.env.FLEET_MODEB_PARENT || "fleet-modeb-748d4372.testnet";
-const LATENCY_AGENT = process.env.FLEET_LATENCY_AGENT || `agent-lat1.${PARENT}`;
-const MODE_B_AGENT = process.env.FLEET_MODEB_AGENT || `agent-b1.${PARENT}`;
-const OWNER1 = process.env.FLEET_OWNER1 || "fleet-v03-5cff9e99.testnet";
-const OWNER2 = process.env.FLEET_OWNER2 || "fleet-v03-fund2-8b91351d.testnet";
+const PARENT = process.env.KEYHALT_MODEB_PARENT || "fleet-modeb-748d4372.testnet";
+const LATENCY_AGENT = process.env.KEYHALT_LATENCY_AGENT || `agent-lat1.${PARENT}`;
+const MODE_B_AGENT = process.env.KEYHALT_MODEB_AGENT || `agent-b1.${PARENT}`;
+const OWNER1 = process.env.KEYHALT_OWNER1 || "fleet-v03-5cff9e99.testnet";
+const OWNER2 = process.env.KEYHALT_OWNER2 || "fleet-v03-fund2-8b91351d.testnet";
 const EVIDENCE_DIR = resolve("evidence/latency-v03");
 const EVIDENCE_PATH = join(EVIDENCE_DIR, "run.json");
 const INNER_GAS = "10000000000000";

@@ -1,6 +1,6 @@
-# FLEET console draft (v0.3, amended)
+# Keyhalt console draft (v0.3, amended)
 
-**Status: BUILT (read-only) — not approved for recording or public use.**
+**Status: BUILT (read-only): not approved for recording or public use.**
 The screen sketches below are the design target; the shipped screens live in
 `web/` and render live testnet reads, and are no longer the static pixel draft
 alone. `design/index.html` remains approval-gated as a pixel reference.
@@ -9,7 +9,7 @@ Human approval is required before any recording or public use.
 2026-11-07, after the human approved the `unslop` direction; console built
 2026-11-07 from these sketches).
 **Design basis:** `docs/DESIGN_SYSTEM.md` (Inter + JetBrains Mono, sentence
-case, three screens, fleet first, chain spine and scope tag).
+case, three screens, keyhalt first, chain spine and scope tag).
 **Data basis:** SDK reads (`getInventory`, `getAuditAll`, `verifyAuditOnChain`),
 canonical Mode A `evidence/testnet-v03/run.json`, Mode B
 `evidence/modeb-v03/run.json`. Every number below is a recorded block height,
@@ -17,18 +17,18 @@ key, hash or count from those files. No mock data is invented.
 
 ---
 
-## Screen 1 — Fleet
+## Screen 1: Keyhalt
 
 ```text
-[FLEET key mark]  Fleet  Timeline                    testnet · block 276454237
+[Keyhalt key mark]  Keyhalt  Timeline                    testnet · block 276454237
 
-  Fleet                  3 agents · 12 operator keys · 0 full-access keys
+  Keyhalt                  3 agents · 12 operator keys · 0 full-access keys
   name                              state    full-access keys   last event
-  agent-1b.fleet-…testnet           Active   0                  Unfreeze · block 276090540 · ok ✓
+  agent-1b.keyhalt-…testnet           Active   0                  Unfreeze · block 276090540 · ok ✓
   4 operator keys · 2 ops-a · 2 ops-b
-  agent-2.fleet-…testnet            Active   0                  Operator execute · block 276090372 · pong ✓
+  agent-2.keyhalt-…testnet            Active   0                  Operator execute · block 276090372 · pong ✓
   4 operator keys · 2 ops-a · 2 ops-b
-  agent-3.fleet-…testnet            Active   0                  Operator execute · block 276090373 · pong ✓
+  agent-3.keyhalt-…testnet            Active   0                  Operator execute · block 276090373 · pong ✓
   4 operator keys · 2 ops-a · 2 ops-b
 
   Timeline →
@@ -45,10 +45,10 @@ its transaction.
 
 ---
 
-## Screen 2 — Agent
+## Screen 2: Agent
 
 ```text
-← Fleet              agent-b1.fleet-modeb-748d4372.testnet   Mode B · 2-of-2 admin · 3 audit entries
+← Keyhalt              agent-b1.fleet-modeb-748d4372.testnet   Mode B · 2-of-2 admin · 3 audit entries
 
   Operator keys
   key                                                   scope     active
@@ -74,7 +74,7 @@ its transaction.
 
   [ Export audit chain ]  [ Freeze ]
 
-    fleet freeze agent-b1.fleet-modeb-748d4372.testnet --signer-key-file <key-file> --json   [ Copy ]
+    keyhalt freeze agent-b1.fleet-modeb-748d4372.testnet --signer-key-file <key-file> --json   [ Copy ]
 ```
 
 The audit entries are drawn as a chain spine: each entry hangs from the hash
@@ -85,10 +85,10 @@ stays blocked. A Frozen agent offers Unfreeze instead.
 
 ---
 
-## Screen 3 — Timeline
+## Screen 3: Timeline
 
 ```text
-← Fleet                                   Timeline        8 events · 3 refused · 160 blocks
+← Keyhalt                                   Timeline        8 events · 3 refused · 160 blocks
 
   block       event                   result                          tx
   276090380   [lock] freeze           ok                              7tqiVYBosLg… ✓
@@ -116,7 +116,7 @@ Mode B state instead.
 ## What this draft intentionally omits
 
 - Wallet connect, sign buttons, write forms, and any key entry.
-- Charts, price feeds, fleet graph, search across accounts.
+- Charts, price feeds, keyhalt graph, search across accounts.
 - A hosted demo URL or public link. `web/` is built read-only, ships
   `noindex`, and serves same-origin testnet reads only until the human
   approves deployment. No hosted demo exists.
@@ -125,7 +125,7 @@ Mode B state instead.
 ## Review checklist for the human
 
 - [ ] Amended tokens (ink ramp, one accent, 4 px grid) acceptable?
-- [ ] Three screens (Fleet, Agent, Timeline) cover the reviewer's questions?
+- [ ] Three screens (Keyhalt, Agent, Timeline) cover the reviewer's questions?
 - [ ] "2 of 2 confirmations · both owners operated by one operator in this
       demo" works as the Mode B row?
 - [ ] The chain spine and the lock marks read as the product, not decoration?

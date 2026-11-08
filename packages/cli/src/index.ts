@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * FLEET CLI v0.3.
+ * Keyhalt CLI v0.3.
  *
  * Reads are public. Writes are signed locally with a mode-600 key file outside
  * any git repository. The CLI never prints, logs, or transmits a secret key.
@@ -11,21 +11,21 @@ import { dirname, join, resolve } from "node:path";
 
 import {
   DEFAULT_TESTNET_RPC,
-  FLEET_SDK_VERSION,
-  FleetError,
+  KEYHALT_SDK_VERSION,
+  KeyhaltError,
   buildAuditExport,
-  createFleetClient,
+  createKeyhaltClient,
   createMultisigAdminClient,
-  fleetExitCode,
+  keyhaltExitCode,
   parseSignedTransaction,
   verifyAuditChain,
   verifyAuditExport,
-  type FleetInventory,
-  type FleetSignedTransaction,
-  type FleetTxResult,
-} from "@fleet/sdk";
+  type KeyhaltInventory,
+  type KeyhaltSignedTransaction,
+  type KeyhaltTxResult,
+} from "@keyhalt/sdk";
 
-const VERSION = FLEET_SDK_VERSION;
+const VERSION = KEYHALT_SDK_VERSION;
 
 const VALUE_FLAGS = new Set([
   "rpc-url",
@@ -45,45 +45,45 @@ const VALUE_FLAGS = new Set([
 
 const BOOLEAN_FLAGS = new Set(["json", "help", "pre-sign"]);
 
-const HELP = `fleet ${VERSION}
+const HELP = `keyhalt ${VERSION}
 
-FLEET is a native NEAR account-fleet key-lifecycle control plane.
+Keyhalt is a native NEAR account-fleet key-lifecycle control plane.
 Testnet only. Unaudited. Mode A is not non-custodial.
 
 Usage:
-  fleet inventory <account> [--rpc-url URL] [--json]
-  fleet verify <account> [--rpc-url URL] [--json]
-  fleet audit export <account> --out <file> [--json]
-  fleet audit verify <file> [--json]
-  fleet verify-audit <file> [--json]
+  keyhalt inventory <account> [--rpc-url URL] [--json]
+  keyhalt verify <account> [--rpc-url URL] [--json]
+  keyhalt audit export <account> --out <file> [--json]
+  keyhalt audit verify <file> [--json]
+  keyhalt verify-audit <file> [--json]
 
-  fleet freeze <account> --signer-key-file <path> [--json]
-  fleet unfreeze <account> --signer-key-file <path> [--json]
-  fleet grant <account> --key <public-key> --tag <tag> --signer-key-file <path> [--json]
-  fleet rotate <account> --old <public-key> --new <public-key> --tag <tag> --signer-key-file <path> [--json]
-  fleet revoke <account> --key <public-key> --signer-key-file <path> [--json]
-  fleet revoke-tag <account> --tag <tag> --signer-key-file <path> [--json]
-  fleet propose-admin <account> --new-admin <public-key> --signer-key-file <path> [--json]
-  fleet accept-admin <account> --signer-key-file <path> [--json]
-  fleet cancel-admin <account> --signer-key-file <path> [--json]
-  fleet recover <account> --new-admin <public-key> --signer-key-file <path> [--json]
-  fleet execute <account> --method <name> [--args '<json>'] [--gas <tgas>] [--receiver <account>] --signer-key-file <path> [--json]
+  keyhalt freeze <account> --signer-key-file <path> [--json]
+  keyhalt unfreeze <account> --signer-key-file <path> [--json]
+  keyhalt grant <account> --key <public-key> --tag <tag> --signer-key-file <path> [--json]
+  keyhalt rotate <account> --old <public-key> --new <public-key> --tag <tag> --signer-key-file <path> [--json]
+  keyhalt revoke <account> --key <public-key> --signer-key-file <path> [--json]
+  keyhalt revoke-tag <account> --tag <tag> --signer-key-file <path> [--json]
+  keyhalt propose-admin <account> --new-admin <public-key> --signer-key-file <path> [--json]
+  keyhalt accept-admin <account> --signer-key-file <path> [--json]
+  keyhalt cancel-admin <account> --signer-key-file <path> [--json]
+  keyhalt recover <account> --new-admin <public-key> --signer-key-file <path> [--json]
+  keyhalt execute <account> --method <name> [--args '<json>'] [--gas <tgas>] [--receiver <account>] --signer-key-file <path> [--json]
 
 Pre-signed freeze:
-  fleet freeze <account> --signer-key-file <path> --pre-sign --out <file> [--json]
-  fleet unfreeze <account> --signer-key-file <path> --pre-sign --out <file> [--json]
-  fleet freeze <account> --submit-signed <file> [--json]
-  fleet unfreeze <account> --submit-signed <file> [--json]
+  keyhalt freeze <account> --signer-key-file <path> --pre-sign --out <file> [--json]
+  keyhalt unfreeze <account> --signer-key-file <path> --pre-sign --out <file> [--json]
+  keyhalt freeze <account> --submit-signed <file> [--json]
+  keyhalt unfreeze <account> --submit-signed <file> [--json]
 
   --pre-sign signs the call locally and writes it to a file without sending
   it. --submit-signed broadcasts a file written by --pre-sign. A signed file
   holds a signature, not a secret key; treat it as a bearer artifact.
 
 Mode B multisig admin (2-of-2; agent's admin is the multisig contract):
-  fleet admin request freeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
-  fleet admin request unfreeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
-  fleet admin confirm <agent> <request-id> --signer-key-file <member.json> [--rpc-url URL] [--json]
-  fleet admin status <agent> [--rpc-url URL] [--json]
+  keyhalt admin request freeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
+  keyhalt admin request unfreeze <agent> --signer-key-file <member.json> [--rpc-url URL] [--json]
+  keyhalt admin confirm <agent> <request-id> --signer-key-file <member.json> [--rpc-url URL] [--json]
+  keyhalt admin status <agent> [--rpc-url URL] [--json]
 
   "request" proposes a freeze/unfreeze through the agent's multisig admin and
   prints the new request id. "confirm" signs the pending request; reaching
@@ -117,13 +117,13 @@ function parseArgs(argv: string[]): ParsedArgs {
     const inline = equals === -1 ? undefined : body.slice(equals + 1);
     if (BOOLEAN_FLAGS.has(name)) {
       if (inline !== undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", `--${name} does not take a value`);
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", `--${name} does not take a value`);
       }
       flags.set(name, true);
       continue;
     }
     if (!VALUE_FLAGS.has(name)) {
-      throw new FleetError("FLEET_E_BAD_ARGS", `unknown flag --${name}`);
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", `unknown flag --${name}`);
     }
     if (inline !== undefined) {
       flags.set(name, inline);
@@ -131,7 +131,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     }
     const value = argv[index + 1];
     if (value === undefined || value.startsWith("--")) {
-      throw new FleetError("FLEET_E_BAD_ARGS", `--${name} requires a value`);
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", `--${name} requires a value`);
     }
     flags.set(name, value);
     index += 1;
@@ -147,7 +147,7 @@ function flagString(args: ParsedArgs, name: string): string | undefined {
 function requireFlag(args: ParsedArgs, name: string): string {
   const value = flagString(args, name);
   if (value === undefined || value.length === 0) {
-    throw new FleetError("FLEET_E_BAD_ARGS", `missing required --${name}`);
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", `missing required --${name}`);
   }
   return value;
 }
@@ -166,18 +166,18 @@ function readSignerSecret(path: string): string {
   const absolute = realpathSync(resolve(path));
   const stat = lstatSync(absolute);
   if (!stat.isFile()) {
-    throw new FleetError("FLEET_E_BAD_ARGS", "signer key path is not a file");
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "signer key path is not a file");
   }
   if ((stat.mode & 0o077) !== 0) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signer key file must be mode 600 (no group or world permissions)",
     );
   }
   const root = gitRootFor(dirname(absolute));
   if (root !== null) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signer key file must live outside a git repository",
     );
   }
@@ -188,14 +188,14 @@ function readSignerSecret(path: string): string {
     try {
       parsed = JSON.parse(text) as Record<string, unknown>;
     } catch {
-      throw new FleetError("FLEET_E_BAD_ARGS", "signer key JSON is malformed");
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "signer key JSON is malformed");
     }
     const candidate = parsed.secret_key ?? parsed.private_key;
     secret = typeof candidate === "string" ? candidate : "";
   }
   if (!/^(ed25519|secp256k1):[1-9A-HJ-NP-Za-km-z]+$/.test(secret)) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signer key file must contain a NEAR secret_key or private_key",
     );
   }
@@ -214,18 +214,18 @@ function readSignerIdentity(path: string): SignerIdentity {
   const absolute = realpathSync(resolve(path));
   const stat = lstatSync(absolute);
   if (!stat.isFile()) {
-    throw new FleetError("FLEET_E_BAD_ARGS", "signer key path is not a file");
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "signer key path is not a file");
   }
   if ((stat.mode & 0o077) !== 0) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signer key file must be mode 600 (no group or world permissions)",
     );
   }
   const root = gitRootFor(dirname(absolute));
   if (root !== null) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signer key file must live outside a git repository",
     );
   }
@@ -237,7 +237,7 @@ function readSignerIdentity(path: string): SignerIdentity {
     try {
       parsed = JSON.parse(text) as Record<string, unknown>;
     } catch {
-      throw new FleetError("FLEET_E_BAD_ARGS", "signer key JSON is malformed");
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "signer key JSON is malformed");
     }
     const candidate = parsed.secret_key ?? parsed.private_key;
     secret = typeof candidate === "string" ? candidate : "";
@@ -248,8 +248,8 @@ function readSignerIdentity(path: string): SignerIdentity {
         : null;
   }
   if (!/^(ed25519|secp256k1):[1-9A-HJ-NP-Za-km-z]+$/.test(secret)) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "signer key file must contain a NEAR secret_key or private_key",
     );
   }
@@ -258,12 +258,12 @@ function readSignerIdentity(path: string): SignerIdentity {
 
 function signerPath(args: ParsedArgs): string {
   const fromFlag = flagString(args, "signer-key-file");
-  const fromEnv = process.env.FLEET_SIGNER_KEY_FILE;
+  const fromEnv = process.env.KEYHALT_SIGNER_KEY_FILE;
   const path = fromFlag ?? fromEnv;
   if (path === undefined || path.length === 0) {
-    throw new FleetError(
-      "FLEET_E_NO_SIGNER",
-      "this command needs --signer-key-file (or FLEET_SIGNER_KEY_FILE)",
+    throw new KeyhaltError(
+      "KEYHALT_E_NO_SIGNER",
+      "this command needs --signer-key-file (or KEYHALT_SIGNER_KEY_FILE)",
     );
   }
   return path;
@@ -271,19 +271,19 @@ function signerPath(args: ParsedArgs): string {
 
 function rpcUrl(args: ParsedArgs): string {
   if (process.env.NEAR_MAINNET) {
-    throw new FleetError(
-      "FLEET_E_MAINNET",
-      "FLEET is testnet-only; NEAR_MAINNET is refused",
+    throw new KeyhaltError(
+      "KEYHALT_E_MAINNET",
+      "Keyhalt is testnet-only; NEAR_MAINNET is refused",
     );
   }
   const url =
     flagString(args, "rpc-url") ??
-    process.env.FLEET_RPC_URL ??
+    process.env.KEYHALT_RPC_URL ??
     DEFAULT_TESTNET_RPC;
   if (/mainnet/i.test(url)) {
-    throw new FleetError(
-      "FLEET_E_MAINNET",
-      "FLEET is testnet-only; mainnet RPC URLs are refused",
+    throw new KeyhaltError(
+      "KEYHALT_E_MAINNET",
+      "Keyhalt is testnet-only; mainnet RPC URLs are refused",
     );
   }
   return url;
@@ -293,18 +293,18 @@ function clientFor(
   args: ParsedArgs,
   accountId: string,
   needSigner: boolean,
-): ReturnType<typeof createFleetClient> {
+): ReturnType<typeof createKeyhaltClient> {
   const options = {
     rpcUrl: rpcUrl(args),
     accountId,
   };
   if (needSigner) {
-    return createFleetClient({
+    return createKeyhaltClient({
       ...options,
       signer: readSignerSecret(signerPath(args)),
     });
   }
-  return createFleetClient(options);
+  return createKeyhaltClient(options);
 }
 
 function jsonReplacer(_key: string, value: unknown): unknown {
@@ -323,7 +323,7 @@ let currentCommand = "";
 let currentAccount: string | null = null;
 let jsonMode = false;
 
-function printInventory(inventory: FleetInventory): void {
+function printInventory(inventory: KeyhaltInventory): void {
   const state = inventory.state;
   human(`account: ${inventory.accountId}`);
   human(`contract: ${state.contractVersion}`);
@@ -356,20 +356,20 @@ function printInventory(inventory: FleetInventory): void {
   );
 }
 
-function printTx(command: string, result: FleetTxResult): void {
+function printTx(command: string, result: KeyhaltTxResult): void {
   human(
     `${command}: OK tx=${result.txHash} block=${result.blockHeight} gas=${result.gasBurnt}`,
   );
 }
 
-async function readInventory(accountId: string, args: ParsedArgs): Promise<FleetInventory> {
+async function readInventory(accountId: string, args: ParsedArgs): Promise<KeyhaltInventory> {
   return clientFor(args, accountId, false).getInventory();
 }
 
 async function commandInventory(args: ParsedArgs): Promise<void> {
   const accountId = args.positionals[1];
   if (accountId === undefined) {
-    throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
   }
   currentAccount = accountId;
   const inventory = await readInventory(accountId, args);
@@ -383,7 +383,7 @@ async function commandInventory(args: ParsedArgs): Promise<void> {
 async function commandVerify(args: ParsedArgs): Promise<void> {
   const accountId = args.positionals[1];
   if (accountId === undefined) {
-    throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
   }
   currentAccount = accountId;
   const client = clientFor(args, accountId, false);
@@ -417,7 +417,7 @@ async function commandVerify(args: ParsedArgs): Promise<void> {
     if (js.error) human(`error: ${js.error}`);
   }
   if (!verified) {
-    process.exitCode = fleetExitCode("FLEET_E_AUDIT");
+    process.exitCode = keyhaltExitCode("KEYHALT_E_AUDIT");
   }
 }
 
@@ -425,7 +425,7 @@ async function commandAuditExport(args: ParsedArgs): Promise<void> {
   currentCommand = "audit export";
   const accountId = args.positionals[2];
   if (accountId === undefined) {
-    throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
   }
   const out = requireFlag(args, "out");
   currentAccount = accountId;
@@ -434,8 +434,8 @@ async function commandAuditExport(args: ParsedArgs): Promise<void> {
   const entries = await client.getAuditAll();
   const verification = verifyAuditChain(entries);
   if (!verification.ok) {
-    throw new FleetError(
-      "FLEET_E_AUDIT",
+    throw new KeyhaltError(
+      "KEYHALT_E_AUDIT",
       `refusing to export an invalid audit chain: ${verification.error}`,
     );
   }
@@ -465,14 +465,14 @@ async function commandAuditExport(args: ParsedArgs): Promise<void> {
 function commandVerifyAuditFile(args: ParsedArgs): void {
   const file = args.positionals[1];
   if (file === undefined) {
-    throw new FleetError("FLEET_E_BAD_ARGS", "missing audit file path");
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing audit file path");
   }
   let raw: unknown;
   try {
     raw = JSON.parse(readFileSync(resolve(file), "utf8"));
   } catch (error) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       `cannot read audit file: ${String((error as Error).message ?? error)}`,
     );
   }
@@ -495,14 +495,14 @@ function commandVerifyAuditFile(args: ParsedArgs): void {
     if (verification.error) human(`error: ${verification.error}`);
   }
   if (!verification.ok) {
-    process.exitCode = fleetExitCode("FLEET_E_AUDIT");
+    process.exitCode = keyhaltExitCode("KEYHALT_E_AUDIT");
   }
 }
 
 async function commandWrite(
   args: ParsedArgs,
   accountId: string,
-  run: (client: ReturnType<typeof createFleetClient>) => Promise<FleetTxResult>,
+  run: (client: ReturnType<typeof createKeyhaltClient>) => Promise<KeyhaltTxResult>,
 ): Promise<void> {
   currentAccount = accountId;
   const client = clientFor(args, accountId, true);
@@ -537,14 +537,14 @@ async function resolveAdminContext(
   const client = clientFor(args, agentId, false);
   const state = await client.getState();
   if (state.mode !== "B") {
-    throw new FleetError(
-      "FLEET_E_UNSUPPORTED",
-      `${agentId} is a Mode A agent; use 'fleet freeze'/'fleet unfreeze' (single admin)`,
+    throw new KeyhaltError(
+      "KEYHALT_E_UNSUPPORTED",
+      `${agentId} is a Mode A agent; use 'keyhalt freeze'/'keyhalt unfreeze' (single admin)`,
     );
   }
   if (state.adminAccount === null || !/^[a-z0-9._-]+$/.test(state.adminAccount)) {
-    throw new FleetError(
-      "FLEET_E_UNSUPPORTED",
+    throw new KeyhaltError(
+      "KEYHALT_E_UNSUPPORTED",
       `${agentId} is Mode B but has no multisig admin account; refusing to guess`,
     );
   }
@@ -559,8 +559,8 @@ async function resolveAdminContext(
 
 function requireMemberAccountId(identity: SignerIdentity): string {
   if (identity.accountId === null) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "a Mode B admin write needs the member account id; the signer file must contain account_id (the NEAR default key-file format does)",
     );
   }
@@ -581,8 +581,8 @@ function multisigClientFor(
   const accountId = signer.accountId;
   if (accountId === null) {
     // Defensive: requireMemberAccountId runs before this in both write paths.
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "a Mode B admin write needs the member account id; the signer file must contain account_id",
     );
   }
@@ -603,8 +603,8 @@ async function adminMembershipGuard(
     .map((member) => (member.kind === "account" ? member.accountId : member.publicKey))
     .filter((value): value is string => value !== null);
   if (identity.accountId !== null && !ids.includes(identity.accountId)) {
-    throw new FleetError(
-      "FLEET_E_REJECTED",
+    throw new KeyhaltError(
+      "KEYHALT_E_REJECTED",
       `signer (${identity.accountId}) is not a member of ${context.adminAccount}; the multisig is the admin, not this key`,
     );
   }
@@ -616,14 +616,14 @@ async function commandAdminRequest(
   subcommand: string,
 ): Promise<void> {
   if (subcommand !== "freeze" && subcommand !== "unfreeze") {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "admin request expects 'freeze' or 'unfreeze'",
     );
   }
   const agentId = args.positionals[3];
   if (agentId === undefined) {
-    throw new FleetError("FLEET_E_BAD_ARGS", "missing agent account id");
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing agent account id");
   }
   currentAccount = agentId;
   currentCommand = `admin request ${subcommand}`;
@@ -656,13 +656,13 @@ async function commandAdminRequest(
 async function commandAdminConfirm(args: ParsedArgs): Promise<void> {
   const agentId = args.positionals[2];
   if (agentId === undefined) {
-    throw new FleetError("FLEET_E_BAD_ARGS", "missing agent account id");
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing agent account id");
   }
   const rawId = args.positionals[3];
   const requestId = rawId === undefined ? NaN : Number(rawId);
   if (!Number.isSafeInteger(requestId) || requestId < 0 || requestId > 1_000_000) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       "request-id must be an integer 0..1000000",
     );
   }
@@ -682,8 +682,8 @@ async function commandAdminConfirm(args: ParsedArgs): Promise<void> {
     (request.methodName === "freeze" || request.methodName === "unfreeze") &&
     call !== undefined;
   if (!targetOk) {
-    throw new FleetError(
-      "FLEET_E_REJECTED",
+    throw new KeyhaltError(
+      "KEYHALT_E_REJECTED",
       `refusing to confirm request ${requestId}: it is not a freeze/unfreeze FunctionCall for ${agentId} (receiver=${request.receiverId} method=${request.methodName ?? "none"})`,
     );
   }
@@ -714,7 +714,7 @@ async function commandAdminConfirm(args: ParsedArgs): Promise<void> {
 async function commandAdminStatus(args: ParsedArgs): Promise<void> {
   const agentId = args.positionals[2];
   if (agentId === undefined) {
-    throw new FleetError("FLEET_E_BAD_ARGS", "missing agent account id");
+    throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing agent account id");
   }
   currentAccount = agentId;
   currentCommand = "admin status";
@@ -781,13 +781,13 @@ async function commandAdminStatus(args: ParsedArgs): Promise<void> {
   }
 }
 
-function readSignedFile(path: string): FleetSignedTransaction {
+function readSignedFile(path: string): KeyhaltSignedTransaction {
   let raw: unknown;
   try {
     raw = JSON.parse(readFileSync(resolve(path), "utf8"));
   } catch (error) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       `cannot read signed transaction file: ${String((error as Error).message ?? error)}`,
     );
   }
@@ -846,8 +846,8 @@ async function commandSubmitSigned(
   const file = requireFlag(args, "submit-signed");
   const signed = readSignedFile(file);
   if (signed.method !== method) {
-    throw new FleetError(
-      "FLEET_E_BAD_ARGS",
+    throw new KeyhaltError(
+      "KEYHALT_E_BAD_ARGS",
       `signed transaction is for ${signed.method}, not ${method}`,
     );
   }
@@ -878,7 +878,7 @@ async function main(): Promise<void> {
   if (raw.includes("--version")) {
     const asJson = jsonMode;
     if (asJson) emitJson({ ok: true, command: "version", version: VERSION });
-    else process.stdout.write(`fleet ${VERSION}\n`);
+    else process.stdout.write(`keyhalt ${VERSION}\n`);
     return;
   }
   const args = parseArgs(raw);
@@ -897,14 +897,14 @@ async function main(): Promise<void> {
 
   if (first === "--version" || first === "version") {
     if (jsonMode) emitJson({ ok: true, command: "version", version: VERSION });
-    else process.stdout.write(`fleet ${VERSION}\n`);
+    else process.stdout.write(`keyhalt ${VERSION}\n`);
     return;
   }
 
   if (process.env.NEAR_MAINNET) {
-    throw new FleetError(
-      "FLEET_E_MAINNET",
-      "FLEET is testnet-only; NEAR_MAINNET is refused",
+    throw new KeyhaltError(
+      "KEYHALT_E_MAINNET",
+      "Keyhalt is testnet-only; NEAR_MAINNET is refused",
     );
   }
 
@@ -924,7 +924,7 @@ async function main(): Promise<void> {
           flags: args.flags,
         });
       }
-      throw new FleetError("FLEET_E_BAD_ARGS", "audit expects export or verify");
+      throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "audit expects export or verify");
     }
     case "verify-audit":
       return commandVerifyAuditFile(args);
@@ -932,7 +932,7 @@ async function main(): Promise<void> {
     case "unfreeze": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       const method = first === "freeze" ? "freeze" : "unfreeze";
       const submitSigned = flagString(args, "submit-signed");
@@ -949,7 +949,7 @@ async function main(): Promise<void> {
     case "grant": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       const publicKey = requireFlag(args, "key");
       const tag = requireFlag(args, "tag");
@@ -960,7 +960,7 @@ async function main(): Promise<void> {
     case "rotate": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       const oldKey = requireFlag(args, "old");
       const newKey = requireFlag(args, "new");
@@ -972,7 +972,7 @@ async function main(): Promise<void> {
     case "revoke": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       const publicKey = requireFlag(args, "key");
       return commandWrite(args, accountId, (client) =>
@@ -982,7 +982,7 @@ async function main(): Promise<void> {
     case "revoke-tag": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       const tag = requireFlag(args, "tag");
       return commandWrite(args, accountId, (client) => client.revokeTag(tag));
@@ -990,7 +990,7 @@ async function main(): Promise<void> {
     case "propose-admin": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       const newAdmin = requireFlag(args, "new-admin");
       return commandWrite(args, accountId, (client) =>
@@ -1000,21 +1000,21 @@ async function main(): Promise<void> {
     case "accept-admin": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       return commandWrite(args, accountId, (client) => client.acceptAdmin());
     }
     case "cancel-admin": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       return commandWrite(args, accountId, (client) => client.cancelAdmin());
     }
     case "recover": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       const newAdmin = requireFlag(args, "new-admin");
       return commandWrite(args, accountId, (client) =>
@@ -1024,14 +1024,14 @@ async function main(): Promise<void> {
     case "execute": {
       const accountId = args.positionals[1];
       if (accountId === undefined) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "missing account id");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "missing account id");
       }
       const method = requireFlag(args, "method");
       const payload = flagString(args, "args") ?? "{}";
       const gasText = flagString(args, "gas") ?? "10";
       const gas = Number(gasText);
       if (!Number.isSafeInteger(gas) || gas < 1 || gas > 100) {
-        throw new FleetError("FLEET_E_BAD_ARGS", "--gas must be 1..100 Tgas");
+        throw new KeyhaltError("KEYHALT_E_BAD_ARGS", "--gas must be 1..100 Tgas");
       }
       const receiver = flagString(args, "receiver") ?? accountId;
       return commandWrite(args, accountId, (client) =>
@@ -1049,25 +1049,25 @@ async function main(): Promise<void> {
       if (sub === "status") {
         return commandAdminStatus(args);
       }
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
         "admin expects 'request', 'confirm', or 'status'",
       );
     }
     default:
-      throw new FleetError(
-        "FLEET_E_BAD_ARGS",
-        `unknown command: ${first} (run fleet --help)`,
+      throw new KeyhaltError(
+        "KEYHALT_E_BAD_ARGS",
+        `unknown command: ${first} (run keyhalt --help)`,
       );
   }
 }
 
 main().catch((error: unknown) => {
-  const fleetError =
-    error instanceof FleetError
+  const keyhaltError =
+    error instanceof KeyhaltError
       ? error
-      : new FleetError(
-          "FLEET_E_UNSUPPORTED",
+      : new KeyhaltError(
+          "KEYHALT_E_UNSUPPORTED",
           String((error as Error)?.message ?? error),
         );
   if (jsonMode) {
@@ -1076,15 +1076,15 @@ main().catch((error: unknown) => {
       command: currentCommand,
       accountId: currentAccount,
       error: {
-        code: fleetError.code,
-        message: fleetError.message,
-        txHash: fleetError.txHash,
-        blockHeight: fleetError.blockHeight,
-        refusal: fleetError.refusal,
+        code: keyhaltError.code,
+        message: keyhaltError.message,
+        txHash: keyhaltError.txHash,
+        blockHeight: keyhaltError.blockHeight,
+        refusal: keyhaltError.refusal,
       },
     });
   } else {
-    human(`fleet: ${fleetError.code}: ${fleetError.message}`);
+    human(`fleet: ${keyhaltError.code}: ${keyhaltError.message}`);
   }
-  process.exit(fleetExitCode(fleetError.code));
+  process.exit(keyhaltExitCode(keyhaltError.code));
 });
