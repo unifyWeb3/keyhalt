@@ -35,7 +35,7 @@ proving test. This document is the test-plan overview; where the two overlap,
 | Gas | `scripts/gas-profile.mjs` | per-operation cost from canonical evidence | **29 groups**, 3 provision rows |
 | Repro | `scripts/repro-build.sh` + multisig source build | two clean `--locked` builds per wasm | **byte-identical** |
 | Fresh clone | `scripts/fresh-clone-test.sh`, `scripts/fresh-clone-clean-session.sh` | a clean clone can reproduce the deployed artifact with no inherited secret | **PASS** 2026-11-06; F-037 |
-| Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **40/40 verified** |
+| Claims/screener | `node scripts/check-claims.mjs` | no unsupported row | **41/41 verified** |
 
 **Sandbox note:** `near-workspaces` cannot run on the arm64 development host
 (`Unsupported platform: Linux arm64`; the newer sandbox needs Node ≥22.22.2

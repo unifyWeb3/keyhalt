@@ -19,7 +19,7 @@ NEAR-key products and the hard-custody competitors.
 | Clone, read README top 30 | **Was missing the first command.** Fixed 2026-11-07 (`README.md` adds the problem line and the `make setup` / `make verify` / `make console` start block). |
 | `make setup` style dep install | Runs clean (`npm ci` + build) in a fresh clone; console builds. |
 | `npm test` | 51/51 pass in the fresh clone. |
-| `node scripts/check-claims.mjs` | `CLAIMS 40/40 verified (40 rows)` — exits 0. |
+| `node scripts/check-claims.mjs` | `CLAIMS 41/41 verified (41 rows)` — exits 0. |
 | `./scripts/secret-scan.sh` | `SECRET SCAN: OK`. |
 | `git ls-files` for key material | none (see §D.1). |
 | Relative links in README | all resolve. |
@@ -145,7 +145,7 @@ this section was re-run after the fix.
 ## D. Claim coverage outside the three validator surfaces
 
 1. **Git sight for key material across history:** Item 7 (`git log -p` scan).
-2. **Console on-screen numbers:** from chain or CLAIMS only (footer 40/40,
+2. **Console on-screen numbers:** from chain or CLAIMS only (footer 41/41,
    snapshot block live, agent/audit numbers live). Verified visually in
    `evidence/console-v03/screenshots/` against `make claims`.
 3. **X draft / posts:** wording rules checked line by line in

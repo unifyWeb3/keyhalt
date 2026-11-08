@@ -40,7 +40,7 @@ the console check is what failed.
 | 1 | Agent-1b is **active** | `node packages/cli/dist/index.js inventory agent-1b.fleet-v03-5cff9e99.testnet --json` → `"paused": false` |
 | 2 | Agent-1b operators intact | Same inventory → `operators`: 2, both `ops-b` |
 | 3 | Audit chain verified | `fleet verify agent-1b.fleet-v03-5cff9e99.testnet --json` → `onChain: true` for a pre-take baseline |
-| 4 | Console running and healthy | `curl -sS http://127.0.0.1:4173/api/health` → `status: live`, `stale: false`, claims count visible (currently 40/40) |
+| 4 | Console running and healthy | `curl -sS http://127.0.0.1:4173/api/health` → `status: live`, `stale: false`, claims count visible (currently 41/41) |
 | 5 | RPC for the demo set to **dRPC** | `FLEET_DEMO_RPC_URL=https://near-testnet.drpc.org`; verify `node scripts/rpc-check.mjs` |
 | 6 | dRPC responsive right now | `curl -sS --max-time 10 -X POST https://near-testnet.drpc.org -H 'content-type: application/json' -d '{"jsonrpc":"2.0","id":"x","method":"status","params":[]}'` |
 | 7 | Watch file acknowledged | `tmp/console-watch.json` is append-only; the demo harness adds freeze/refusal/unfreeze tx hashes to it — that is how the refusal row appears live |
@@ -59,7 +59,7 @@ Left pane commands; right pane console at `http://127.0.0.1:4173/#/fleet`.
 
 | Time | Left: terminal | Right: console | Expected CLI output |
 | --- | --- | --- | --- |
-| 0:00–0:05 | — | Fleet: 3 agents · 10 operator keys · 0 full-access keys. Header block ticking every finalized block. Footer `Verified 40/40` | — |
+| 0:00–0:05 | — | Fleet: 3 agents · 10 operator keys · 0 full-access keys. Header block ticking every finalized block. Footer `Verified 41/41` | — |
 | 0:05–0:15 | `node packages/cli/dist/index.js inventory agent-1b.fleet-v03-5cff9e99.testnet --json` | Click agent-1b. Audit head `blockHeight` matches chain; chain `verified on chain and in the SDK` | `"paused": false`, `operators: 2` (ops-b × 2), `fullAccessKeys: 0` |
 | 0:15–0:25 | `node scripts/console-demo.mjs --hold-frozen 15 --console-url http://127.0.0.1:4173` | Agent-1b row flips to **Frozen** within one or two blocks; chip + status line show the freeze | `{"ok": true, "command": "freeze", "txHash": "<rehearsed hash>", "blockHeight": N}` |
 | 0:25–0:35 | (harness continues; narrate: "this call is refused — with the operator key") | Recent events show the frozen freeze | `{"ok": false, "error": {"code": "FLEET_E_REJECTED", "message": "controller is frozen", "txHash": "<hash>", "blockHeight": N}}` |
@@ -110,7 +110,7 @@ on screen: live reads, and the refusal is real — zoom on it at 0:35.
 
 - [ ] agent-1b active (inventory; `"paused": false`)
 - [ ] Operators present: 2 (ops-b × 2)
-- [ ] `make verify` record from this morning attached; `make claims` → 40/40
+- [ ] `make verify` record from this morning attached; `make claims` → 41/41
 - [ ] Console `api/health` → live, not stale
 - [ ] dRPC responds (cold status call), FLEET_DEMO_RPC_URL set
 - [ ] Watch file accepted as append-only; watcher resolves it (9/9)

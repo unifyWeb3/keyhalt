@@ -65,7 +65,7 @@ live. Say once, at 0:07:
 | Tag revoke | `fleet revoke-tag … --tag ops-b --json`, then `fleet inventory …` | Agent screen for the revoked agent: the `ops-b` rows leave the operator table (live console only — the draft has no revoked-agent screen; see the cut rule in §7) |
 | Audit export | `fleet audit export …`, `fleet verify-audit …` | Timeline: the **✓ verified** column, and the **Export verified export** button becomes enabled |
 | Mode B | the three-transaction multisig sequence | Agent screen for `agent-b1.fleet-modeb-748d4372.testnet`, admin row **2 of 2 · 2 owners · demo: same operator** |
-| Claims | `node scripts/check-claims.mjs` | Footer: **Verified 40/40 → CLAIMS.md** |
+| Claims | `node scripts/check-claims.mjs` | Footer: **Verified 41/41 → CLAIMS.md** |
 
 ---
 
@@ -275,7 +275,7 @@ say that both owners were the same operator.
 node scripts/check-claims.mjs
 ```
 
-Show `CLAIMS 40/40 verified`. Say:
+Show `CLAIMS 41/41 verified`. Say:
 
 > "Every claim in this demo maps to a row in CLAIMS.md and to a test or a
 > public transaction hash. Testnet only. Unaudited. Mode A is not
@@ -285,7 +285,7 @@ Show `CLAIMS 40/40 verified`. Say:
 
 ### 1:29–1:30 — End card
 
-Right pane footer: **Verified 40/40 → CLAIMS.md**. Left pane: the account id
+Right pane footer: **Verified 41/41 → CLAIMS.md**. Left pane: the account id
 and the last transaction hash of the take.
 
 ---

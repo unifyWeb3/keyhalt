@@ -33,7 +33,7 @@ key, hash or count from those files. No mock data is invented.
 
   Timeline →
 
-  Verified 40/40 · Threat model     Pixel draft · captured testnet evidence · the block counter is a stand-in
+  Verified 41/41 · Threat model     Pixel draft · captured testnet evidence · the block counter is a stand-in
 ```
 
 The table fills the viewport width. Each row carries the account, its state,

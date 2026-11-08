@@ -60,7 +60,7 @@ Notes on the JSON:
 ## Agent-done checklist (before the human touches the form)
 
 - [x] Repository builds clean: `make verify` PASS at merge commits; fresh clone PASS (latest run pending on commit `67982da`)
-- [x] Claims: 40/40 `VERIFIED`; `node scripts/check-claims.mjs` exits 0
+- [x] Claims: 41/41 `VERIFIED`; `node scripts/check-claims.mjs` exits 0
 - [x] Secret scan clean (tree + evidence; see Item 7 output)
 - [x] README honest at the top: problem, the first command, trust limits
 - [x] `docs/HOSTILE_REVIEW.md`, `docs/HOSTING_RESEARCH.md`, `docs/CONSOLE_SHOT_LIST.md` finalized
