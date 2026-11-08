@@ -1,0 +1,53 @@
+{
+  "run": "rehearsal 2 (2026-11-08)",
+  "date_utc": "2026-11-08T00:52:22.660Z",
+  "ok": true,
+  "exit_code": 0,
+  "freeze": {
+    "txHash": "7qWaPLLrifDNVjUfVABJkSX57tGYkfoPrwJGH6t4vgZP",
+    "blockHeight": 276705480,
+    "gasBurnt": "3346941716433"
+  },
+  "refusedExecute": {
+    "txHash": "8R1T89ZmmTnwSgiPHxnAxoGCNZDuTN5NbGEemS3rbVMq",
+    "blockHeight": 276705494,
+    "code": "FLEET_E_REJECTED",
+    "message": "controller is frozen"
+  },
+  "unfreeze": {
+    "txHash": "Car4dByo8QEbwGFgP1C7Y69af3pCRihVKAsa7Ht3nypJ",
+    "blockHeight": 276705506,
+    "gasBurnt": "3381742291006"
+  },
+  "console_summary": {
+    "headBlock": 276705510,
+    "events": 47,
+    "refused": 7,
+    "blocks": 630007,
+    "refusedRow": {
+      "event": "execute while frozen",
+      "result": "refused",
+      "blockHeight": 276705494,
+      "source": "receipt"
+    }
+  },
+  "timeline_saw_tx": "8R1T89ZmmTnwSgiPHxnAxoGCNZDuTN5NbGEemS3rbVMq",
+  "timings": [
+    {
+      "step": "start"
+    },
+    {
+      "step": "console_visible_frozen",
+      "elapsed_ms": 7219
+    },
+    {
+      "step": "console_visible_active",
+      "elapsed_ms": 25243
+    },
+    {
+      "step": "demo_exit_0",
+      "elapsed_ms": 27323
+    }
+  ],
+  "total_ms": 27326
+}
