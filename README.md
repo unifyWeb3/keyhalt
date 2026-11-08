@@ -584,7 +584,7 @@ transaction hash, not by trusting the generator.
 | `borsh` | `1.8.1` | controller | MIT OR Apache-2.0 |
 | `serde` | `1` (derive) | controller | MIT OR Apache-2.0 |
 | `sha2` | `0.11` | controller | MIT OR Apache-2.0 |
-| `near-api-js` | `7.4.0` | testnet harness scripts | MIT |
+| `near-api-js` | `7.4.0` | SDK, CLI, console, testnet harness | MIT |
 | `near-api-js` | `5.1.1` | integration suite | MIT |
 | `near-workspaces` | `5.0.0` | integration suite | MIT |
 | `typescript` | `5.9.3` | build | Apache-2.0 |

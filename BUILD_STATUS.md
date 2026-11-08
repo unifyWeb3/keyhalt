@@ -21,7 +21,8 @@ Judging instructions (Q-017) screen reproducibility before humans score.
 | Name options | presented, recommendation recorded; rename not applied |
 | X post draft | `docs/X_POST_DRAFT.md` |
 | Evidence | `evidence/console-v03/*`, `evidence/modeb-v03/cli-admin-run.json` |
-| item 8 — live research | HACKATHON.md re-fetched 2026-11-08 (this file's date) |
+| item 7 — pre-publication audit | git-history secret scan clean; ls-files credential scan clean; builder-name grep clean (public references sanitized); LICENSE present; AI-assistance list updated; Q-003 baseline section current; hackathon-submission tag plan complete; file modes 644/755 |
+| item 8 — live research | HACKATHON.md re-fetched 2026-11-08; diff logged; competitor named in brief not locatable (docs/LIVE_RESEARCH.md §3); NEAR NEP-611 gas keys / NEP-642 account cost / HSP-027 logged, no claims affected |
 
 ## Open / blocked (requires the human)
 

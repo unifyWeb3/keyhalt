@@ -6,7 +6,7 @@ document does not soften a finding to make a submission pass.
 
 **Reviewer stance:** (1) a screening agent with no context that clones the
 repo and tries to verify everything; (2) a sceptical security judge who knows
-NEAR-key products and the contestants (OutLayer et al.).
+NEAR-key products and the hard-custody competitors.
 
 **Tree under review:** `9c68961` (and `ba1b65b`).
 
@@ -49,20 +49,20 @@ independently custodied in this evidence, and unaudited — and it is
 **documented** this way on the README screen and in the X draft. No claim
 elsewhere contradicts it.
 
-**B1-3 — "A hostile judge spots competitor OutLayer and asks what is new."
+**B1-3 — "A hostile judge spots a hard-custody competitor and asks what is new."
 (Info — one-sentence answer, already in `docs/RED_TEAM.md` RT-02)** FLEET
 changes no custody: it governs the **native FunctionCall keys** on accounts
 the team already owns; freeze revokes execution authority in one
-transaction without moving funds. OutLayer (FastNEAR; Verifiable compute in
-TDX enclaves, multi-chain wallets, MPC-backed keys) targets agent execution;
-FLEET targets the account's native key lifecycle and the freeze stop switch.
+transaction without moving funds. Enclave-based competitors (TDX computing,
+multi-chain wallets, MPC-backed keys) target agent execution; FLEET targets
+the account’s native key lifecycle and the freeze stop switch.
 They are complementary, not substitutes. **No repository or name is copied or
 traded on.** No wording in this repo names a competitor negatively.
 
-**B1-4 — "SpactVault?" (Info — unverifiable; do not fabricate)** No public
-project, org, repository, or account by that exact name can be found as of
-2026-11-07. It is treated as the hard-custody class (enclave/MPC vaults) that
-OutLayer exemplifies. The honest answer to a judge is: position against the
+**B1-4 — "Unknown hard-custody project?" (Info — unverifiable; do not
+fabricate)** A hard-custody project the judge references cannot be found by
+its given name as of 2026-11-07. It is treated as belonging to the
+enclave/MPC vault class that the known comparator exemplifies. The honest answer to a judge is: position against the
 class on the mechanism (native keys, one-tx freeze, tag revoke, hash-chained
 audit), never against a specific unseen competitor. If the judge has its URL,
 the comparison tightens; nothing in this review changes if it does not.

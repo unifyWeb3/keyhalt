@@ -25,15 +25,15 @@ screenshot.
 **Evidence/test:** T-SC-01, T-SC-05, `scripts/fresh-clone-test.sh`.
 **Owner/date:** builder, before every release candidate; final on Nov 13.
 
-### RT-02 — A judge says “OutLayer does this”
+### RT-02 — A judge says “an enclave competitor does this”
 
-**Scenario:** The judge compares FLEET to OutLayer and asks what is new.
+**Scenario:** The judge compares FLEET to an enclave-based competitor on the same chain and asks what is new.
 **Why it hurts:** Originality is a judging criterion; a “me-too custody app”
 answer loses.
 **Response:** One defensible sentence: “FLEET controls the **native NEAR access
 keys** on accounts the team already owns; it is not a custody contract and does
 not move assets into a new trust boundary.” Show the native-key inventory and
-the exact tag revoke. Do not claim OutLayer is bad or insecure.
+the exact tag revoke. Do not claim a competitor is bad or insecure.
 **Evidence/test:** T-I-09 (inventory vs native keys), T-I-08 (tag revoke);
 `research/FLEET_EDGE.md` in the separate research workspace.
 **Owner/date:** builder, in README and demo; Nov 13.
