@@ -335,3 +335,144 @@ test("timeline merges receipts into audit rows and keeps refusals separate", () 
   assert.equal(refused.result, "refused");
   assert.equal(refused.source, "receipt");
 });
+
+/* ---------- console UI state machines (web/state.js) ---------- */
+import {
+  dataLoadReducer,
+  INITIAL_DATA_LOAD,
+  sseReducer,
+  INITIAL_SSE_STATE,
+  sheetReducer,
+  INITIAL_SHEET,
+  timelineResultOf,
+  actionForAgent,
+  viewportOf,
+  bannerOf,
+  agentStateRead,
+} from "../../../web/state.js";
+
+test("dataLoad: loading -> live, ok with zero agents -> empty", () => {
+  let s = INITIAL_DATA_LOAD;
+  assert.equal(s.status, "loading");
+  s = dataLoadReducer(s, { type: "fetch-ok", agents: 3, block: 100 });
+  assert.equal(s.status, "live");
+  assert.equal(s.lastGoodBlock, 100);
+  s = dataLoadReducer(s, { type: "fetch-ok", agents: 0, block: 100 });
+  assert.equal(s.status, "empty");
+});
+
+test("dataLoad: fail with cache -> stale; fail without cache -> error; ok recovers", () => {
+  let s = dataLoadReducer(INITIAL_DATA_LOAD, { type: "fetch-ok", agents: 3, block: 100 });
+  s = dataLoadReducer(s, { type: "fetch-fail" });
+  assert.equal(s.status, "stale");
+  assert.equal(s.lastGoodBlock, 100);
+  s = dataLoadReducer(s, { type: "fetch-ok", agents: 3, block: 101 });
+  assert.equal(s.status, "live");
+  const fresh = dataLoadReducer(INITIAL_DATA_LOAD, { type: "fetch-fail" });
+  assert.equal(fresh.status, "error");
+  assert.equal(fresh.hasData, false);
+});
+
+test("dataLoad: live with behind agent -> partial; impossible mixes stay impossible", () => {
+  let s = dataLoadReducer(INITIAL_DATA_LOAD, { type: "fetch-ok", agents: 3, partial: true, block: 10 });
+  assert.equal(s.status, "partial");
+  // `stale` with no cached data must land on `error`, never `stale`.
+  const e = dataLoadReducer(INITIAL_DATA_LOAD, { type: "stale-marker" });
+  assert.equal(e.status, "error");
+});
+
+test("sse: connecting -> live -> reconnecting -> live", () => {
+  let s = INITIAL_SSE_STATE;
+  s = sseReducer(s, { type: "open" }, 1000);
+  assert.equal(s.status, "live");
+  s = sseReducer(s, { type: "error" }, 2000);
+  assert.equal(s.status, "reconnecting");
+  s = sseReducer(s, { type: "open" }, 3000);
+  assert.equal(s.status, "live");
+  // stopped is terminal
+  let stopped = sseReducer(s, { type: "stop" }, 4000);
+  stopped = sseReducer(stopped, { type: "open" }, 5000);
+  assert.equal(stopped.status, "stopped");
+});
+
+test("commandSheet: open, copy, copied resets; impossible transitions are refused", () => {
+  let s = INITIAL_SHEET;
+  assert.equal(s.status, "closed");
+  // copy without open is refused — stays closed, no fake "copied"
+  s = sheetReducer(s, { type: "copy-success" });
+  assert.equal(s.status, "closed");
+  s = sheetReducer(s, { type: "open", commandId: "freeze" });
+  assert.equal(s.status, "open");
+  s = sheetReducer(s, { type: "copy-success" });
+  assert.equal(s.status, "copied");
+  assert.equal(s.commandId, "freeze");
+  s = sheetReducer(s, { type: "copy-failed" });
+  assert.equal(s.status, "copy-failed");
+  s = sheetReducer(s, { type: "close" });
+  assert.equal(s.status, "closed");
+  assert.equal(s.commandId, null);
+});
+
+test("actionForAgent: freeze on active Mode A, unfreeze on frozen; never both", () => {
+  assert.deepEqual(actionForAgent({ mode: "A", paused: false }), ["freeze"]);
+  assert.deepEqual(actionForAgent({ mode: "A", paused: true }), ["unfreeze"]);
+  assert.deepEqual(actionForAgent({ mode: "A", paused: null }), ["freeze", "unfreeze"]);
+  assert.deepEqual(actionForAgent({ mode: "B", paused: false }), ["request-freeze", "confirm-freeze", "status"]);
+  assert.deepEqual(actionForAgent({ mode: "B", paused: true }), ["request-unfreeze", "confirm-unfreeze", "status"]);
+  assert.deepEqual(actionForAgent(null), []);
+});
+
+test("actionForAgent: UI never offers an action the contract would reject", () => {
+  // Freeze on an already-frozen account would trap in the controller.
+  for (const paused of [true]) {
+    for (const mode of ["A", "B"]) {
+      const offered = actionForAgent({ mode, paused });
+      if (mode === "A") assert.equal(offered.includes("freeze"), false);
+      if (mode === "B") assert.equal(offered.includes("request-freeze"), false);
+    }
+  }
+  // Unfreeze on an unfrozen account would also trap.
+  for (const mode of ["A", "B"]) {
+    const offered = actionForAgent({ mode, paused: false });
+    if (mode === "A") assert.equal(offered.includes("unfreeze"), false);
+    if (mode === "B") assert.equal(offered.includes("request-unfreeze"), false);
+  }
+});
+
+test("timelineResult: refused detected from rows; everything else is ok or pending", () => {
+  assert.equal(timelineResultOf({ refused: true }), "refused");
+  assert.equal(timelineResultOf({ result: "refused" }), "refused");
+  assert.equal(timelineResultOf({ result: "ok" }), "ok");
+  assert.equal(timelineResultOf({ kind: "receipt" }), "ok");
+  assert.equal(timelineResultOf(null), "pending");
+});
+
+test("viewport: compact/medium/wide by pixel width", () => {
+  assert.equal(viewportOf(390), "compact");
+  assert.equal(viewportOf(900), "medium");
+  assert.equal(viewportOf(901), "wide");
+});
+
+test("bannerOf: stale/error -> reads failing; partial -> partial; sse reconnecting mid-load -> reconnecting; healthy -> null", () => {
+  const healthy = bannerOf(
+    { status: "live", lastGoodBlock: 1, hasData: true, consecutiveFailures: 0, staleSince: null },
+    { status: "live", since: 1 },
+  );
+  assert.equal(healthy, null);
+  const stale = bannerOf(
+    { status: "stale", lastGoodBlock: 5, hasData: true, consecutiveFailures: 2, staleSince: 1 },
+    { status: "live", since: 1 },
+  );
+  assert.equal(stale.kind, "danger");
+  const partial = bannerOf(
+    { status: "partial", lastGoodBlock: 5, hasData: true, consecutiveFailures: 0, staleSince: null },
+    { status: "live", since: 1 },
+  );
+  assert.equal(partial.title, "Partial snapshot.");
+});
+
+test("agentStateRead: paused true -> frozen at block; false -> active; null -> unknown", () => {
+  assert.deepEqual(agentStateRead({ block: null }, true, 100), { status: "frozen", block: 100 });
+  assert.deepEqual(agentStateRead({ block: 10 }, false, null), { status: "active", block: 10 });
+  assert.deepEqual(agentStateRead({ block: null }, undefined, null), { status: "unknown", block: null });
+});

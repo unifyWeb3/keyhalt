@@ -1,903 +1,642 @@
 /**
- * FLEET console frontend. Reads only the local read-only API.
- *
- * The browser never talks to an RPC, never sees a key, and never calls a write
- * route. Every number rendered comes from CLAIMS.md through the API or from a
- * live chain read pinned by the server.
+ * Console frontend — derives every frame from the machines in state.js.
+ * No fetches to RPCs. No keys. No writes. The command sheet only shows a
+ * pre-filled CLI command for the user's own shell; nothing here signs.
  */
 
-const $ = (id) => document.getElementById(id);
+import {
+  INITIAL_DATA_LOAD,
+  INITIAL_SHEET,
+  INITIAL_SSE_STATE,
+  actionForAgent,
+  bannerOf,
+  sheetReducer,
+  dataLoadReducer,
+  sseReducer,
+  agentStateRead,
+  viewportOf,
+  timelineResultOf,
+} from "./state.js";
+import { BRAND, BRAND_LABEL } from "./brand.js";
 
-const ICONS = {
-  lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-  unlock:
-    '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
-  check: '<path d="M20 6 9 17l-5-5"/>',
-  arrowRight: '<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
-  arrowLeft: '<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
-  warning:
-    '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
-  refresh:
-    '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
-  key: '<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>',
-  block:
-    '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/><path d="m3 18 9 5 9-5"/>',
-  shield:
-    '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
-  copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
-  clock:
-    '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
-  terminal:
-    '<polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/>',
-  search:
-    '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+const $ = (id) => document.getElementById(id);
+const esc = (v) =>
+  String(v ?? "").replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
+const fmtInt = (v) =>
+  v == null || !Number.isFinite(Number(v)) ? "—" : new Intl.NumberFormat("en-US").format(Number(v));
+const trunc8_6 = (v) => {
+  if (typeof v !== "string" || v.length <= 16) return v ?? "—";
+  return `${v.slice(0, 8)}…${v.slice(-6)}`;
+};
+const fmtKey = (key) => {
+  if (typeof key !== "string") return "—";
+  const prefix = "ed25519:";
+  if (!key.startsWith(prefix)) return trunc8_6(key);
+  const body = key.slice(prefix.length);
+  return `ed25519:${trunc8_6(body)}`;
+};
+const shortHash = trunc8_6;
+const timeFmt = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 19).replace("T", " ") + "Z";
+};
+const txUrl = (hash) => `https://testnet.nearblocks.io/txns/${encodeURIComponent(hash)}`;
+const accountUrl = (id) => `https://testnet.nearblocks.io/account/${encodeURIComponent(id)}`;
+const icon = (name) => {
+  switch (name) {
+    case "lock": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+    case "unlock": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>';
+    case "check": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+    case "alert": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';
+    case "copy": return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>';
+    default: return "";
+  }
 };
 
-function icon(name, extraClass = "") {
-  const body = ICONS[name] ?? ICONS.block;
-  return `<svg class="ic ${extraClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
-}
-
-function esc(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (char) => {
-    switch (char) {
-      case "&": return "&amp;";
-      case "<": return "&lt;";
-      case ">": return "&gt;";
-      case '"': return "&quot;";
-      default: return "&#39;";
-    }
-  });
-}
-
-function fmtInt(value) {
-  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "—";
-  return new Intl.NumberFormat("en-US").format(Number(value));
-}
-
-function fmtBlock(value) {
-  if (value === null || value === undefined || !Number.isFinite(Number(value))) return "—";
-  return String(value);
-}
-
-function shortHash(hash, head = 10, tail = 6) {
-  if (typeof hash !== "string" || hash.length === 0) return "—";
-  if (hash.length <= head + tail + 1) return hash;
-  return `${hash.slice(0, head)}…${hash.slice(-tail)}`;
-}
-
-function txUrl(hash) {
-  return `https://testnet.nearblocks.io/txns/${encodeURIComponent(hash)}`;
-}
-
-function actionLabel(action) {
-  switch (action) {
-    case "init": return "init";
-    case "freeze": return "freeze";
-    case "unfreeze": return "unfreeze";
-    case "execute": return "operator execute";
-    case "grant_operator": return "grant operator";
-    case "revoke_operator": return "revoke operator";
-    case "rotate_operator": return "rotate operator";
-    case "propose_admin": return "propose admin";
-    case "cancel_admin": return "cancel admin";
-    case "recover_confirmed": return "recover admin";
-    case "accept_admin": return "accept admin";
-    case "revoke_tag": return "revoke tag";
-    default: return String(action ?? "event").replaceAll("_", " ");
-  }
-}
-
 const state = {
+  route: { name: "fleet", account: null },
   fleet: null,
   agent: null,
   timeline: null,
-  route: { name: "fleet", account: null },
+  dataLoad: { ...INITIAL_DATA_LOAD },
+  sse: { ...INITIAL_SSE_STATE },
+  sheet: { ...INITIAL_SHEET },
+  loadGuard: { fleet: false, agent: false, timeline: false, summary: false },
+  timers: new Map(),
   lastBlock: null,
-  lastLiveAt: null,
-  lastDataAt: null,
-  // True when a data fetch failed after we had a good one, independent of
-  // the SSE block stream. The stream can keep ticking while data is down.
-  dataStale: false,
-  connection: "connecting",
-  reconnectSince: null,
-  timers: { fleet: null, agent: null, timeline: null, retry: null },
-  loading: { fleet: false, agent: false, timeline: false },
-  timelineLimit: 20,
-  sheetCommand: null,
+  fleetFingerprint: null,
+  claims: null,
+  timelineExpanded: false,
 };
 
-/* ---------- API ---------- */
+const seenReceipts = new Set();
+
+/* ---------- fetch ---------- */
 
 async function getJSON(path) {
-  const response = await fetch(path, {
-    headers: { accept: "application/json" },
-    cache: "no-store",
-  });
+  const response = await fetch(path, { headers: { accept: "application/json" }, cache: "no-store" });
   let body = {};
-  try {
-    body = await response.json();
-  } catch {
-    body = {};
-  }
-  if (!response.ok) {
-    const error = new Error(body.message ?? `HTTP ${response.status}`);
-    error.code = body.code ?? "HTTP_ERROR";
-    error.status = response.status;
-    throw error;
-  }
+  try { body = await response.json(); } catch { body = {}; }
+  if (!response.ok) { const e = new Error(body.message ?? `HTTP ${response.status}`); e.code = body.code; e.status = response.status; throw e; }
   return body;
+}
+
+/* ---------- footer / header ---------- */
+
+function updateNet(block) {
+  if (Number.isFinite(Number(block)) && (state.lastBlock === null || Number(block) >= state.lastBlock)) {
+    state.lastBlock = Number(block);
+    $("block").textContent = String(state.lastBlock);
+  } else if (state.lastBlock === null) {
+    $("block").textContent = "—";
+  }
+  $("net").dataset.stale = state.dataLoad.status === "stale" || state.dataLoad.status === "error" ? "true" : "false";
+}
+
+async function loadClaimsOnce() {
+  if (state.claims !== null) return;
+  try {
+    const health = await getJSON("/api/health");
+    if (health.claims?.total > 0) {
+      state.claims = health.claims;
+      $("claims-link").textContent = `${fmtInt(health.claims.verified)}/${fmtInt(health.claims.total)}`;
+    }
+  } catch {
+    // Footer ticket stays out of the way if health fails; it is optional.
+  }
+}
+
+function applyBanner() {
+  const banner = $("banner");
+  const spot = bannerOf(state.dataLoad, state.sse);
+  if (spot === null) {
+    banner.hidden = true;
+    banner.innerHTML = "";
+    $("net").dataset.stale = "false";
+    return;
+  }
+  $("banner").hidden = false;
+  $("banner").className = `banner${spot.kind === "danger" ? " danger" : ""}`;
+  if (state.dataLoad.status === "stale" || state.dataLoad.status === "error") {
+    $("banner").innerHTML = `${icon("alert")}<span class="banner-msg">Reads failing · last good block <span class="mono">${esc(state.dataLoad.lastGoodBlock ?? "—")}</span></span>`;
+  } else {
+    $("banner").innerHTML = `${icon("alert")}<span class="banner-msg">${esc(spot.title ?? "Reconnecting")}</span>`;
+  }
+}
+
+function setRowFlash(rowEl) {
+  rowEl.classList.add("flash");
+  rowEl.addEventListener("animationend", () => rowEl.classList.remove("flash"), { once: true });
+}
+function setChipFlash(chipEl) {
+  chipEl.classList.add("flash");
+  chipEl.addEventListener("animationend", () => chipEl.classList.remove("flash"), { once: true });
+}
+
+/* ---------- helpers ---------- */
+
+function copyButton(text, label = "Copy") {
+  return `<button class="copy-icon" type="button" data-copy="${esc(text)}" aria-label="${esc(label)}" title="${esc(label)}">${icon("copy")}</button>`;
+}
+function hashSpan(full, { link } = {}) {
+  const short = fmtKey(full);
+  const core = `<span class="mono trunc" title="${esc(full)}">${esc(short)}</span>`;
+  if (link) return `<a href="${esc(link)}" rel="noopener noreferrer" target="_blank" class="mono">${core}</a>${copyButton(full, "Copy transaction hash")}`;
+  return `<span class="mono hash">${core}${copyButton(full, "Copy hash")}</span>`;
+}
+function fullTxn(hash) {
+  if (!hash) return "";
+  return `<a href="${esc(txUrl(hash))}" class="mono" rel="noopener noreferrer" target="_blank">${esc(trunc8_6(hash))}</a>`;
+}
+
+/* ---------- fleet ---------- */
+
+function renderFleet(data, changedIds) {
+  const body = $("fleet-body");
+  const meta = $("fleet-meta");
+  meta.textContent =
+    data.status === "loading"
+      ? "reading…"
+      : `${fmtInt(data.totals?.agents)} agents · ${data.totals?.operatorKeys == null ? "—" : fmtInt(data.totals.operatorKeys)} operators · ${data.totals?.fullAccessKeys == null ? "—" : fmtInt(data.totals.fullAccessKeys)} full-access`;
+
+  if (data.status === "loading") {
+    body.innerHTML = `<div class="skeleton-table" aria-hidden="true"><span class="skeleton skeleton-wide"></span><span class="skeleton"></span><span class="skeleton skeleton-wide"></span><span class="skeleton"></span><span class="skeleton skeleton-wide"></span><span class="skeleton"></span></div>`;
+    body.setAttribute("aria-busy", "true");
+    return;
+  }
+
+  const agents = Array.isArray(data.agents) ? data.agents : [];
+  if (data.status === "empty" || agents.length === 0) {
+    body.innerHTML = `<div class="state-flat"><h2>No agents</h2><p>Set <code>FLEET_CONSOLE_ACCOUNTS</code> and restart.</p></div>`;
+    body.setAttribute("aria-busy", "false");
+    return;
+  }
+
+  const rows = agents.map((agent) => {
+    const stateCell =
+      agent.state === "frozen"
+        ? '<span class="state frozen"><span class="dot"></span>Frozen</span>'
+        : agent.state === "active"
+          ? '<span class="state active"><span class="dot"></span>Active</span>'
+          : '<span class="state unknown"><span class="dot"></span>Unknown</span>';
+    const action = actionForAgent({ mode: agent.mode ?? "A", paused: agent.paused });
+    let actionCell = "";
+    if (action.includes("freeze")) actionCell = `<button class="action-btn danger" type="button" data-action="freeze" data-agent="${esc(agent.accountId)}" data-mode="A">Freeze</button>`;
+    else if (action.includes("unfreeze")) actionCell = `<button class="action-btn" type="button" data-action="unfreeze" data-agent="${esc(agent.accountId)}" data-mode="A">Unfreeze</button>`;
+    else if (action.includes("request-freeze")) actionCell = `<button class="action-btn danger" type="button" data-action="request-freeze" data-agent="${esc(agent.agentId ?? agent.accountId)}" data-mode="B">Request freeze</button>`;
+    else if (action.includes("request-unfreeze")) actionCell = `<button class="action-btn" type="button" data-action="request-unfreeze" data-agent="${esc(agent.agentId ?? agent.accountId)}" data-mode="B">Request unfreeze</button>`;
+    const last = agent.lastEvent;
+    const lastEvent = last
+      ? `<span class="mono">${esc(last.event)}</span> · ${last.refused ? `<span class="result refused">refused</span>` : `<span class="result ok">ok</span>`} · ${esc(last.blockHeight)}`
+      : '<span class="dim">—</span>';
+    return `<tr data-row="${esc(agent.accountId)}">
+      <td class="fleet-cell-name"><a class="mono" href="#/agent/${encodeURIComponent(agent.accountId)}">${esc(agent.accountId)}</a>
+        <span class="key-meta">${fmtInt(agent.operatorKeys)} operators · ${fmtInt(agent.fullAccessKeys)} full-access</span></td>
+      <td class="fleet-cell-state">${stateCell}</td>
+      <td class="fleet-cell-event result ${last?.refused ? "refused" : "ok"}">${lastEvent}</td>
+      <td class="fleet-cell-action">${actionCell}</td>
+    </tr>`;
+  }).join("");
+
+  body.innerHTML = `<div class="table-wrap"><table class="fleet-table"><thead><tr><th scope="col">Name</th><th scope="col">State</th><th scope="col">Last event</th><th scope="col" class="num">Action</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  body.setAttribute("aria-busy", "false");
+  if (changedIds?.length) {
+    for (const id of changedIds) {
+      const row = body.querySelector(`[data-row="${CSS.escape(id)}"]`);
+      if (row) setRowFlash(row);
+    }
+  }
+}
+
+async function loadFleet(silent = false) {
+  if (state.loadGuard.fleet) return;
+  state.loadGuard.fleet = true;
+  try {
+    const data = await getJSON("/api/fleet");
+    if (state.route.name !== "fleet") return;
+    const previous = state.fleetFingerprint;
+    const fingerprint = (data.agents ?? []).map((a) => `${a.accountId}:${a.state}`).join("|");
+    state.fleet = data;
+    state.fleetFingerprint = fingerprint;
+    const changed = previous === null ? [] : diffFingerprint(previous, fingerprint);
+    updateNet(data.headBlock);
+    applyBanner();
+    $("fleet-meta").textContent =
+      data.status === "loading"
+        ? "reading…"
+        : `${fmtInt(data.totals?.agents)} agents · ${data.totals?.operatorKeys == null ? "—" : fmtInt(data.totals.operatorKeys)} operators · ${data.totals?.fullAccessKeys == null ? "—" : fmtInt(data.totals.fullAccessKeys)} full-access`;
+    if (data.status === "loading") {
+      renderFleet(data);
+      if (!silent) scheduleRetry(loadFleet);
+      return;
+    }
+    renderFleet(data, changed);
+    const hasAgents = Array.isArray(data.agents) && data.agents.length > 0;
+    state.dataLoad = dataLoadReducer(state.dataLoad, {
+      type: "fetch-ok",
+      agents: data.agents?.length ?? 0,
+      partial: data.status === "partial" || data.stale,
+      block: data.pinnedBlock ?? data.lastGoodBlock ?? data.headBlock,
+    });
+    applyBanner();
+  } catch (error) {
+    if (state.route.name !== "fleet") return;
+    state.dataLoad = dataLoadReducer(state.dataLoad, {
+      type: "fetch-fail",
+    });
+    applyBanner();
+    if (state.fleet !== null) {
+      renderFleet(state.fleet);
+      return;
+    }
+    $("fleet-meta").textContent = "read failed";
+    $("fleet-body").innerHTML = `<div class="state-flat"><h2>Could not read the fleet</h2><p>${esc(error.message ?? "RPC read failed.")}</p><div style="margin-top:10px"><button class="btn" type="button" data-retry="fleet">Retry</button></div></div>`;
+    $("fleet-body").setAttribute("aria-busy", "false");
+  } finally {
+    state.loadGuard.fleet = false;
+  }
+}
+function diffFingerprint(prev, next) {
+  const left = new Map(prev.split("|").filter(Boolean).map((s) => { const [k, v] = s.split(":"); return [k, v]; }));
+  return next.split("|").filter(Boolean).filter((s) => {
+    const [k, v] = s.split(":");
+    return left.has(k) && left.get(k) !== v;
+  }).map((s) => s.split(":")[0]);
+}
+
+/* ---------- agent ---------- */
+
+function renderAgent(data, changed) {
+  const agent = data;
+  const paused = agent.state.paused === true;
+  const action = actionForAgent({ mode: agent.mode ?? "A", paused: agent.paused });
+  const strip = $("agent-status");
+  const freezeCmd = `node packages/cli/dist/index.js ${paused ? "unfreeze" : "freeze"} ${agent.accountId} --signer-key-file "$FLEET_ADMIN_KEY_FILE" --json`;
+  const modeBFreeze = `node packages/cli/dist/index.js admin request freeze ${agent.accountId} --signer-key-file "$FLEET_OWNER_KEY_FILE" --json`;
+  const modeBUnfreeze = `node packages/cli/dist/index.js admin request unfreeze ${agent.accountId} --signer-key-file "$FLEET_OWNER_KEY_FILE" --json`;
+  const modeBConfirmFreeze = `node packages/cli/dist/index.js admin confirm ${agent.accountId} <request-id> --signer-key-file "$FLEET_OWNER_KEY_FILE" --json`;
+  const modeBConfirmUnfreeze = modeBConfirmFreeze;
+  const modeBStatus = `node packages/cli/dist/index.js admin status ${agent.accountId} --json`;
+
+  const actionButton = (() => {
+    if ((agent.mode ?? "A") === "A") {
+      const label = paused ? "Unfreeze" : "Freeze";
+      return `<button class="action-btn ${paused ? "" : "danger"}" type="button" data-command="${paused ? "unfreeze" : "freeze"}" data-mode="A" data-agent="${esc(agent.accountId)}">${label}</button>`;
+    }
+    return paused
+      ? `<button class="action-btn" type="button" data-command="request-unfreeze" data-mode="B" data-agent="${esc(agent.accountId)}">Request unfreeze</button>`
+      : `<button class="action-btn danger" type="button" data-command="request-freeze" data-mode="B" data-agent="${esc(agent.accountId)}">Request freeze</button>`;
+  })();
+
+  strip.className = `status-strip${paused ? " frozen" : ""}`;
+  strip.innerHTML = `<span class="state-chip ${paused ? "frozen" : "active"}" id="state-chip">${paused ? "Frozen" : "Active"}</span>
+    <span class="status-meta">state @ <span class="mono">${esc(agent.stateBlock)}</span></span>
+    <span class="status-action">${actionButton}</span>`;
+  if (changed) setChipFlash($("state-chip"));
+
+  // operator keys
+  $("keys-meta").textContent = `${fmtInt(agent.operators.filter(o => o.active).length)} active · ${fmtInt(agent.operators.length)} total`;
+  const rows = agent.operators.length === 0
+    ? '<tr><td colspan="3" class="dim">No operator keys.</td></tr>'
+    : agent.operators.map((op) => `<tr>
+        <td class="key-cell mono">${hashSpan(op.publicKey)}</td>
+        <td><span class="tag mono">${esc(op.tag)}</span></td>
+        <td class="dim">${esc(op.active ? "member" : "disabled")}</td>
+      </tr>`).join("");
+  const body = $("keys-body");
+  body.innerHTML = rows;
+
+  // roles as data
+  const adminCount = agent.admin.publicKey || agent.admin.adminAccount ? 1 : 0;
+  const adminLine = adminCount === 0
+    ? "admin 0 · recovery — · full-access 0"
+    : `admin ${adminCount} · recovery ${agent.admin.recoveryPublicKey ? 1 : 0} · full-access ${fmtInt(agent.fullAccessKeys)} · mode ${esc(agent.mode ?? "A")}`;
+  $("roles").innerHTML = `<span><b>${fmtInt(agent.operators.filter(o => o.active).length)}</b>operators</span><span><b>${adminCount}</b>admin</span><span><b>${agent.admin.recoveryPublicKey ? 1 : 0}</b>recovery</span><span><b>${fmtInt(agent.fullAccessKeys)}</b>full-access</span><span><b>${fmtInt(agent.state.auditLength)}</b>audit entries</span>`;
+
+  // admin rows (Mode B link as data)
+  const adminRows = $("admin-rows");
+  adminRows.innerHTML = `
+    <dt>Admin</dt><dd>${hashSpan(agent.admin.adminAccount ?? agent.admin.publicKey ?? "unknown")}</dd>
+    <dt>Recovery</dt><dd>${agent.admin.recoveryPublicKey ? hashSpan(agent.admin.recoveryPublicKey) : "<span class=\"none\">none</span>"}</dd>
+    <dt>Mode</dt><dd class="mono">${esc(agent.mode ?? "A")}</dd>
+    <dt>Mode B demo</dt><dd><a class="modeb-link" href="https://testnet.nearblocks.io/account/agent-b1.fleet-modeb-748d4372.testnet" rel="noopener noreferrer" target="_blank">agent-b1.fleet-modeb-748d4372.testnet →</a></dd>`;
+
+  // audit one-liners
+  const auditMeta = agent.state.auditLength;
+  const list = $("audit-chain");
+  const verification = agent.auditVerification;
+  $("audit-meta").textContent = `${fmtInt(agent.state.auditLength)} · ${verification.ok ? "verified" : "not linked"}`;
+  const sorted = [...agent.audit].sort((a, b) => b.seq - a.seq);
+  list.innerHTML = sorted.map((entry) => `<li class="chain-entry">
+     <button class="chain-row" type="button" aria-expanded="false" aria-controls="audit-detail-${entry.seq}">
+       <span class="chain-seq mono">${fmtInt(entry.seq)}</span>
+       <span class="chain-action">${esc(entry.action.replaceAll("_", " "))}</span>
+       <span class="chain-block mono">${esc(entry.blockHeight)}</span>
+       ${verification.ok ? '<span class="verified" aria-label="verified">✓</span>' : '<span class="not-verified" aria-label="not linked">✕</span>'}
+     </button>
+     <div class="chain-detail" id="audit-detail-${entry.seq}" hidden><div class="mono">${esc(entry.entryHash)}</div><div class="mono dim">prev ${esc(entry.prevHash)}</div></div>
+   </li>`).join("");
+
+  // events — latest 6 rows, one link to all
+  const eventsBox = $("agent-events");
+  const events = (agent.events ?? []).slice(0, 6);
+  eventsBox.innerHTML = events.length === 0 ? '<p class="dim" style="margin:0">—</p>' : eventsTable(events, { compact: true });
+}
+
+function eventsTable(events, { compact = false } = {}) {
+  const rows = events.map((event) => `<tr>
+    <td class="mono">${esc(event.blockHeight)}</td>
+    <td class="event-cell">${eventIcon(event)} ${esc(event.event ?? event.action)}<span class="agent-note">${esc(event.agentLabel ?? event.accountId ?? "")}</span></td>
+    <td class="result ${event.refused ? "refused" : "ok"}">${event.refused ? "refused" : "ok"}</td>
+    <td class="result mono">${fullTxn(event.txHash)}${event.entryHash && !event.txHash ? ` <span class="dim">${esc(shortHash(event.entryHash))}</span>` : ""}${eventVerifiedMark(event)}</td>
+  </tr>`).join("");
+  return `<div class="table-wrap"><table class="events"><thead><tr><th scope="col">Block</th><th scope="col">Event</th><th scope="col">Result</th><th scope="col">Tx</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function eventIcon(event) {
+  if (event.action === "freeze") return icon("lock");
+  if (event.action === "unfreeze") return icon("unlock");
+  return "";
+}
+function eventVerifiedMark(event) {
+  if (event.verified === true) return ' <span class="proof" aria-label="verified">✓</span>';
+  return "";
+}
+
+async function loadAgent(account, silent = false) {
+  if (!account || state.loadGuard.agent) return;
+  state.loadGuard.agent = true;
+  try {
+    const data = await getJSON(`/api/agent?account=${encodeURIComponent(account)}`);
+    if (state.route.name !== "agent" || state.route.account !== account) return;
+    const previousPaused = state.agent?.state?.paused;
+    state.agent = data;
+    updateNet(data.headBlock);
+    const agentState = agentStateRead(state.dataLoad, data.state.paused, data.stateBlock);
+    state.dataLoad = dataLoadReducer(state.dataLoad, {
+      type: "fetch-ok",
+      agents: 1,
+      partial: data.status === "partial" || data.stale,
+      block: data.stateBlock ?? data.headBlock,
+    });
+    applyBanner();
+    const changed = previousPaused !== undefined && previousPaused !== data.state.paused;
+    $("agent-heading").textContent = data.accountId;
+    renderAgent(data, changed);
+  } catch (error) {
+    if (state.route.name !== "agent" || state.route.account !== account) return;
+    state.dataLoad = dataLoadReducer(state.dataLoad, { type: "fetch-fail" });
+    applyBanner();
+    if (state.agent !== null && state.agent.accountId === account) return;
+    $("agent-status").innerHTML = `<span class="state-chip unknown">unknown</span><span class="status-meta">read failed</span>`;
+  } finally {
+    state.loadGuard.agent = false;
+  }
+}
+
+/* ---------- timeline ---------- */
+
+function renderTimeline(data) {
+  const body = $("timeline-body");
+  const meta = $("timeline-meta");
+  const events = Array.isArray(data.events) ? data.events : [];
+  const counts = data.counts ?? { events: 0, refused: 0, blocks: 0 };
+
+  if (data.status === "loading" && events.length === 0) {
+    body.innerHTML = `<div class="skeleton-table" aria-hidden="true"><span class="skeleton skeleton-wide"></span><span class="skeleton"></span><span class="skeleton skeleton-wide"></span><span class="skeleton"></span><span class="skeleton skeleton-wide"></span><span class="skeleton"></span></div>`;
+    body.setAttribute("aria-busy", "true");
+    return;
+  }
+  if (data.status === "empty" || events.length === 0) {
+    meta.textContent = "0 events · 0 refused";
+    body.innerHTML = `<div class="state-flat"><h2>No events</h2><p class="dim"></p></div>`;
+    body.setAttribute("aria-busy", "false");
+    return;
+  }
+  const showAll = state.timelineExpanded;
+  const shown = showAll ? events : events.slice(0, 20);
+  const toggle =
+    !showAll && events.length > 20
+      ? `<p class="timeline-more"><button class="btn" type="button" data-expand-timeline>Show all events (${fmtInt(events.length)})</button></p>`
+      : showAll
+        ? `<p class="timeline-more"><button class="btn" type="button" data-collapse-timeline>Show latest session</button></p>`
+        : "";
+  meta.textContent = `${fmtInt(counts.events)} events · ${fmtInt(counts.refused)} refused · ${fmtInt(counts.blocks)} blocks`;
+  body.innerHTML = `${eventsTable(shown)}${toggle}`;
+  body.setAttribute("aria-busy", "false");
+}
+
+async function loadTimeline(silent = false) {
+  if (state.loadGuard.timeline) return;
+  state.loadGuard.timeline = true;
+  try {
+    const data = await getJSON("/api/timeline?limit=200");
+    if (state.route.name !== "timeline") return;
+    state.timeline = data;
+    updateNet(data.headBlock);
+    state.dataLoad = dataLoadReducer(state.dataLoad, {
+      type: "fetch-ok",
+      agents: data.status === "empty" ? 0 : 1,
+      partial: data.status === "partial" || data.stale,
+      block: data.headBlock,
+    });
+    applyBanner();
+    renderTimeline(data);
+  } catch (error) {
+    if (state.route.name !== "timeline") return;
+    state.dataLoad = dataLoadReducer(state.dataLoad, { type: "fetch-fail" });
+    applyBanner();
+    if (state.timeline !== null) {
+      renderTimeline(state.timeline);
+      return;
+    }
+    $("timeline-body").innerHTML = `<div class="state-flat"><h2>Could not read the timeline</h2><p>${esc(error.code ?? "FLEET_ERR")} — retry below.</p><div style="margin-top:10px"><button class="btn" type="button" data-retry="timeline">Retry</button></div></div>`;
+    $("timeline-body").setAttribute("aria-busy", "false");
+  } finally {
+    state.loadGuard.timeline = false;
+  }
+}
+
+/* ---------- command sheet ---------- */
+
+function currentCommandFor(action, mode, agent) {
+  if (mode === "B") {
+    if (action === "request-freeze") return { id: "request-freeze", text: () => `node packages/cli/dist/index.js admin request freeze ${agent} --signer-key-file "$FLEET_OWNER_KEY_FILE" --json` };
+    if (action === "request-unfreeze") return { id: "request-unfreeze", text: () => `node packages/cli/dist/index.js admin request unfreeze ${agent} --signer-key-file "$FLEET_OWNER_KEY_FILE" --json` };
+    if (action === "confirm-freeze" || action === "confirm-freeze-both" || action === "confirm") return { id: "confirm", text: () => `node packages/cli/dist/index.js admin confirm ${agent} <request-id> --signer-key-file "$FLEET_OWNER_KEY_FILE" --json` };
+    return { id: "status", text: () => `node packages/cli/dist/index.js admin status ${agent} --json` };
+  }
+  const method = action === "unfreeze" ? "unfreeze" : "freeze";
+  return { id: method, text: () => `node packages/cli/dist/index.js ${method} ${agent} --signer-key-file "$FLEET_ADMIN_KEY_FILE" --json` };
+}
+function renderSheet() {
+  const sheet = $("command-sheet");
+  if (state.sheet.status === "closed") {
+    sheet.hidden = true;
+    return;
+  }
+  sheet.hidden = false;
+  $("copy-status").hidden = state.sheet.status !== "copied" && state.sheet.status !== "copy-failed";
+  const statusEl = $("copy-status");
+  if (state.sheet.status === "copied") { statusEl.textContent = "Copied"; statusEl.className = "copied"; }
+  else if (state.sheet.status === "copy-failed") { statusEl.textContent = "Copy failed — select the command"; statusEl.className = "copy-failed"; }
+  else { statusEl.textContent = ""; statusEl.className = "copied"; }
+}
+function openSheetFor(action, mode, agent) {
+  const cmd = currentCommandFor(action, mode, agent);
+  state.sheet = sheetReducer(state.sheet, { type: "open", commandId: cmd.id });
+  $("command-text").textContent = cmd.text();
+  renderSheet();
+}
+
+async function copyCurrentCommand() {
+  const ok = await copyText($("command-text").textContent ?? "");
+  state.sheet = sheetReducer(state.sheet, { type: ok ? "copy-success" : "copy-failed" });
+  renderSheet();
+  setTimeout(() => {
+    state.sheet = { ...state.sheet, status: "open" };
+    renderSheet();
+  }, 2600);
+}
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    const area = document.createElement("textarea");
+    area.className = "copy-fallback";
+    area.value = text;
+    area.setAttribute("readonly", "");
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand("copy");
+    area.remove();
+    return ok;
+  } catch {
+    return false;
+  }
 }
 
 /* ---------- routing ---------- */
 
 function parseRoute() {
   const raw = location.hash.replace(/^#\/?/, "");
-  if (raw.startsWith("agent/")) {
-    return { name: "agent", account: decodeURIComponent(raw.slice("agent/".length)) };
-  }
-  if (raw.startsWith("agent=")) {
-    return { name: "agent", account: decodeURIComponent(raw.slice("agent=".length)) };
-  }
-  if (raw === "timeline") return { name: "timeline", account: null };
+  if (raw.startsWith("agent/")) return { name: "agent", account: decodeURIComponent(raw.slice("agent/".length)) };
+  if (raw.startsWith("timeline")) return { name: "timeline", account: null };
   return { name: "fleet", account: null };
 }
-
-function updateNav() {
-  const navName = state.route.name === "agent" ? "fleet" : state.route.name;
+function setView() {
+  const views = { fleet: $("view-fleet"), agent: $("view-agent"), timeline: $("view-timeline") };
+  for (const [name, element] of Object.entries(views)) element.hidden = name !== state.route.name;
+  $("brand-mark").textContent = "KEYHALT";
+  $("brand-home").setAttribute("aria-label", BRAND_LABEL);
+  document.title = state.route.name === "fleet" ? "Keyhalt · Fleet" : state.route.name === "agent" ? "Keyhalt · Agent" : "Keyhalt · Timeline";
   document.querySelectorAll(".nav a[data-nav]").forEach((link) => {
-    if (link.dataset.nav === navName) link.setAttribute("aria-current", "page");
-    else link.removeAttribute("aria-current");
+    const active = (state.route.name === "agent" ? "fleet" : state.route.name) === link.dataset.nav;
+    if (active) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current");
   });
 }
-
-function showView() {
-  const views = { fleet: $("view-fleet"), agent: $("view-agent"), timeline: $("view-timeline") };
-  for (const [name, element] of Object.entries(views)) {
-    element.hidden = name !== state.route.name;
-  }
-  document.title =
-    state.route.name === "agent"
-      ? "FLEET · Agent"
-      : state.route.name === "timeline"
-        ? "FLEET · Timeline"
-        : "FLEET · Fleet";
-}
-
 function route() {
   state.route = parseRoute();
-  state.timelineLimit = 20;
-  closeSheet();
   showView();
-  updateNav();
-  if (state.timers.retry !== null) {
-    clearTimeout(state.timers.retry);
-    state.timers.retry = null;
-  }
-  if (state.route.name !== "fleet") loadSummary();
-  if (state.route.name === "fleet") {
-    loadFleet();
-  } else if (state.route.name === "agent") {
+  updateNet(state.fleet?.headBlock ?? state.lastBlock);
+  if (state.route.name === "fleet") loadFleet();
+  else if (state.route.name === "agent") {
     const account = state.route.account;
-    $("agent-heading").textContent = account ?? "Agent";
     if (!account) {
-      $("agent-meta").textContent = "No agent selected";
-      $("agent-body").innerHTML = stateBox(
-        "No agent selected",
-        '<p>Open an agent from the <a href="#/fleet">Fleet screen</a>.</p>',
-        { icon: "search" },
-      );
-      $("agent-body").setAttribute("aria-busy", "false");
-    } else {
-      $("agent-meta").textContent = "Reading finalized block…";
-      $("agent-body").innerHTML = loadingBody("Reading this agent at the same finalized block.");
-      $("agent-body").setAttribute("aria-busy", "true");
-      loadAgent(account);
+      $("agent-status").innerHTML = '<span class="state-chip unknown">unknown</span><span class="status-meta">no agent</span>';
+      return;
     }
+    loadAgent(account);
   } else {
     loadTimeline();
   }
-  updateTicker(state.fleet?.headBlock ?? state.lastBlock);
-  updateBanner();
+}
+function showView() {
+  const views = { fleet: $("view-fleet"), agent: $("view-agent"), timeline: $("view-timeline") };
+  for (const [name, element] of Object.entries(views)) element.hidden = name !== state.route.name;
+  $("brand-mark").textContent = "KEYHALT";
+  document.title = state.route.name === "fleet" ? `${BRAND} · Fleet` : state.route.name === "agent" ? `${BRAND} · Agent` : `${BRAND} · Timeline`;
 }
 
-/* ---------- ticker / banner / footer ---------- */
+/* ---------- sse & polling ---------- */
 
-function updateTicker(block) {
-  if (Number.isFinite(Number(block))) {
-    const value = Number(block);
-    if (state.lastBlock === null || value >= state.lastBlock) {
-      state.lastBlock = value;
-      $("block").textContent = fmtBlock(value);
-    }
-  }
-  if (state.lastBlock !== null) {
-    $("block").title = `Finalized testnet block ${fmtBlock(state.lastBlock)} from the live RPC feed`;
-  }
+let streamSrc = null;
+function scheduleRouteRefresh(kind) {
+  const key = `refresh:${kind}`;
+  if (state.timers.has(key)) return;
+  state.timers.set(key, setTimeout(() => {
+    state.timers.delete(key);
+    if (kind === "fleet" && state.route.name === "fleet") loadFleet(true);
+    else if (kind === "agent" && state.route.name === "agent") loadAgent(state.route.account, true);
+    else if (kind === "timeline" && state.route.name === "timeline") loadTimeline(true);
+  }, 1400));
 }
-
-function updateBanner() {
-  const banner = $("banner");
-  const data = state.fleet;
-  let kind = null;
-  let title = "";
-  let detail = "";
-
-  if (data !== null && data.stale) {
-    kind = "danger";
-    title = "Reads are failing.";
-    detail = `Showing the last good read at block ${fmtBlock(data.lastGoodBlock)}. The server is retrying with paced RPC failover.`;
-  } else if (data !== null && data.status === "partial") {
-    kind = "warn";
-    title = "Partial snapshot.";
-    detail = `Last good read at block ${fmtBlock(data.lastGoodBlock)}. One or more agents are behind the finalized head.`;
-  } else if (state.dataStale) {
-    kind = "warn";
-    title = "Live updates stopped.";
-    detail = `The last block on screen is ${fmtBlock(state.lastBlock)}. Showing the last good read; reconnecting.`;
-  } else if (
-    state.connection === "reconnecting" &&
-    state.reconnectSince !== null &&
-    Date.now() - state.reconnectSince > 4_000
-  ) {
-    kind = "warn";
-    title = "Reconnecting to the block stream.";
-    detail = "The last snapshot stays on screen while the stream reconnects.";
-  }
-
-  if (kind === null) {
-    banner.hidden = true;
-    banner.innerHTML = "";
-    $("net").dataset.stale = "false";
-    return;
-  }
-  banner.hidden = false;
-  banner.className = `banner${kind === "danger" ? " danger" : ""}`;
-  banner.innerHTML = `${icon("warning")}<div><strong>${esc(title)}</strong> <span class="banner-detail">${esc(detail)}</span></div>`;
-  $("net").dataset.stale = data?.stale ? "true" : "false";
-}
-
-async function loadSummary() {
-  if (state.fleet !== null) {
-    updateFooter(state.fleet);
-    updateBanner();
-    return;
-  }
-  try {
-    const data = await getJSON("/api/fleet");
-    state.fleet = data;
-    updateTicker(data.headBlock);
-    updateFooter(data);
-    updateBanner();
-  } catch {
-    // The current screen reports its own read failure; the footer stays quiet.
-  }
-}
-
-function updateFooter(data) {
-  const claims = data?.claims;
-  $("claims-link").textContent =
-    claims && claims.total > 0 ? `${fmtInt(claims.verified)}/${fmtInt(claims.total)}` : "—";
-  const snapshot = data?.pinnedBlock ?? data?.lastGoodBlock ?? data?.headBlock;
-  $("foot-note").textContent =
-    snapshot === null || snapshot === undefined
-      ? "Read-only · no key stored"
-      : `snapshot @ block ${fmtBlock(snapshot)} · read-only`;
-  if (data?.modeB?.url) $("modeb-link").href = data.modeB.url;
-}
-
-function markLive() {
-  state.lastLiveAt = Date.now();
-}
-
-function noteData(ok) {
-  if (ok) {
-    state.lastDataAt = Date.now();
-    state.dataStale = false;
-  } else {
-    state.dataStale = true;
-  }
-  updateBanner();
-}
-
-function scheduleRefresh(kind) {
-  if (state.timers[kind] !== null) return;
-  state.timers[kind] = setTimeout(() => {
-    state.timers[kind] = null;
-    if (state.route.name !== kind) return;
-    if (kind === "fleet") loadFleet(true);
-    else if (kind === "agent") loadAgent(state.route.account, true);
-    else loadTimeline(true);
-  }, 1_500);
-}
-
 function scheduleRetry(fn) {
-  if (state.timers.retry !== null) return;
-  state.timers.retry = setTimeout(() => {
-    state.timers.retry = null;
-    fn();
-  }, 2_000);
+  const key = `retry:${fn.name || "fn"}`;
+  if (state.timers.has(key)) return;
+  state.timers.set(key, setTimeout(() => { state.timers.delete(key); fn(); }, 2000));
 }
-
-/* ---------- shared render pieces ---------- */
-
-function loadingBody(note = "Waiting for the first pinned testnet read.") {
-  return `<div class="skeleton-table" aria-hidden="true">
-    <span class="skeleton skeleton-wide"></span><span class="skeleton"></span>
-    <span class="skeleton skeleton-wide"></span><span class="skeleton"></span>
-    <span class="skeleton skeleton-wide"></span><span class="skeleton"></span>
-  </div><p class="loading-note">${esc(note)}</p>`;
-}
-
-function stateCell(value) {
-  if (value === "frozen") {
-    return '<span class="state frozen"><span class="dot"></span>Frozen</span>';
-  }
-  if (value === "active") {
-    return '<span class="state active"><span class="dot"></span>Active</span>';
-  }
-  return '<span class="state unknown"><span class="dot"></span>Unknown</span>';
-}
-
-function stateBox(title, body, options = {}) {
-  return `<div class="state-box${options.error ? " error" : ""}"${options.alert ? ' role="alert"' : ""}>
-    <span class="box-icon">${icon(options.icon ?? "warning")}</span>
-    <div>
-      <h2>${esc(title)}</h2>
-      ${body}
-      ${options.retry ? `<button class="btn" type="button" data-retry="${esc(options.retry)}">${icon("refresh")} Retry read</button>` : ""}
-    </div>
-  </div>`;
-}
-
-function resultCell(event) {
-  if (event.refused) {
-    const text = String(event.resultText ?? "").replace(/^refused\s*·\s*/i, "");
-    return `<span class="result refused">${icon("lock")}refused${text ? ` · ${esc(text)}` : ""}</span>`;
-  }
-  return `<span class="result ${event.result === "ok" ? "ok" : ""}">${esc(event.resultText ?? "ok")}</span>`;
-}
-
-function txCell(event) {
-  if (event.txHash) {
-    return `<div class="tx-line"><a href="${esc(txUrl(event.txHash))}" title="${esc(event.txHash)}" rel="noopener noreferrer" target="_blank">${esc(shortHash(event.txHash))}</a>${icon("check")}</div>`;
-  }
-  if (event.entryHash) {
-    return `<span class="audit-ref mono" title="Audit entry ${esc(event.entryHash)}">${esc(shortHash(event.entryHash, 12, 6))}</span>`;
-  }
-  return '<span class="dim">—</span>';
-}
-
-function eventIcon(event) {
-  if (event.action === "freeze") return icon("lock");
-  if (event.action === "unfreeze") return icon("unlock");
-  if (event.refused) return icon("lock");
-  return "";
-}
-
-function eventRows(events) {
-  return events.map((event) => `<tr>
-    <td class="block" data-label="Block"><span class="mono">${esc(fmtBlock(event.blockHeight))}</span></td>
-    <td class="event" data-label="Event">${eventIcon(event)}${esc(event.event)}<span class="agent-note">${esc(event.agentLabel)}</span></td>
-    <td class="result-cell" data-label="Result">${resultCell(event)}</td>
-    <td class="tx-cell" data-label="Tx">${txCell(event)}</td>
-  </tr>`).join("");
-}
-
-function eventTable(events) {
-  return `<div class="table-wrap">
-    <table class="timeline-table">
-      <caption class="sr-only">Recorded fleet events, newest first</caption>
-      <thead><tr><th scope="col">Block</th><th scope="col">Event</th><th scope="col">Result</th><th scope="col">Tx</th></tr></thead>
-      <tbody>${eventRows(events)}</tbody>
-    </table>
-  </div>`;
-}
-
-/* ---------- fleet ---------- */
-
-async function loadFleet(silent = false) {
-  if (state.loading.fleet) return;
-  state.loading.fleet = true;
-  try {
-    const data = await getJSON("/api/fleet");
-    if (state.route.name !== "fleet") return;
-    state.fleet = data;
-    updateTicker(data.headBlock);
-    updateFooter(data);
-    markLive();
-    noteData(true);
-    renderFleet(data, silent);
-  } catch (error) {
-    if (state.route.name !== "fleet") return;
-    if (state.fleet !== null) {
-      noteData(false);
-    } else {
-      renderFleetError(error);
-    }
-  } finally {
-    state.loading.fleet = false;
-  }
-}
-
-function renderFleet(data, silent) {
-  const body = $("fleet-body");
-  const meta = $("fleet-meta");
-  const agents = Array.isArray(data.agents) ? data.agents : [];
-
-  if (data.status === "loading") {
-    meta.textContent = "Reading finalized block…";
-    if (!silent || agents.length === 0 || agents.every((agent) => agent.state === "unknown")) {
-      body.innerHTML = loadingBody("Waiting for the first pinned testnet read.");
-    }
-    body.setAttribute("aria-busy", "true");
-    scheduleRetry(() => loadFleet());
-    return;
-  }
-
-  if (data.status === "empty" || agents.length === 0) {
-    meta.textContent = `${fmtInt(data.totals?.agents ?? 0)} agents · ${fmtInt(data.totals?.operatorKeys ?? 0)} operator keys · ${fmtInt(data.totals?.fullAccessKeys ?? 0)} full-access keys`;
-    body.innerHTML = stateBox(
-      "No agents configured",
-      `<p>This console is running without a fleet. Set <code>FLEET_CONSOLE_ACCOUNTS</code> to a comma-separated list of testnet controllers and restart it.</p>
-       <p>For the canonical run: <code>make console</code>.</p>`,
-      { icon: "key" },
-    );
-    body.setAttribute("aria-busy", "false");
-    return;
-  }
-
-  meta.textContent = `${fmtInt(data.totals?.agents)} agents · ${data.totals?.operatorKeys === null ? "—" : fmtInt(data.totals.operatorKeys)} operator keys · ${data.totals?.fullAccessKeys === null ? "—" : fmtInt(data.totals.fullAccessKeys)} full-access keys`;
-
-  const rows = agents.map((agent) => {
-    const tags = Object.entries(agent.operatorTags ?? {})
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([tag, count]) => `${fmtInt(count)} ${tag}`)
-      .join(" · ");
-    const operatorLine = `${agent.operatorKeys === null ? "—" : fmtInt(agent.operatorKeys)} operator keys${tags ? ` · ${tags}` : ""}`;
-    const staleLine = agent.stale
-      ? `<span class="key-meta">read behind at block ${esc(fmtBlock(agent.blockHeight))}</span>`
-      : "";
-    const errorLine = agent.error
-      ? `<span class="key-meta">read error · showing last good</span>`
-      : "";
-    const last = agent.lastEvent;
-    const lastEvent = last === null
-      ? '<span class="dim">No recorded event</span>'
-      : `<span class="dim">${esc(actionLabel(last.action))}</span> <span class="mono block">${esc(fmtBlock(last.blockHeight))}</span> <span class="dim">·</span> ${resultCell(last)} ${txCell(last)}`;
-    return `<tr>
-      <td class="id" data-label="Name"><a href="#/agent/${encodeURIComponent(agent.accountId)}">${esc(agent.accountId)}</a><span class="key-meta mono">${esc(operatorLine)}</span>${staleLine}${errorLine}</td>
-      <td class="state-cell" data-label="State">${stateCell(agent.state)}</td>
-      <td class="num full" data-label="Full-access keys">${agent.fullAccessKeys === null ? "—" : fmtInt(agent.fullAccessKeys)}</td>
-      <td class="last" data-label="Last event">${lastEvent}</td>
-    </tr>`;
-  }).join("");
-
-  body.innerHTML = `<div class="table-wrap">
-    <table class="fleet-table">
-      <caption class="sr-only">Fleet agents read at finalized block ${esc(fmtBlock(data.pinnedBlock))}</caption>
-      <thead><tr><th scope="col">Name</th><th scope="col">State</th><th scope="col" class="num">Full-access keys</th><th scope="col">Last event</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </div>`;
-  body.setAttribute("aria-busy", "false");
-}
-
-function renderFleetError(error) {
-  const lastGood = state.fleet?.lastGoodBlock;
-  $("fleet-meta").textContent = "Read failed";
-  $("fleet-body").innerHTML = stateBox(
-    "Could not read the fleet",
-    `<p>${esc(error.message ?? "The console API did not return a snapshot.")}</p>
-     ${lastGood ? `<p class="last-good">Last good block <span class="mono">${esc(fmtBlock(lastGood))}</span>.</p>` : '<p>The console never falls back to invented data. Retry when the RPC is reachable.</p>'}`,
-    { error: true, alert: true, retry: "fleet", icon: "warning" },
-  );
-  $("fleet-body").setAttribute("aria-busy", "false");
-}
-
-/* ---------- agent ---------- */
-
-async function loadAgent(account, silent = false) {
-  if (!account || state.loading.agent) return;
-  state.loading.agent = true;
-  try {
-    const data = await getJSON(`/api/agent?account=${encodeURIComponent(account)}`);
-    if (state.route.name !== "agent" || state.route.account !== account) return;
-    state.agent = data;
-    updateTicker(data.headBlock);
-    updateFooter(state.fleet);
-    markLive();
-    noteData(true);
-    renderAgent(data, silent);
-  } catch (error) {
-    if (state.route.name !== "agent" || state.route.account !== account) return;
-    if (error.status === 503) {
-      if (state.agent !== null && state.agent.accountId === account) {
-        noteData(false);
-        return;
-      }
-      $("agent-meta").textContent = "Reading finalized block…";
-      $("agent-body").innerHTML = loadingBody("Waiting for this agent's first pinned read.");
-      $("agent-body").setAttribute("aria-busy", "true");
-      scheduleRetry(() => loadAgent(account));
-      return;
-    }
-    if (state.agent !== null && state.agent.accountId === account) {
-      noteData(false);
-      return;
-    }
-    $("agent-meta").textContent = "Read failed";
-    $("agent-body").innerHTML = stateBox(
-      "Could not read this agent",
-      `<p>${esc(error.message ?? "The console API did not return an agent snapshot.")}</p>
-       <p>The agent screen only renders chain reads at a finalized block.</p>`,
-      { error: true, alert: true, retry: "agent", icon: "warning" },
-    );
-    $("agent-body").setAttribute("aria-busy", "false");
-  } finally {
-    state.loading.agent = false;
-  }
-}
-
-function renderAgent(data, silent) {
-  const body = $("agent-body");
-  const meta = $("agent-meta");
-  $("agent-heading").textContent = data.accountId;
-  meta.textContent = `Mode A · ${fmtInt(data.operators.length)} operator keys · ${fmtInt(data.state.auditLength)} audit entries`;
-
-  const paused = data.state.paused === true;
-  const frozenEvent = [...data.audit]
-    .filter((entry) => entry.action === "freeze")
-    .sort((left, right) => right.blockHeight - left.blockHeight)[0];
-  const statusDetail = paused && frozenEvent
-    ? `Frozen at block ${esc(fmtBlock(frozenEvent.blockHeight))}`
-    : paused
-      ? "Controller paused"
-      : "Controller accepts operator calls";
-
-  const operatorRows = data.operators.length === 0
-    ? '<tr><td colspan="3" class="dim" data-label="">No operator keys are active.</td></tr>'
-    : data.operators.map((operator) => `<tr>
-        <td class="key mono" data-label="Key">${esc(operator.publicKey)}</td>
-        <td class="scope" data-label="Scope"><span class="tag mono">${esc(operator.tag)}</span></td>
-        <td class="active" data-label="Active">${operator.active ? "Yes" : "No"}</td>
-      </tr>`).join("");
-
-  const nativeKeys = Array.isArray(data.nativeKeys) ? data.nativeKeys : null;
-  const functionCallKeys =
-    nativeKeys === null
-      ? null
-      : nativeKeys.filter((key) => key.permission === "FunctionCall").length;
-  const fullAccess = data.fullAccessKeys;
-
-  const audit = [...data.audit].sort((left, right) => right.seq - left.seq);
-  const verification = data.auditVerification;
-  const verificationText = verification.ok
-    ? data.onChainVerified === true
-      ? "verified on chain and in the SDK"
-      : data.onChainVerified === false
-        ? "on-chain verifier returned false"
-        : "prev-hash linked; on-chain verification pending"
-    : `chain check failed${verification.error ? `: ${verification.error}` : ""}`;
-  const chainMeta = audit.length === 0
-    ? "No audit entries read yet."
-    : `head ${esc(shortHash(verification.head, 12, 6))} · ${esc(verificationText)}${audit.length < data.state.auditLength ? ` · showing ${fmtInt(audit.length)} of ${fmtInt(data.state.auditLength)}` : ""}`;
-
-  const chain = audit.map((entry) => `<li class="chain-entry">
-    <span class="chain-rail" aria-hidden="true"><span class="chain-node"></span></span>
-    <div>
-      <p class="chain-line"><span class="seq mono">seq ${fmtInt(entry.seq)}</span><span class="action">${esc(actionLabel(entry.action))}</span><span class="block mono">· block ${esc(fmtBlock(entry.blockHeight))}</span></p>
-      <p class="chain-hash mono">${esc(shortHash(entry.entryHash, 12, 6))}${verification.ok ? `<span class="verified">${icon("check")}verified</span>` : `<span class="verified bad">${icon("warning")}not linked</span>`}</p>
-      <p class="chain-prev mono">prev ${esc(shortHash(entry.prevHash, 12, 6))}</p>
-    </div>
-  </li>`).join("");
-
-  const recent = data.events.slice(0, 6);
-  const recentSection = recent.length === 0
-    ? '<p class="dim">No recorded events for this agent yet.</p>'
-    : eventTable(recent);
-
-  body.innerHTML = `
-    <div class="agent-status${paused ? " frozen" : ""}">
-      ${paused ? icon("lock") : icon("unlock")}
-      <span class="state-chip ${paused ? "frozen" : "active"}">${paused ? "Frozen" : "Active"}</span>
-      <span>${statusDetail}</span>
-      <span class="status-detail mono">state @ block ${esc(fmtBlock(data.stateBlock))}</span>
-    </div>
-
-    <div class="group">
-      <div class="group-head"><h3>Operator keys</h3><span class="group-meta mono">${fmtInt(data.operators.filter((operator) => operator.active).length)} active · ${fmtInt(data.state.operators.length)} total</span></div>
-      <div class="table-wrap">
-        <table class="keys-table">
-          <caption class="sr-only">Operator keys for ${esc(data.accountId)}</caption>
-          <thead><tr><th scope="col">Key</th><th scope="col">Scope</th><th scope="col">Active</th></tr></thead>
-          <tbody>${operatorRows}</tbody>
-        </table>
-      </div>
-      <p class="native-summary">${functionCallKeys === null ? "—" : fmtInt(functionCallKeys)} FunctionCall keys <span class="dim">·</span> ${fullAccess === null ? "—" : fmtInt(fullAccess)} full-access keys</p>
-    </div>
-
-    <div class="group">
-      <h3>Admin</h3>
-      <div class="admin-row"><span class="admin-label">Admin key</span><code class="key-block mono">${esc(data.admin.publicKey ?? "not set")}</code></div>
-      <div class="admin-row"><span class="admin-label">Recovery key</span><code class="key-block mono">${esc(data.admin.recoveryPublicKey ?? "not set")}</code></div>
-      ${data.admin.pendingPublicKey ? `<div class="admin-row"><span class="admin-label">Pending admin key</span><code class="key-block mono">${esc(data.admin.pendingPublicKey)}</code><p class="dim">origin: ${esc(data.admin.pendingOrigin ?? "unknown")}</p></div>` : ""}
-      <p class="admin dim">Mode A controller · single admin key plus recovery key · ${fullAccess === null ? "—" : fmtInt(fullAccess)} full-access keys</p>
-    </div>
-
-    <div class="group">
-      <h3>Recent audit entries</h3>
-      <p class="chain-meta mono">${chainMeta}</p>
-      ${audit.length === 0 ? '<p class="dim">No audit entries read yet.</p>' : `<ol class="chain">${chain}</ol>`}
-    </div>
-
-    <div class="group">
-      <div class="group-head"><h3>Recent events</h3><a class="group-meta" href="#/timeline">View timeline →</a></div>
-      ${recentSection}
-    </div>
-
-    <div class="actions">
-      <button class="btn btn-primary" type="button" data-command="${paused ? "unfreeze" : "freeze"}" aria-controls="command-sheet" aria-expanded="false">${paused ? "Show unfreeze command" : "Show freeze command"}</button>
-      <button class="btn" type="button" data-command="inventory" aria-controls="command-sheet" aria-expanded="false">Show inventory command</button>
-      <a class="btn" href="${esc(data.exportUrl)}">Export audit chain</a>
-    </div>
-  `;
-  body.setAttribute("aria-busy", "false");
-  if (state.sheetCommand !== null) {
-    document.querySelectorAll("[data-command]").forEach((button) => {
-      button.setAttribute("aria-expanded", String(button.dataset.command === state.sheetCommand));
-    });
-  }
-}
-
-/* ---------- timeline ---------- */
-
-async function loadTimeline(silent = false) {
-  if (state.loading.timeline) return;
-  state.loading.timeline = true;
-  try {
-    const data = await getJSON("/api/timeline?limit=200");
-    if (state.route.name !== "timeline") return;
-    state.timeline = data;
-    updateTicker(data.headBlock);
-    updateFooter(state.fleet);
-    markLive();
-    noteData(true);
-    renderTimeline(data, silent);
-  } catch (error) {
-    if (state.route.name !== "timeline") return;
-    if (state.timeline !== null) {
-      noteData(false);
-      return;
-    }
-    $("timeline-meta").textContent = "Read failed";
-    $("timeline-body").innerHTML = stateBox(
-      "Could not read the timeline",
-      `<p>${esc(error.message ?? "The console API did not return events.")}</p>`,
-      { error: true, alert: true, retry: "timeline", icon: "warning" },
-    );
-    $("timeline-body").setAttribute("aria-busy", "false");
-  } finally {
-    state.loading.timeline = false;
-  }
-}
-
-function renderTimeline(data, silent) {
-  const body = $("timeline-body");
-  const meta = $("timeline-meta");
-  const events = Array.isArray(data.events) ? data.events : [];
-  const counts = data.counts ?? { events: 0, refused: 0, blocks: 0 };
-
-  if (data.status === "empty") {
-    meta.textContent = "No agents configured";
-    body.innerHTML = stateBox(
-      "No events to show",
-      "<p>This console is running without a fleet. Set <code>FLEET_CONSOLE_ACCOUNTS</code> and restart to read audit entries and watched receipts.</p>",
-      { icon: "block" },
-    );
-    body.setAttribute("aria-busy", "false");
-    return;
-  }
-
-  if (data.status === "loading" && counts.events === 0) {
-    meta.textContent = "Reading finalized block…";
-    if (!silent) body.innerHTML = loadingBody("Reading audit entries and watched receipts.");
-    body.setAttribute("aria-busy", "true");
-    scheduleRetry(() => loadTimeline());
-    return;
-  }
-
-  meta.textContent = `${fmtInt(counts.events)} events · ${fmtInt(counts.refused)} refused · ${fmtInt(counts.blocks)} blocks`;
-
-  if (events.length === 0) {
-    meta.textContent = "0 events · 0 refused";
-    body.innerHTML = stateBox(
-      "No events recorded yet",
-      "<p>The audit log is empty and no watched receipt has resolved. The timeline does not invent rows.</p>",
-      { icon: "clock" },
-    );
-    body.setAttribute("aria-busy", "false");
-    return;
-  }
-
-  const shown = events.slice(0, state.timelineLimit);
-  const more = events.length > shown.length
-    ? `<p class="more"><button class="btn" type="button" data-more="1">Show ${fmtInt(Math.min(20, events.length - shown.length))} more</button> <span class="dim">${fmtInt(shown.length)} of ${fmtInt(events.length)}</span></p>`
-    : "";
-  body.innerHTML = `${eventTable(shown)}${more}`;
-  body.setAttribute("aria-busy", "false");
-}
-
-/* ---------- command sheet ---------- */
-
-function openSheet(key) {
-  const commands = state.agent?.commands;
-  const command = commands?.[key];
-  if (!command) return;
-  const sheet = $("command-sheet");
-  sheet.hidden = false;
-  $("command-text").textContent = command;
-  $("copy-status").hidden = true;
-  $("copy-status").className = "copied";
-  state.sheetCommand = key;
-  requestAnimationFrame(() => sheet.classList.add("open"));
-  document.querySelectorAll("[data-command]").forEach((button) => {
-    button.setAttribute("aria-expanded", String(button.dataset.command === key));
+function connectStream() {
+  if (typeof EventSource === "undefined") return;
+  if (streamSrc) { streamSrc.close(); streamSrc = null; }
+  streamSrc = new EventSource("/api/stream");
+  streamSrc.addEventListener("open", () => { state.sse = sseReducer(state.sse, { type: "open" }, Date.now()); applyBanner(); });
+  streamSrc.addEventListener("block", (message) => {
+    let data = {};
+    try { data = JSON.parse(message.data); } catch { return; }
+    state.sse = sseReducer(state.sse, { type: "message" }, Date.now());
+    updateNet(data.height);
+    const kind = state.route.name === "fleet" ? "fleet" : state.route.name === "agent" ? "agent" : "timeline";
+    scheduleRouteRefresh(kind);
   });
-}
-
-function closeSheet() {
-  const sheet = $("command-sheet");
-  sheet.classList.remove("open");
-  sheet.hidden = true;
-  state.sheetCommand = null;
-  document.querySelectorAll("[data-command]").forEach((button) => {
-    button.setAttribute("aria-expanded", "false");
-  });
-}
-
-async function copyCommand() {
-  const text = $("command-text").textContent ?? "";
-  const status = $("copy-status");
-  try {
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(text);
-    } else {
-      const area = document.createElement("textarea");
-      area.className = "copy-fallback";
-      area.value = text;
-      area.setAttribute("readonly", "");
-      document.body.appendChild(area);
-      area.select();
-      const ok = document.execCommand("copy");
-      area.remove();
-      if (!ok) throw new Error("execCommand refused");
-    }
-    status.textContent = "Copied";
-    status.className = "copied";
-  } catch {
-    status.textContent = "Copy failed — select the command and copy it manually";
-    status.className = "copy-error";
-  }
-  status.hidden = false;
-  setTimeout(() => {
-    status.hidden = true;
-  }, 3_000);
+  streamSrc.addEventListener("snapshot", () => { state.sse = sseReducer(state.sse, { type: "message" }, Date.now()); });
+  streamSrc.addEventListener("timeline", () => { state.sse = sseReducer(state.sse, { type: "message" }, Date.now()); scheduleRouteRefresh(state.route.name === "agent" ? "agent" : "timeline"); });
+  streamSrc.addEventListener("error", () => { state.sse = sseReducer(state.sse, { type: "error" }, Date.now()); applyBanner(); });
 }
 
 /* ---------- events ---------- */
 
 document.addEventListener("click", (event) => {
-  const target = event.target;
-  if (!(target instanceof Element)) return;
-  const retry = target.closest("[data-retry]");
-  if (retry !== null) {
-    if (retry.dataset.retry === "fleet") loadFleet();
-    else if (retry.dataset.retry === "agent") loadAgent(state.route.account);
-    else if (retry.dataset.retry === "timeline") loadTimeline();
+  const t = event.target;
+  if (!(t instanceof Element)) return;
+  const retry = t.closest("[data-retry]");
+  if (retry) { if (retry.dataset.retry === "fleet") loadFleet(); else if (retry.dataset.retry === "agent") loadAgent(state.route.account); else loadTimeline(); return; }
+  const copyEl = t.closest("[data-copy]");
+  if (copyEl) { copyText(copyEl.getAttribute("data-copy") ?? ""); return; }
+  const expandRow = t.closest(".chain-row");
+  if (expandRow) {
+    const detail = expandRow.parentElement?.querySelector(".chain-detail");
+    if (detail) { detail.hidden = !detail.hidden; expandRow.setAttribute("aria-expanded", String(!detail.hidden)); }
     return;
   }
-  const more = target.closest("[data-more]");
-  if (more !== null && state.timeline !== null) {
-    state.timelineLimit += 20;
-    renderTimeline(state.timeline, true);
-    return;
-  }
-  const command = target.closest("[data-command]");
-  if (command !== null) {
-    if (state.sheetCommand === command.dataset.command && !$("command-sheet").hidden) {
-      closeSheet();
-    } else {
-      openSheet(command.dataset.command);
-    }
-  }
+  const actionBtn = t.closest("[data-action]");
+  if (actionBtn) { openSheetFor(actionBtn.dataset.action, actionBtn.dataset.mode, actionBtn.dataset.agent); return; }
+  const commandBtn = t.closest("[data-command]");
+  if (commandBtn) { openSheetFor(commandBtn.dataset.command, commandBtn.dataset.mode ?? "A", commandBtn.dataset.agent); return; }
+  const expand = t.closest("[data-expand-timeline]");
+  if (expand) { state.timelineExpanded = true; renderTimeline(state.timeline); return; }
+  const collapse = t.closest("[data-collapse-timeline]");
+  if (collapse) { state.timelineExpanded = false; renderTimeline(state.timeline); return; }
+  if (t.id === "copy-command" || t.closest("#copy-command")) { copyCurrentCommand(); }
 });
 
-$("copy-command").addEventListener("click", copyCommand);
-
-window.addEventListener("hashchange", route);
-
-setInterval(() => {
-  const staleAfter = Math.max(12_000, (state.fleet?.blockPollMs ?? 1_000) * 8);
-  if (
-    state.lastDataAt !== null &&
-    Date.now() - state.lastDataAt > staleAfter &&
-    !state.dataStale
-  ) {
-    state.dataStale = true;
-    updateBanner();
+$("copy-command").addEventListener("click", copyCurrentCommand);
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && state.sheet.status !== "closed") {
+    state.sheet = sheetReducer(state.sheet, { type: "close" });
+    renderSheet();
   }
-  if (state.connection === "reconnecting") updateBanner();
-}, 2_000);
-
-/* ---------- stream ---------- */
-
-function connectStream() {
-  if (typeof EventSource === "undefined") return;
-  const source = new EventSource("/api/stream");
-  source.addEventListener("open", () => {
-    state.connection = "live";
-    state.reconnectSince = null;
-    markLive();
-    updateBanner();
-    if (state.route.name === "fleet") scheduleRefresh("fleet");
-  });
-  source.addEventListener("init", (message) => {
-    let data = {};
-    try {
-      data = JSON.parse(message.data);
-    } catch {
-      return;
-    }
-    state.connection = "live";
-    state.reconnectSince = null;
-    markLive();
-    updateTicker(data.headBlock);
-    updateBanner();
-  });
-  source.addEventListener("block", (message) => {
-    let data = {};
-    try {
-      data = JSON.parse(message.data);
-    } catch {
-      return;
-    }
-    state.connection = "live";
-    state.reconnectSince = null;
-    markLive();
-    updateTicker(data.height);
-    if (state.fleet !== null && data.height >= (state.fleet.headBlock ?? 0)) {
-      state.fleet.headBlock = data.height;
-    }
-    updateBanner();
-    if (state.route.name === "fleet") scheduleRefresh("fleet");
-    else if (state.route.name === "agent") scheduleRefresh("agent");
-    else scheduleRefresh("timeline");
-  });
-  source.addEventListener("snapshot", () => {
-    state.connection = "live";
-    state.reconnectSince = null;
-    markLive();
-    if (state.route.name === "fleet") scheduleRefresh("fleet");
-    else if (state.route.name === "agent") scheduleRefresh("agent");
-    else scheduleRefresh("timeline");
-  });
-  source.addEventListener("timeline", () => {
-    markLive();
-    if (state.route.name === "timeline") scheduleRefresh("timeline");
-    else if (state.route.name === "agent") scheduleRefresh("agent");
-    else scheduleRefresh("fleet");
-  });
-  source.addEventListener("error", () => {
-    if (state.connection !== "reconnecting") {
-      state.reconnectSince = Date.now();
-    }
-    state.connection = "reconnecting";
-    updateBanner();
-  });
-}
+});
+window.addEventListener("hashchange", route);
+window.addEventListener("resize", () => viewportOf(window.innerWidth));
 
 /* ---------- boot ---------- */
 
+state.sse = sseReducer(state.sse, { type: "open" }, Date.now());
 route();
 connectStream();
+loadClaimsOnce();

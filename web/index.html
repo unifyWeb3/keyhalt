@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex" />
 <meta name="color-scheme" content="dark" />
-<title>FLEET console</title>
+<title>Keyhalt console</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="stylesheet" href="/styles.css" />
 </head>
@@ -13,9 +13,9 @@
 <a class="skip-link" href="#main">Skip to content</a>
 
 <header class="topbar">
-  <a class="brand" href="#/fleet" aria-label="FLEET fleet home">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
-    <span class="wordmark">FLEET</span>
+  <a class="brand" id="brand-home" href="#/fleet" aria-label="Home">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="10" width="18" height="11" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/><circle cx="12" cy="15.5" r=".75" fill="currentColor"/></svg>
+    <span class="wordmark" id="brand-mark"></span>
   </a>
   <nav class="nav" aria-label="Screens">
     <a href="#/fleet" data-nav="fleet">Fleet</a>
@@ -32,11 +32,12 @@
 <div class="banner" id="banner" role="status" aria-live="polite" hidden></div>
 
 <main id="main">
-  <section class="view" id="view-fleet">
-    <section class="panel" aria-labelledby="fleet-heading">
+  <section class="view" id="view-fleet" aria-labelledby="fleet-heading">
+    <h1 id="fleet-heading" class="sr-only">Fleet</h1>
+    <div class="panel" id="fleet-panel">
       <div class="panel-head">
-        <h1 id="fleet-heading">Fleet</h1>
-        <span class="meta mono" id="fleet-meta">Reading finalized block…</span>
+        <span class="panel-title">Fleet</span>
+        <span class="meta mono" id="fleet-meta">reading…</span>
       </div>
       <div id="fleet-body" aria-busy="true">
         <div class="skeleton-table" aria-hidden="true">
@@ -47,68 +48,84 @@
           <span class="skeleton skeleton-wide"></span>
           <span class="skeleton"></span>
         </div>
-        <p class="loading-note">Waiting for the first pinned testnet read.</p>
       </div>
-    </section>
-    <p class="more"><a href="#/timeline" id="fleet-timeline-link">Timeline <span class="ic" aria-hidden="true">→</span></a></p>
+    </div>
+    <p class="more"><a href="#/timeline" class="more-link">Timeline <span aria-hidden="true">→</span></a></p>
   </section>
 
   <section class="view" id="view-agent" hidden>
-    <p class="back"><a href="#/fleet" id="agent-back">← Fleet</a></p>
-    <section class="panel" aria-labelledby="agent-heading">
+    <p class="back"><a href="#/fleet" class="back-link">← Fleet</a></p>
+    <h1 class="agent-id mono" id="agent-heading">Agent</h1>
+    <div id="agent-status" class="status-strip" aria-live="polite"></div>
+    <section class="panel" aria-labelledby="operators-heading">
       <div class="panel-head">
-        <h1 class="agent-id mono" id="agent-heading">Agent</h1>
-        <span class="meta mono" id="agent-meta">Reading finalized block…</span>
+        <h2 id="operators-heading" class="panel-title">Operator keys</h2>
+        <span class="meta mono" id="keys-meta">—</span>
       </div>
-      <div id="agent-body" aria-busy="true">
-        <div class="skeleton-table" aria-hidden="true">
-          <span class="skeleton skeleton-wide"></span>
-          <span class="skeleton"></span>
-          <span class="skeleton skeleton-wide"></span>
-          <span class="skeleton"></span>
-        </div>
-        <p class="loading-note">Reading this agent at the same finalized block.</p>
-      </div>
-      <div class="sheet" id="command-sheet" hidden>
-        <code id="command-text"></code>
-        <p class="sheet-note">Run this in the repository root with your mode-600 admin key outside the repository. The console never sees the key and never signs.</p>
-        <div class="row">
-          <button class="btn" id="copy-command" type="button">Copy command</button>
-          <span class="copied" id="copy-status" role="status" aria-live="polite" hidden></span>
-        </div>
-      </div>
+      <div class="table-wrap"><table class="keys-table" id="keys-table" aria-describedby="keys-meta">
+        <caption class="sr-only">Operator keys for this agent</caption>
+        <thead><tr><th scope="col">Key</th><th scope="col">Tag</th><th scope="col">From</th></tr></thead>
+        <tbody id="keys-body"></tbody>
+      </table></div>
+      <div class="roles" id="roles"></div>
     </section>
+
+    <section class="panel" aria-labelledby="admin-heading">
+      <div class="panel-head">
+        <h2 id="admin-heading" class="panel-title">Admin</h2>
+        <span class="meta mono" id="admin-meta"></span>
+      </div>
+      <div id="admin-rows" class="admin-rows"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="audit-heading">
+      <div class="panel-head">
+        <h2 id="audit-heading" class="panel-title">Audit</h2>
+        <span class="meta mono" id="audit-meta">—</span>
+      </div>
+      <ol class="chain" id="audit-chain"></ol>
+    </section>
+
+    <section class="panel" aria-labelledby="events-heading">
+      <div class="panel-head">
+        <h2 id="events-heading" class="panel-title">Events</h2>
+        <a class="meta mono link" href="#/timeline" id="all-events-link">all events →</a>
+      </div>
+      <div id="agent-events"></div>
+    </section>
+
   </section>
 
   <section class="view" id="view-timeline" hidden>
-    <p class="back"><a href="#/fleet">← Fleet</a></p>
-    <section class="panel" aria-labelledby="timeline-heading">
+    <p class="back"><a href="#/fleet" class="back-link">← Fleet</a></p>
+    <div class="panel">
       <div class="panel-head">
-        <h1 id="timeline-heading">Timeline</h1>
-        <span class="meta mono" id="timeline-meta">Reading finalized block…</span>
+        <h1 id="timeline-heading" class="panel-title">Timeline</h1>
+        <span class="meta mono" id="timeline-meta">reading…</span>
       </div>
       <div id="timeline-body" aria-busy="true">
         <div class="skeleton-table" aria-hidden="true">
-          <span class="skeleton skeleton-wide"></span>
-          <span class="skeleton"></span>
-          <span class="skeleton skeleton-wide"></span>
-          <span class="skeleton"></span>
-          <span class="skeleton skeleton-wide"></span>
-          <span class="skeleton"></span>
+          <span class="skeleton skeleton-wide"></span><span class="skeleton"></span>
+          <span class="skeleton skeleton-wide"></span><span class="skeleton"></span>
+          <span class="skeleton skeleton-wide"></span><span class="skeleton"></span>
         </div>
-        <p class="loading-note">Reading audit entries and watched receipts.</p>
       </div>
-    </section>
+    </div>
   </section>
+<div class="sheet" id="command-sheet" hidden>
+  <code class="mono" id="command-text"></code>
+  <div class="row">
+    <button class="btn btn-copy" id="copy-command" type="button">Copy</button>
+    <span class="copied" id="copy-status" role="status" aria-live="polite" hidden>Copied</span>
+  </div>
+</div>
+
 </main>
 
-<footer>
-  <span>Verified <a href="/claims.md" id="claims-link">—</a></span>
-  <span aria-hidden="true">·</span>
-  <a href="/threat-model.md">Threat model</a>
-  <span class="foot-note" id="foot-note">Read-only · no key stored</span>
-  <span aria-hidden="true">·</span>
-  <a href="https://testnet.nearblocks.io/account/agent-b1.fleet-modeb-748d4372.testnet" id="modeb-link" rel="noopener noreferrer" target="_blank">Mode B demo</a>
+<footer class="foot">
+  <span class="foot-item">Verified <a href="/claims.md" id="claims-link" class="link">—</a></span>
+  <span aria-hidden="true" class="foot-sep">·</span>
+  <a href="/threat-model.md" class="link">Threat model</a>
 </footer>
 
 <script type="module" src="/app.js"></script>
