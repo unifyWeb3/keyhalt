@@ -260,6 +260,10 @@ test("console agent reads expose keys, audit verification, and commands", async 
 
 test("console audit export is the portable fleet-audit-v1 format", async () => {
   await withConsole(async ({ base }) => {
+    // The export route waits for a snapshot; call /api/fleet first so the
+    // agent state exists by the time the route is probed (this is what the
+    // route waits for, exercised under full CPU contention in CI clones).
+    await getJson(base, "/api/fleet");
     const { response, body } = await getJson(
       base,
       "/api/audit-export?account=agent.testnet",
