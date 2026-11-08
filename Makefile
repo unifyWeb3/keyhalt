@@ -2,7 +2,7 @@ SHELL := /usr/bin/env bash
 export PATH := $(HOME)/.cargo/bin:$(PATH)
 .DEFAULT_GOAL := help
 
-.PHONY: help setup verify test build claims secret-scan rpc-check demo console console-smoke console-demo fresh-clone mutation gas repro clean
+.PHONY: help setup verify test build claims secret-scan rpc-check demo console console-smoke console-demo mcp fresh-clone mutation gas repro clean
 
 help:
 	@echo "FLEET v0.3 — testnet key-lifecycle control plane (unaudited)"
@@ -18,6 +18,7 @@ help:
 	@echo "  make console     start the read-only console at http://127.0.0.1:4173"
 	@echo "  make console-smoke  deterministic console start/read-only/static check"
 	@echo "  make console-demo   rehearse freeze -> refusal -> unfreeze (needs key env)"
+	@echo "  make mcp         run the read-only FLEET MCP server on stdio"
 	@echo "  make mutation    run the 8-mutant state-machine test"
 	@echo "  make gas         rebuild the testnet gas profile"
 	@echo "  make repro       build the wasm twice and compare hashes"
@@ -59,6 +60,10 @@ console-smoke:
 
 console-demo:
 	node scripts/console-demo.mjs
+
+mcp:
+	npm run build
+	node packages/mcp/dist/cli.js
 
 mutation:
 	node scripts/mutation-test.mjs

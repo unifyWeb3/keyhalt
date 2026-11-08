@@ -5,6 +5,9 @@ Working document for the human; updated as items land. Not a public artifact.
 ## Gate
 
 **Feature freeze 2026-11-10 18:00 UTC.** After the freeze: bug fixes only.
+
+**Items 1-8 all landed and are verified; item 9 (read-only MCP) landed too:
+`packages/mcp` passes 8/8 tests, claim F-041, full suite 68/68.**
 Judging instructions (Q-017) screen reproducibility before humans score.
 
 ## Done (through item 6)
@@ -23,6 +26,7 @@ Judging instructions (Q-017) screen reproducibility before humans score.
 | Evidence | `evidence/console-v03/*`, `evidence/modeb-v03/cli-admin-run.json` |
 | item 7 — pre-publication audit | git-history secret scan clean; ls-files credential scan clean; builder-name grep clean (public references sanitized); LICENSE present; AI-assistance list updated; Q-003 baseline section current; hackathon-submission tag plan complete; file modes 644/755 |
 | item 8 — live research | HACKATHON.md re-fetched 2026-11-08; diff logged; competitor named in brief not locatable (docs/LIVE_RESEARCH.md §3); NEAR NEP-611 gas keys / NEP-642 account cost / HSP-027 logged, no claims affected |
+| item 9 — read-only MCP server | `packages/mcp`: stdio JSON-RPC server, `fleet_inventory`/`fleet_audit`/`fleet_verify`; 8/8 tests; claim F-041 (CLAIMS 41/41); mainnet RPC refused at startup |
 
 ## Open / blocked (requires the human)
 

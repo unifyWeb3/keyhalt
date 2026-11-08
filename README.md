@@ -224,6 +224,10 @@ state polling. These are measurements, not an execution SLA.
 | Mode B (2-of-2 multisig) | freeze | 3 | 10,038 / 17,105 ms | 13,682 / 32,946 ms | 13 / 19 | 18 / 47 |
 | Mode B (2-of-2 multisig) | unfreeze | 3 | 11,864 / 21,581 ms | 15,840 / 42,479 ms | 14 / 19 | 21 / 66 |
 
+**Read-only MCP for out-of-process agents:** `@fleet/mcp` serves
+`fleet_inventory`, `fleet_audit` and `fleet_verify` over the stdio MCP
+transport (docs/INTERFACES.md §8; claim F-041).
+
 The Mode B row is the same harness signing for both owners, so it measures the
 2-of-2 mechanism, not independent custody. Claims F-029…F-032.
 

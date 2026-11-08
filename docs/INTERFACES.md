@@ -1,7 +1,8 @@
 # FLEET interfaces (v0.3)
 
 **Status:** v0.3 — controller, TypeScript SDK, and CLI are implemented and have
-run on NEAR testnet. Mode B 2-of-2 administration is implemented and verified on
+run on NEAR testnet. The read-only MCP server (`@fleet/mcp`) is built and
+tested. Mode B 2-of-2 administration is implemented and verified on
 testnet both by the harness and through the product CLI
 (`fleet admin request freeze|unfreeze` / `fleet admin confirm` /
 `fleet admin status`; claim rows F-038…F-040). The read-only
@@ -448,3 +449,29 @@ visible in the public receipt logs even though the call fails.
 In Mode B, `actor_account` is the multisig parent and `signer_pk` is the owner
 key that signed the outer transaction. The controller cannot see the multisig's
 internal confirmation count; it only observes the executed predecessor call.
+
+## 8. Read-only MCP server
+
+Package: `@fleet/mcp` (`packages/mcp`), version `0.3.0`. The server speaks
+JSON-RPC 2.0 over stdio (newline-delimited), the Model Context Protocol. It
+has no signer, no write method, and no key input. It exists so agent systems
+can read the same inventory and audit data the CLI and SDK expose.
+
+```text
+node packages/mcp/dist/cli.js [--rpc-url URL]
+```
+
+Tools:
+
+| Tool | Reads | Arguments |
+| --- | --- | --- |
+| `fleet_inventory` | agent mode, paused state, operators, native keys, audit length, audit head — one pinned finalized block | `account` (testnet id) |
+| `fleet_audit` | audit entries with seq/action/block/hashes; `limit` caps the return at 1..100, default 100 | `account`, optional `limit` |
+| `fleet_verify` | SDK re-verification of the audit chain plus on-chain `verify_audit` | `account` |
+
+The server answers `initialize` with MCP protocol `2025-06-18`,
+`tools/list` with the three tools above, and refuses unknown methods with
+`-32601`. A mainnet-looking RPC URL is refused at startup, like everywhere
+else. Claim F-041 records what the test suite proves; the implementation
+adds no further claims. The inventory data is exactly what `fleet inventory`
+and `getInventory()` return.

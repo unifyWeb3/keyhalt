@@ -2,22 +2,23 @@
   "name": "fleet",
   "version": "0.3.0",
   "private": true,
-  "description": "FLEET — native NEAR account-fleet key-lifecycle control plane (testnet, unaudited)",
+  "description": "FLEET \u2014 native NEAR account-fleet key-lifecycle control plane (testnet, unaudited)",
   "license": "MIT",
   "type": "module",
   "workspaces": [
     "packages/sdk",
     "packages/cli",
     "packages/api",
-    "packages/console"
+    "packages/console",
+    "packages/mcp"
   ],
   "engines": {
     "node": ">=22.0.0"
   },
   "scripts": {
-    "build": "tsc -p packages/sdk/tsconfig.json && tsc -p packages/cli/tsconfig.json && tsc -p packages/api/tsconfig.json && tsc -p packages/console/tsconfig.json",
-    "test": "npm run build && node --test packages/sdk/test/sdk.test.mjs packages/cli/test/cli.test.mjs packages/api/test/api.test.mjs packages/console/test/console.test.mjs",
-    "clean": "rm -rf packages/sdk/dist packages/cli/dist packages/api/dist packages/console/dist",
+    "build": "tsc -p packages/sdk/tsconfig.json && tsc -p packages/cli/tsconfig.json && tsc -p packages/api/tsconfig.json && tsc -p packages/console/tsconfig.json && tsc -p packages/mcp/tsconfig.json",
+    "test": "npm run build && node --test packages/sdk/test/sdk.test.mjs packages/cli/test/cli.test.mjs packages/api/test/api.test.mjs packages/console/test/console.test.mjs packages/mcp/test/mcp.test.mjs",
+    "clean": "rm -rf packages/sdk/dist packages/cli/dist packages/api/dist packages/console/dist packages/mcp/dist",
     "console": "npm run build && node packages/console/dist/cli.js"
   },
   "devDependencies": {
