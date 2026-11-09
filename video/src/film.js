@@ -4,7 +4,8 @@ import { scene, SHOTS } from './scenes.js';
 
 const W = 1280, H = 720, FPS = 30, DUR = SHOTS[SHOTS.length - 1].t1;
 const OUT = process.argv[2] ?? '/home/unify/near/keyhalt/video/out/frames';
-rmSync(OUT, { recursive: true, force: true });
+// Do not wipe the output directory; PNG frames from prior runs are kept intentionally.
+mkdirSync(OUT, { recursive: true });
 mkdirSync(OUT, { recursive: true });
 const total = DUR * FPS;
 for (let i = 0; i < total; i += 1) {

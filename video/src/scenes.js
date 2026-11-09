@@ -38,16 +38,15 @@ export function beatFleet(t) {
   const gt = t;
   const a = (d) => easeOut(Math.min(1, Math.max(0, (gt - 9.2 - d) / 0.6)));
   const rows = [
-    ['agent-1', 'owner', 'full access', true],
-    ['agent-1b', 'operator', 'execute ping', true],
-    ['agent-1b', 'operator', 'execute ping', true],
-    ['agent-1b', 'operator', 'execute ping', true],
-    ['agent-2', 'operator', 'execute ping', true],
-    ['agent-3', 'operator', 'execute ping', true],
+    ['agent-1b', 'operator', 'tag ops-a · ping', true],
+    ['agent-1b', 'operator', 'tag ops-a · ping', true],
+    ['agent-1b', 'operator', 'tag ops-b · ping', true],
+    ['agent-2', 'operator', 'tag ops-a · ping', true],
+    ['agent-3', 'operator', 'tag ops-b · ping', true],
   ];
   const inner = [
     text({ x: 640, y: 112, s: 'fleet-v03-5cff9e99.testnet', size: 26, family: MONO, weight: 700, fill: INK, anchor: 'middle' }),
-    text({ x: 640, y: 140, s: 'Six native keys. Four active operators. One full-access parent.', size: 15, fill: MUTED, anchor: 'middle' }),
+    text({ x: 640, y: 140, s: 'Three agents, four operators each, zero full-access keys.', size: 15, fill: MUTED, anchor: 'middle' }),
     ...rows.map(([agent, role, perm, on], i) => [
       rect({ x: 320, y: 168 + i * 72, w: 640, h: 52, r: 6, fill: RAISED, stroke: LINE, sw: 1, opacity: a(i * 0.18) }),
       text({ x: 352, y: 201 + i * 72, s: agent, size: 16, family: MONO, weight: 700, fill: STEEL, opacity: a(i * 0.18) }),
@@ -151,14 +150,21 @@ export function beatAudit(t) {
 
 export function beatNumbers(t) {
   const gt = t;
-  const a = (d) => easeOut(Math.min(1, Math.max(0, (gt - 65.4 - d) / 0.6)));
+  const a = (d) => easeOut(Math.min(1, Math.max(0, (gt - 65.4 - d) / 0.7)));
+  const cell = (x, y, w, big, caption2, delay) => {
+    const p = a(delay);
+    return [
+      text({ x: x + 56, y: y + 76, s: String(big), size: 62, family: MONO, weight: 700, fill: STEEL, anchor: 'start', opacity: p }),
+      text({ x: x + 56, y: y + 108, s: caption2, size: 17, weight: 600, fill: INK, anchor: 'start', opacity: p }),
+    ].join('');
+  };
   const inner = [
     text({ x: 640, y: 132, s: 'The evidence, in public', size: 28, family: SERIF, weight: 700, fill: INK, anchor: 'middle' }),
-    [[84, 'Rust tests'], [41, 'TypeScript tests'], [7, 'near-workspaces tests'], [98.41, 'mutation score']].map(([n, caption2], i) => [
-      text({ x: 380, y: 258 + (i % 2) * 140, s: String(n), size: 74, family: MONO, weight: 700, fill: STEEL, anchor: 'middle', opacity: a(Math.floor(i / 2) * 0.2) }),
-      text({ x: 560, y: 258 + (i % 2) * 140, s: caption2, size: 19, weight: 700, fill: INK, opacity: a(Math.floor(i / 2) * 0.2) }),
-    ].join('')).join(''),
-    caption(gt, 70, 78, 'github.com/unifyWeb3/keyhalt · MIT · testnet-only, unaudited'),
+    cell(140, 190, 480, 84, 'Rust tests, clippy clean', 0),
+    cell(140, 380, 480, 41, 'TypeScript tests, CLI and SDK', 0.15),
+    cell(660, 190, 480, 7, 'near-workspaces integration tests', 0.3),
+    cell(660, 380, 480, 98.41, 'mutation score, all 4 survivors justified in writing', 0.45),
+    caption(gt, 70, 78, 'github.com/unifyWeb3/keyhalt · MIT · testnet-only, unaudited · every figure has a row in CLAIMS.md'),
   ];
   return frame(runningHead(inner, 8), 1280, 720);
 }
