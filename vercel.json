@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": "dist-snapshot",
+  "ignoreCommand": "if git diff --quiet HEAD^ HEAD -- dist-snapshot vercel.json; then exit 0; else exit 1; fi"
+}

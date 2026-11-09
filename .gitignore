@@ -19,3 +19,5 @@ mutants.snapshot.*/
 mutants.stdout.txt
 mutants.snapshot.*.stdout.txt
 .DS_Store
+.vercel
+.env*
