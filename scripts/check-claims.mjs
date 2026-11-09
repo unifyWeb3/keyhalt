@@ -59,7 +59,10 @@ for (const [index, line] of lines.entries()) {
   if (!claim || claim.length < 8) fail(`${id}: claim text is too short`);
   if (!STATUSES.has(status)) fail(`${id}: bad status ${status}`);
   if (status === "VERIFIED") {
-    if (!evidence || evidence === "—" || /^n\/?a$/i.test(evidence)) {
+    // A VERIFIED row with no evidence. Cells made only of dashes, colons, or
+    // em dashes count as missing evidence; real evidence is a path, hash,
+    // or sentence naming the test/tx that proves the claim.
+    if (!evidence || /^[-:\u2014\u2013\s]*$/.test(evidence) || /^n\/?a$/i.test(evidence)) {
       fail(`${id}: VERIFIED requires a test path or tx hash`);
     }
     if (!DATE_RE.test(lastVerified)) {
