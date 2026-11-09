@@ -1,0 +1,18 @@
+{
+  "capturedAt": "2026-11-09T01:18:54Z",
+  "network": "testnet",
+  "source": "live read via the local Keyhalt console pinned to finalized blocks",
+  "gitCommit": "d5d2d37",
+  "headBlock": 276853268,
+  "pinnedBlock": 276853260,
+  "notice": "Recorded data, not live. The snapshot generator embeds these bytes and makes no network call.",
+  "health": "health.json",
+  "keyhalt": "keyhalt.json",
+  "timeline": "timeline.json",
+  "agents": {
+    "agent-1b.fleet-v03-5cff9e99.testnet": "agent-1b.json",
+    "agent-2.fleet-v03-5cff9e99.testnet": "agent-2.json",
+    "agent-3.fleet-v03-5cff9e99.testnet": "agent-3.json",
+    "agent-b1.fleet-modeb-748d4372.testnet": "agent-b1.json"
+  }
+}
