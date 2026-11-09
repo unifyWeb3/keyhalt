@@ -549,6 +549,20 @@ rename. These strings cannot change without redeploying:
 
 ---
 
+## Independence and disclosure
+
+- This is one of two independent NEAR submissions by the same builder. The
+  other project is `bound`, a spend-policy contract for paid agent wallets
+  at `https://github.com/unifyWeb3/near-bound`. The two repositories share
+  no code, no contract, and no package. They share a thesis and a builder.
+- No implementation in this repository existed before 2026-11-01. The build
+  window is 2026-11-01 to 2026-11-14.
+- The code was written with an AI coding agent. The claims table, the
+  verification evidence, and the console were reviewed and run by the
+  builder.
+- Judges run the DEMO and the evidence on testnet. No mainnet transactions
+  are required or recommended.
+
 ## License
 
 MIT. See [`LICENSE`](LICENSE).
