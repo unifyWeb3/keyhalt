@@ -63,6 +63,18 @@ Cloudflare Pages, labelled on every page:
   public page is a frozen sample with the block height visible.
 - No auth, no secrets, no data that is not already public on testnet.
 
+## Update 2026-11-09: the snapshot was deployed (Vercel, Hobby)
+
+The labelled static snapshot (`dist-snapshot/`) was deployed to Vercel on the
+Hobby plan by `unifyWeb3`, project `keyhalt` in team `oxunify`, linked to the
+private GitHub repository `unifyWeb3/keyhalt` with `main` as the production
+branch. The deployment is static, contains no environment variables, and the
+ignored-build-step skips deploys when neither `dist-snapshot/` nor the Vercel
+config changes. Vercel Authentication is scoped to preview deployments on
+this project; the production URL is public. The page served there is the
+candidate submission demo surface; it is still a static capture and still
+marked "Recorded data, not live" until the human removes the noindex meta.
+
 ## Recommendation
 
 **Ship the labelled static snapshot** (GitHub Pages or Cloudflare Pages); it
