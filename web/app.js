@@ -15,9 +15,10 @@ import {
   sseReducer,
   agentStateRead,
   viewportOf,
+  viewIdForRoute,
   timelineResultOf,
 } from "./state.js";
-import { BRAND, BRAND_LABEL } from "./brand.js";
+import { BRAND, BRAND_HTML, BRAND_LABEL } from "./brand.js";
 
 const $ = (id) => document.getElementById(id);
 const esc = (v) =>
@@ -530,17 +531,6 @@ function parseRoute() {
   if (raw.startsWith("timeline")) return { name: "timeline", account: null };
   return { name: "keyhalt", account: null };
 }
-function setView() {
-  const views = { fleet: $("view-keyhalt"), agent: $("view-agent"), timeline: $("view-timeline") };
-  for (const [name, element] of Object.entries(views)) element.hidden = name !== state.route.name;
-  $("brand-mark").textContent = "KEYHALT";
-  $("brand-home").setAttribute("aria-label", BRAND_LABEL);
-  document.title = state.route.name === "keyhalt" ? "Keyhalt · Keyhalt" : state.route.name === "agent" ? "Keyhalt · Agent" : "Keyhalt · Timeline";
-  document.querySelectorAll(".nav a[data-nav]").forEach((link) => {
-    const active = (state.route.name === "agent" ? "keyhalt" : state.route.name) === link.dataset.nav;
-    if (active) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current");
-  });
-}
 function route() {
   state.route = parseRoute();
   showView();
@@ -558,10 +548,15 @@ function route() {
   }
 }
 function showView() {
-  const views = { fleet: $("view-keyhalt"), agent: $("view-agent"), timeline: $("view-timeline") };
+  const views = Object.fromEntries(["keyhalt", "agent", "timeline"].map((name) => [name, $(viewIdForRoute(name))]));
   for (const [name, element] of Object.entries(views)) element.hidden = name !== state.route.name;
-  $("brand-mark").textContent = "KEYHALT";
+  $("brand-mark").textContent = BRAND_HTML;
+  $("brand-home").setAttribute("aria-label", BRAND_LABEL);
   document.title = state.route.name === "keyhalt" ? `${BRAND} · Keyhalt` : state.route.name === "agent" ? `${BRAND} · Agent` : `${BRAND} · Timeline`;
+  document.querySelectorAll(".nav a[data-nav]").forEach((link) => {
+    const active = (state.route.name === "agent" ? "keyhalt" : state.route.name) === link.dataset.nav;
+    if (active) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current");
+  });
 }
 
 /* ---------- sse & polling ---------- */

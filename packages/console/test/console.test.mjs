@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { buildTimeline } from "../dist/timeline.js";
@@ -349,7 +350,19 @@ import {
   viewportOf,
   bannerOf,
   agentStateRead,
+  viewIdForRoute,
 } from "../../../web/state.js";
+
+test("viewIdForRoute: every route maps to an existing view element", () => {
+  const expected = { keyhalt: "view-keyhalt", agent: "view-agent", timeline: "view-timeline" };
+  const html = readFileSync(new URL("../../../web/index.html", import.meta.url), "utf8");
+  for (const [route, id] of Object.entries(expected)) {
+    assert.equal(viewIdForRoute(route), id);
+    assert.ok(html.includes(`id="${id}"`), `web/index.html must carry #${id}`);
+  }
+  assert.equal(viewIdForRoute("fleet"), null);
+  assert.equal(viewIdForRoute(""), null);
+});
 
 test("dataLoad: loading -> live, ok with zero agents -> empty", () => {
   let s = INITIAL_DATA_LOAD;

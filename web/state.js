@@ -220,3 +220,18 @@ export function bannerOf(dataLoad, sse) {
   }
   return null;
 }
+
+/* ---------- 9. routes to view ids: one mapping, tested ---------- */
+
+export function viewIdForRoute(routeName) {
+  switch (routeName) {
+    case "keyhalt":
+      return "view-keyhalt";
+    case "agent":
+      return "view-agent";
+    case "timeline":
+      return "view-timeline";
+    default:
+      return null;
+  }
+}
