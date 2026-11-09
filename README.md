@@ -309,8 +309,11 @@ make console        # builds, then http://127.0.0.1:4173
 
 `web/` is a real interface served from the same origin. It never calls an
 RPC directly and never sees a key. Three screens: Keyhalt, Agent, Timeline.
-Every number comes from `CLAIMS.md` or from live reads pinned to a finalized
-block, and the header ticks the finalized block.
+The fleet list shows three Mode A agents and the Mode B demo agent
+`agent-b1.fleet-modeb-748d4372.testnet`; Mode B rows act through the
+`admin request` and `admin confirm` command sheet. Every number comes from
+`CLAIMS.md` or from live reads pinned to a finalized block, and the header
+ticks the finalized block.
 
 It never signs, never stores a key, never calls a write method, and never
 prints a made-up number. If every read fails it shows the last good block

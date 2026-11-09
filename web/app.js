@@ -286,9 +286,11 @@ function renderAgent(data, changed) {
       const label = paused ? "Unfreeze" : "Freeze";
       return `<button class="action-btn ${paused ? "" : "danger"}" type="button" data-command="${paused ? "unfreeze" : "freeze"}" data-mode="A" data-agent="${esc(agent.accountId)}">${label}</button>`;
     }
-    return paused
+    const request = paused
       ? `<button class="action-btn" type="button" data-command="request-unfreeze" data-mode="B" data-agent="${esc(agent.accountId)}">Request unfreeze</button>`
       : `<button class="action-btn danger" type="button" data-command="request-freeze" data-mode="B" data-agent="${esc(agent.accountId)}">Request freeze</button>`;
+    const confirm = `<button class="action-btn" type="button" data-command="confirm-freeze" data-mode="B" data-agent="${esc(agent.accountId)}">Confirm request</button>`;
+    return `${request}${confirm}`;
   })();
 
   strip.className = `status-strip${paused ? " frozen" : ""}`;

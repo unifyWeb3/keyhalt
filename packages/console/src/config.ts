@@ -45,14 +45,15 @@ export interface ConsoleConfig {
   modeBUrl: string;
 }
 
+export const MODE_B_ACCOUNT = "agent-b1.fleet-modeb-748d4372.testnet";
+export const MODE_B_URL = `https://testnet.nearblocks.io/account/${MODE_B_ACCOUNT}`;
+
 export const CANONICAL_AGENTS: AgentConfig[] = [
   { accountId: "agent-1b.fleet-v03-5cff9e99.testnet", label: "agent-1b" },
   { accountId: "agent-2.fleet-v03-5cff9e99.testnet", label: "agent-2" },
   { accountId: "agent-3.fleet-v03-5cff9e99.testnet", label: "agent-3" },
+  { accountId: MODE_B_ACCOUNT, label: "agent-b1" },
 ];
-
-export const MODE_B_ACCOUNT = "agent-b1.fleet-modeb-748d4372.testnet";
-export const MODE_B_URL = `https://testnet.nearblocks.io/account/${MODE_B_ACCOUNT}`;
 
 /**
  * Public testnet lifecycle receipts already recorded in `evidence/`. They are

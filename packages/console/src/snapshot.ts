@@ -43,7 +43,7 @@ interface AgentRecord {
 export interface AgentRow {
   accountId: string;
   label: string;
-  mode: "A";
+  mode: "A" | "B";
   state: "active" | "frozen" | "unknown";
   paused: boolean | null;
   operatorKeys: number | null;
@@ -65,7 +65,7 @@ export interface KeyhaltPayload {
   service: "keyhalt-console";
   version: string;
   status: "loading" | "live" | "stale" | "partial" | "empty";
-  mode: "A";
+  mode: "A" | "B" | "mixed";
   chainId: "testnet";
   headBlock: number | null;
   pinnedBlock: number | null;
@@ -95,7 +95,7 @@ export interface AgentPayload {
   service: "keyhalt-console";
   accountId: string;
   label: string;
-  mode: "A";
+  mode: "A" | "B";
   chainId: "testnet";
   status: "loading" | "live" | "stale" | "partial";
   headBlock: number | null;
@@ -125,6 +125,7 @@ export interface AgentPayload {
     inventory: string;
     freeze: string;
     unfreeze: string;
+    confirm: string;
   };
   exportUrl: string;
 }
@@ -421,6 +422,12 @@ export class SnapshotService {
     return { events: filtered, counts: built.counts };
   }
 
+  private fleetMode(rows: AgentRow[]): "A" | "B" | "mixed" {
+    if (rows.length === 0) return "A";
+    const modes = new Set(rows.map((row) => row.mode));
+    return modes.size === 1 ? ([...modes][0] ?? "A") : "mixed";
+  }
+
   keyhaltPayload(): KeyhaltPayload {
     const allEvents = this.timeline(500).events;
     const rows: AgentRow[] = [...this.agents.values()].map((agent) => {
@@ -435,7 +442,7 @@ export class SnapshotService {
       return {
         accountId: agent.config.accountId,
         label: agent.config.label,
-        mode: "A",
+        mode: state?.mode ?? "A",
         state: state === null ? "unknown" : state.paused ? "frozen" : "active",
         paused: state === null ? null : state.paused,
         operatorKeys:
@@ -473,7 +480,7 @@ export class SnapshotService {
       service: "keyhalt-console",
       version: "0.3.0",
       status: this.status(),
-      mode: "A",
+      mode: this.fleetMode(rows),
       chainId: "testnet",
       headBlock: this.head?.height ?? null,
       pinnedBlock: this.pinnedBlock,
@@ -522,7 +529,7 @@ export class SnapshotService {
       service: "keyhalt-console",
       accountId,
       label: agent.config.label,
-      mode: "A",
+      mode: state.mode,
       chainId: "testnet",
       status,
       headBlock: this.head?.height ?? null,
@@ -555,11 +562,20 @@ export class SnapshotService {
       },
       onChainVerified: agent.onChainVerified,
       events,
-      commands: {
-        inventory: `node packages/cli/dist/index.js inventory ${accountId} --json`,
-        freeze: `node packages/cli/dist/index.js freeze ${accountId} --signer-key-file "$KEYHALT_ADMIN_KEY_FILE" --json`,
-        unfreeze: `node packages/cli/dist/index.js unfreeze ${accountId} --signer-key-file "$KEYHALT_ADMIN_KEY_FILE" --json`,
-      },
+      commands:
+        state.mode === "B"
+          ? {
+              inventory: `node packages/cli/dist/index.js inventory ${accountId} --json`,
+              freeze: `node packages/cli/dist/index.js admin request freeze ${accountId} --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json`,
+              unfreeze: `node packages/cli/dist/index.js admin request unfreeze ${accountId} --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json`,
+              confirm: `node packages/cli/dist/index.js admin confirm ${accountId} <request-id> --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json`,
+            }
+          : {
+              inventory: `node packages/cli/dist/index.js inventory ${accountId} --json`,
+              freeze: `node packages/cli/dist/index.js freeze ${accountId} --signer-key-file "$KEYHALT_ADMIN_KEY_FILE" --json`,
+              unfreeze: `node packages/cli/dist/index.js unfreeze ${accountId} --signer-key-file "$KEYHALT_ADMIN_KEY_FILE" --json`,
+              confirm: `node packages/cli/dist/index.js admin confirm ${accountId} <request-id> --signer-key-file "$KEYHALT_OWNER_KEY_FILE" --json`,
+            },
       exportUrl: `/api/audit-export?account=${encodeURIComponent(accountId)}`,
     };
   }
