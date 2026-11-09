@@ -305,3 +305,12 @@ table.events th:nth-child(4) { width: 36%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+[data-reduce-transparency],
+@media (prefers-reduced-transparency: reduce) {
+  .topbar,
+  .banner {
+    backdrop-filter: none !important;
+    background: var(--panel) !important;
+  }
+}

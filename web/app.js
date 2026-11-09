@@ -637,3 +637,13 @@ state.sse = sseReducer(state.sse, { type: "open" }, Date.now());
 route();
 connectStream();
 loadClaimsOnce();
+
+/* Set a data attribute when the user needs reduced transparency. */
+try {
+  const mq = window.matchMedia('(prefers-reduced-transparency: reduce)');
+  if (mq.matches) document.documentElement.setAttribute('data-reduce-transparency', '');
+  mq.addEventListener?.('change', (e) => {
+    if (e.matches) document.documentElement.setAttribute('data-reduce-transparency', '');
+    else document.documentElement.removeAttribute('data-reduce-transparency');
+  });
+} catch {}
