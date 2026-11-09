@@ -103,6 +103,7 @@ let html = readFileSync(join(root, "web/index.html"), "utf8");
 if (!/<meta name="robots" content="noindex"\s*\/>/.test(html)) {
   fail("web/index.html lost its noindex meta; refusing to build the snapshot");
 }
+html = "<!-- Keyhalt dist-snapshot. Static capture, not a live service. See snapshot/capture.json. -->\n" + html;
 html = html.replace(
   "</header>",
   `</header>\n<div class="snapshot-banner" role="status">${BANNER}</div>`,
