@@ -4,8 +4,8 @@
 which intentionally contained no product code. v0.3 product code was added after
 that tag; see `README.md` and `CLAIMS.md`. This page is not rewritten to pretend
 the baseline included the product.
-**Repository:** `fleet`. Private remote configured
-(`https://github.com/unifyWeb3/keyhalt-private.git`); commits have been pushed to
+**Repository:** `keyhalt`. Private remote configured
+(`https://github.com/unifyWeb3/keyhalt.git`); commits have been pushed to
 that private remote, and **nothing has been made public**. No public
 repository, no published tag, no X post, no submission.
 **Created:** 2026-11-03 UTC (Phase 1 was planned for 2026-10-30/31 and slipped; see `research/BUILD_STATUS.md` in the separate research workspace).
@@ -86,7 +86,7 @@ human's explicit approval, in this order:
    testnet chain ids used, and the fact that the tag marks the **testnet
    prototype** submitted to the `security` track.
 4. **Push the tag only to the private remote** `origin`
-   (`https://github.com/unifyWeb3/keyhalt-private.git`), if the human approves
+   (`https://github.com/unifyWeb3/keyhalt.git`), if the human approves
    even that. A tag push is a publication action on a remote that the human
    may later make public, so it waits for the same approval as the repository
    publication.
