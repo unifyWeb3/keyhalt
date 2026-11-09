@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Ink'; src: url('assets/fonts-sans-bold.ttf'); font-weight: 700; }
+      @font-face { font-family: 'InkLite'; src: url('assets/fonts-sans.ttf'); font-weight: 400; }
+      @font-face { font-family: 'Mono'; src: url('assets/fonts-sans.ttf'); font-weight: 400; }
+      :root {
+        --bg: #0b0d14;
+        --panel: #11141c;
+        --panel-2: #1a1e28;
+        --raise: #1d2230;
+        --line: rgba(255,255,255,0.09);
+        --ink: #eef0f5;
+        --ink-2: #b0b6c4;
+        --muted: #737989;
+        --steel: #7cb7ff;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+      #root .clip > * { position: absolute; }
+      .clip { position: absolute; opacity: 0; }
+      img.plate { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
+      .plate-frame { position: absolute; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 40px 90px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05); }
+      .eyebrow { font-family: 'JetBrains Mono'; font-weight: 700; font-size: 20px; letter-spacing: 0.22em; color: var(--muted); text-transform: uppercase; }
+      .speaker { font-family: 'InkLite', 'Ink', sans-serif; font-weight: 400; color: var(--ink); font-size: 37px; line-height: 1.3; letter-spacing: -0.005em; }
+      .speaker b { font-weight: 700; color: var(--steel); }
+      .tag { font-family: 'JetBrains Mono'; font-size: 17px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="75" data-width="1920" data-height="1080">
+
+      <!-- 1 · fleet -->
+      <section id="scene-1" class="clip" data-start="0" data-duration="7.5" data-track-index="0">
+        <div class="eyebrow" style="left: 140px; top: 140px; font-size: 21px; color: var(--steel);">YOUR FLEET ON NEAR</div>
+        <div class="speaker" style="left: 140px; top: 192px; max-width: 640px;">Every agent fleet I run starts the same way. <b>Keys everywhere</b>, no idea which ones are still trusted <b>after today</b>.</div>
+        <div class="plate-frame" style="right: 110px; top: 95px; width: 1010px; height: 880px;">
+          <img src="assets/active-fleet-1920x1080.png" style="object-position: 50% 55%;" alt="Keyhalt fleet page"/>
+        </div>
+        <div class="tag" style="left: 140px; top: 780px;">3 agents · 10 operators · 0 full-access</div>
+      </section>
+
+      <!-- 2 · inventory -->
+      <section id="scene-2" class="clip" data-start="7.0" data-duration="8.0" data-track-index="0">
+        <div class="eyebrow" style="left: 140px; top: 140px; font-size: 21px; color: var(--steel);">THE CALLER LIST</div>
+        <div class="speaker" style="left: 140px; top: 192px; max-width: 640px;">Each agent's <b>operator keys</b> are scoped: <b>receiver ACL</b>, <b>method ACL</b>, tag set, role.</div>
+        <div class="plate-frame" style="right: 110px; top: 95px; width: 1010px; height: 880px;">
+          <img src="assets/active-agent-1920x1080.png" style="object-position: 50% 20%;" alt="Keyhalt agent detail showing operator keys"/>
+        </div>
+        <div class="tag" style="left: 140px; top: 780px;">ops-a · ops-b · admin · recovery</div>
+      </section>
+
+      <!-- 3 · freeze -->
+      <section id="scene-3" class="clip" data-start="14.0" data-duration="7.0" data-track-index="0">
+        <div class="eyebrow" style="left: 140px; top: 140px; font-size: 21px; color: var(--steel);">FREEZE THE AGENT</div>
+        <div class="speaker" style="left: 140px; top: 192px; max-width: 640px;">If one of them starts doing things I do not want, <b>one transaction</b> and its keys stop working.</div>
+        <div class="plate-frame" style="right: 110px; top: 95px; width: 1010px; height: 880px; border: 2px solid var(--warn);">
+          <img src="assets/frozen-agent-1920x1080.png" style="object-position: 50% 25%;" alt="Keyhalt frozen agent view"/>
+        </div>
+        <div class="tag" style="left: 140px; top: 780px; color: #e6b45a;">controller is frozen</div>
+      </section>
+
+      <!-- 4 · refusal -->
+      <section id="scene-4" class="clip" data-start="20.0" data-duration="8.5" data-track-index="0">
+        <div class="eyebrow" style="left: 140px; top: 140px; font-size: 21px; color: var(--steel);">AFTER THE FREEZE</div>
+        <div class="speaker" style="left: 140px; top: 192px; max-width: 700px;">The next call from the operator key is <b>refused</b>. The refusal is on chain, with the receipt.</div>
+        <div class="plate-frame" style="right: 110px; top: 95px; width: 1010px; height: 880px;">
+          <img src="assets/active-timeline-1920x1080.png" style="object-position: 0px -260px;" alt="Keyhalt timeline showing refused execute"/>
+        </div>
+        <div class="tag" style="left: 140px; top: 780px;">controller is frozen · refusal is a receipt</div>
+      </section>
+
+      <!-- 5 · audit chain -->
+      <section id="scene-5" class="clip" data-start="26.9" data-duration="7.5" data-track-index="0">
+        <div class="eyebrow" style="left: 140px; top: 140px; font-size: 21px; color: var(--steel);">AUDIT CHAIN</div>
+        <div class="speaker" style="left: 140px; top: 192px; max-width: 700px;">Every grant, every revoke, every freeze. <b>An entry links to the previous by hash.</b></div>
+        <div class="plate-frame" style="right: 110px; top: 95px; width: 1010px; height: 880px;">
+          <img src="assets/active-timeline-1920x1080.png" style="object-position: 0px -900px;" alt="Timeline window mid-history"/>
+        </div>
+        <div class="tag" style="left: 140px; top: 780px;">u-sage verify · offline recomputable</div>
+      </section>
+
+      <!-- 6 · evidence numbers -->
+      <section id="scene-6" class="clip" data-start="32.9" data-duration="11.0" data-track-index="0"><div class="eyebrow" style="left: 140px; top: 130px; font-size: 21px; color: var(--steel);">EVIDENCE IN PUBLIC</div>
+        <div class="speaker" style="left: 140px; top: 178px; max-width: 580px;"><b>Every claim</b>, one link.<br/><b>84</b> Rust tests · <b>41</b> TypeScript tests · <b>7/7</b> near-workspaces.</div>
+        <div style="position: absolute; left: 140px; top: 470px; width: 1540px; padding: 30px 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; font-family: 'JetBrains Mono'; color: var(--ink);">
+          <div style="font-size: 18px; color: var(--muted); letter-spacing: 0.12em;">CLAIMS · ROW TO PROOF</div>
+          <div style="font-size: 26px; margin-top: 12px; line-height: 1.4;"><span style="color: var(--steel);">F-003</span>  Freeze blocks operator execute · reason recorded<br/><span style="color: var(--steel);">F-004</span>  execute refuses gas above 100 Tgas, non-pinned receiver<br/><span style="color: var(--steel);">F-014</span>  SDK reads inventory + audit offline, exit 0<br/><span style="color: var(--steel);">F-029</span>  20-run freeze, optimistic p50 5,567 ms · final p50 13,251 ms</div>
+        </div>
+        <div class="tag" style="left: 140px; top: 890px;">repo · CLAIMS.md · verifiable with near-cli, no keys</div>
+      </section>
+
+      <!-- 7 · close -->
+      <section id="scene-7" class="clip" data-start="43.2" data-duration="19.8" data-track-index="0">
+        <svg style="position: absolute; left: 858px; top: 200px; width: 204px; height: 204px;" viewBox="0 0 100 100">
+          <rect width="100" height="100" rx="16" fill="#11141c" stroke="#7cb7ff" stroke-width="2.5"/>
+          <path d="M30 42 L50 22 L70 42" fill="none" stroke="#7cb7ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M35 62 L50 46 L65 62" fill="none" stroke="#7cb7ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity="0.72"/>
+        </svg>
+        <div id="end-wordmark" style="position: absolute; left: 0; top: 415px; width: 1920px; text-align: center; font-family: 'Ink'; font-weight: 700; font-size: 150px; color: var(--ink); letter-spacing: -0.02em;">Keyhalt</div>
+        <div class="eyebrow" style="position: absolute; left: 0; top: 584px; width: 1920px; text-align: center; font-size: 19px; color: var(--muted);">CONTROL THE KEYS BEHIND YOUR FLEET</div>
+        <div style="position: absolute; left: 0; top: 655px; width: 1920px; text-align: center; font-family: 'JetBrains Mono'; font-weight: 700; font-size: 29px; color: var(--steel);">github.com/unifyWeb3/keyhalt</div>
+        <div style="position: absolute; left: 0; top: 717px; width: 1920px; text-align: center; font-family: 'InkLite'; font-size: 19px; color: var(--ink-2); letter-spacing: 0.06em;">MIT · NEAR Hackathon · testnet-only · unaudited</div>
+      </section>
+
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const show = (id, at, dur) => tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.4 }, at).to(id, { opacity: 0, duration: 0.32 }, at + dur - 0.32);
+      show('#scene-1', 0, 7.5);
+      show('#scene-2', 7.0, 8.0);
+      show('#scene-3', 14.0, 7.0);
+      show('#scene-4', 20.0, 8.5);
+      show('#scene-5', 26.9, 7.5);
+      show('#scene-6', 32.9, 11.0);
+      tl.fromTo('#scene-7', { opacity: 0 }, { opacity: 1, duration: 0.4 }, 43.2)
+        .fromTo('#end-wordmark', { y: -80, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out' }, 43.4);
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
