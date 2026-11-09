@@ -113,6 +113,7 @@ export interface AgentPayload {
   detailsReady: boolean;
   admin: {
     publicKey: string | null;
+    adminAccount: string | null;
     recoveryPublicKey: string | null;
     pendingPublicKey: string | null;
     pendingOrigin: string | null;
@@ -549,6 +550,7 @@ export class SnapshotService {
       detailsReady: agent.nativeKeys !== null || agent.detailError !== null,
       admin: {
         publicKey: state.adminPublicKey,
+        adminAccount: state.adminAccount,
         recoveryPublicKey: state.recoveryPublicKey,
         pendingPublicKey: state.pendingAdminPublicKey,
         pendingOrigin: state.pendingOrigin,
